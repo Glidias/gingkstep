@@ -113,12 +113,14 @@
 
         var rootElement = document.getElementById("impress");
         socket.on('joinedTestRoom', function(msg) {
-            yourId = msg;
-            document.getElementById('you-are').innerHTML = "<i>Your id:</i> " + msg;
-            document.getElementById('application').style.display = "block";
-            document.getElementById('attempting-connection').style.display = "none";
-            document.getElementById('hamburger').style.display = "block";
-            imp.init();
+            if (msg === yourId) {
+              document.getElementById('application').style.display = "block";
+              document.getElementById('attempting-connection').style.display = "none";
+              document.getElementById('hamburger').style.display = "block";
+              imp.init();
+            } else {
+              // someone else joined room
+            }
         });
         document.getElementById("application").style.touchAction = "none";
         socket.on('hosted', function(msg) {
@@ -156,7 +158,12 @@
           socket.emit('slide-change', event.target.id);
         });
 
-        socket.emit('join-test-room');
+        socket.on('connect', function() {
+            yourId = socket.id;
+            document.getElementById('you-are').innerHTML = "<i>Your id:</i> " + socket.id;
+            socket.emit('join-test-room', socket.sessionid);
+        });
+
       </script>
   </body>
 </html>
