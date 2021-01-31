@@ -4,7 +4,7 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const port = process.env.PORT || 3000;
 
-const TEST_HOST_PASSWORD = process.env.TEST_HOST_PASSWORD;
+const TEST_HOST_PASSWORD = process.env.TEST_HOST_PASSWORD || "blahblah";
 const TEST_ROOM_ID = "testroom192419249gage"
 var TEST_HOST_ID = "";
 
@@ -34,6 +34,7 @@ io.on('connection', (socket) => {
 
   socket.on('admin-password-entry', msg => {
     if (TEST_HOST_PASSWORD && msg === TEST_HOST_PASSWORD) {
+
       TEST_HOST_ID = socket.id;
       io.to(TEST_ROOM_ID).emit('hosted', TEST_HOST_ID);
 

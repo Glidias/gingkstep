@@ -46,8 +46,8 @@
             <button type="submit">Become Admin</button>
 
         </form>
-        <div id="admin-name"></div>
-            <div id="you-are"></div>
+        <div id="admin-is"></div>
+          <div id="you-are"></div>
     </div>
     <div id="hamburger" style="display:none" onclick="toggleTray()"></div>
     <div id="attempting-connection">Attempting connection...</div>
@@ -119,39 +119,41 @@
             document.getElementById('attempting-connection').style.display = "none";
             document.getElementById('hamburger').style.display = "block";
             imp.init();
-
-
         });
         document.getElementById("application").style.touchAction = "none";
         socket.on('hosted', function(msg) {
+
           if (msg) {
             adminId = msg;
             document.getElementById('hamburger').classList.add("admin-connected");
             document.getElementById('admin-is').innerHTML = "<i>Admin:</i> " + msg;
 
-
             if (adminId === yourId ) {
               document.getElementById('hamburger').classList.add("you-are-admin");
               enableImp();
             }  else {
-              document.getElementById('hamburger').classList.add("you-are-admin");
+              document.getElementById('hamburger').classList.remove("you-are-admin");
               disableImp();
             }
           } else {
             enableImp();
             adminId = null;
             document.getElementById('admin-is').innerHTML = "";
+            document.getElementById('hamburger').classList.remove("you-are-admin");
             document.getElementById('hamburger').classList.remove("admin-connected");
           }
         });
 
         socket.on('slideChange', function(msg) {
             var val = parseInt(msg);
+
             if (!isNaN(val)) imp.goto(val);
+            else imp.goto(msg);
         });
 
         rootElement.addEventListener( "impress:stepenter", function(event) {
-          socket.emit('admin-password-entry', input.value);
+
+          socket.emit('slide-change', event.target.id);
         });
 
         socket.emit('join-test-room');
