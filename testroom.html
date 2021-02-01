@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Gingshow Test Room</title>
+    <title>GingkStep Test Room</title>
     <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <style>
@@ -155,8 +155,9 @@
         });
 
         rootElement.addEventListener( "impress:stepenter", function(event) {
-
-          socket.emit('slide-change', event.target.id);
+          if (adminId !== yourId ) {
+            socket.emit('slide-change', event.target.id);
+          }
         });
 
         socket.on('connect', function() {
