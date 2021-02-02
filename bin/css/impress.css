@@ -126,7 +126,7 @@
     -o-transition: opacity 1s;
     transition: opacity 1s;
     background-color: rgba(255,255,255,0.92);
-    transition-duration:0.15s !important;
+    transition-duration:0s !important;
   }
 
   .impress-enabled .step {
