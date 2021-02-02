@@ -155,7 +155,7 @@
         });
 
         rootElement.addEventListener( "impress:stepenter", function(event) {
-          if (adminId !== yourId ) {
+          if (adminId === yourId ) {
             socket.emit('slide-change', event.target.id);
           }
         });
