@@ -28,7 +28,6 @@ body {
   padding: 0;
   margin: 0;
   overflow:hidden;
-  height:100%;
 }
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;

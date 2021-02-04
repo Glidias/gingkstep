@@ -143,6 +143,8 @@ export default {
 
     },
     onResize () {
+      this.$el.style.height = window.innerHeight + 'px';
+     this.$refs.splider.$el.style.height = (window.innerHeight - 50) + 'px';
       let slideList = this.slideList;
 
 
@@ -360,15 +362,19 @@ export default {
   }
   ::v-deep .splide__track {
     overflow: visible;
+    height:100%;
+  }
+  ::v-deep .splide__list {
+    height:100%;
   }
 
  ::v-deep .splide__slide {
-   padding-bottom:50px;
+    //padding-bottom:50px;
     position: relative;
 
     box-sizing: border-box;
     border: 1px solid #333333;
-    height: 500px;
+    height: 100% !important;
 
     overflow: hidden;
   }
