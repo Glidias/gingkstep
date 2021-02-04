@@ -1,5 +1,5 @@
 <template>
-  <div class="slide-overview" :data-columns="testC" :class="{'no-touch':!isTouchDevice}"  @keydown.up="tapHandlerLeft2"  @keydown.down="tapHandlerRight2">
+  <div class="slide-overview" :data-columns="testC" :class="{'no-touch':!isTouchDevice}" @keydown.up="tapHandlerLeft2"  @keydown.down="tapHandlerRight2">
     <div
       class="offseter"
        :style="{transform: `translateX(${rootOffsetH}px)`}"
@@ -25,7 +25,7 @@
         </splide-slide>
       </splide>
     </div>
-    <div class="bottombar"  v-touch:swipe="swipeHandler">
+    <div class="bottombar">
       <button class="left" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">{{ testC > 1 ? '&lt;' : '↑' }}</button>
       <button class="right" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">{{testC > 1 ? '&gt;' : '↓' }}</button>
       <button class="left" v-touch:tap="returnTap" v-show="splideIndex  > lastScrolledSlideIndex">⏎</button>
@@ -34,7 +34,7 @@
   </div>
 </template>
 
-<script>
+<script> //v-touch:swipe="swipeHandler"
 function isTouchDevice() {
   return (('ontouchstart' in window) ||
      (navigator.maxTouchPoints > 0) ||
