@@ -89,7 +89,7 @@ export default {
         dragDistanceStartThreshold: 30,
         drag: true,
 
-        height: 'calc(100vh - 50px)'
+         height: '100%' //'calc(100vh - 50px)'
       };
     },
   },
@@ -144,6 +144,7 @@ export default {
     },
     onResize () {
       let slideList = this.slideList;
+
 
        let initial = getNumColumnsFromViewport()
         this.testC = initial;
@@ -291,7 +292,7 @@ export default {
   height: 100%;
 
   ::v-deep .scrollslides {
-    height: 100vh;
+    height: 100%;
   }
 
    &[data-columns='1'] {
@@ -362,6 +363,7 @@ export default {
   }
 
  ::v-deep .splide__slide {
+   padding-bottom:50px;
     position: relative;
 
     box-sizing: border-box;
