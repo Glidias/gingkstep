@@ -8,10 +8,10 @@ const TEST_HOST_PASSWORD = process.env.TEST_HOST_PASSWORD || "blahblah";
 const TEST_ROOM_ID = "testroom192419249gage"
 var TEST_HOST_ID = "";
 
-app.use(express.static('bin'))
+app.use(express.static('dist'))
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+  res.sendFile(__dirname + '/dist/index.html');
 });
 
 app.get('/testroom.html', (req, res) => {
