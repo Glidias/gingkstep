@@ -27,11 +27,11 @@ export default {
 body {
   padding: 0;
   margin: 0;
-  overflow:hidden;
-}
-body {
+  //overflow:hidden;
+
   touch-action: none;
 }
+
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
