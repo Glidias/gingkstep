@@ -27,9 +27,10 @@ export default {
 body {
   padding: 0;
   margin: 0;
-  //overflow:hidden;
-
+  overflow:hidden;
   touch-action: none;
+  width:100%;
+  height:100%;
 }
 
 #app {
