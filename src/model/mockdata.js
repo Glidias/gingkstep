@@ -1,7 +1,7 @@
 
 export default [
    { slides:[
-    `<p class="song">Only Thing</p>`,
+    `<p class="song">Oing BB</p>`,
 
     `<p class="song">
         Seif it t meant,<br />for cav that is<br />
@@ -67,7 +67,7 @@ export default [
     ]},
 
     { slides:[
-        `<p class="song">Only Thing 2</p>`,
+        `<p class="song">Oing BB 2</p>`,
 
         `<p class="song">
             Seif itwaaw t meant,<br />for awtawfre that is<br />
@@ -141,7 +141,7 @@ export default [
         </p>`
         ]},
 
-    {copyright:'<p>(C) Only Tawt watawhing</p>', slides:[
+    {copyright:'<p>(C) Only Tawt whing</p>', slides:[
     `<p>Only Tawt watawhing</p>`,
     `<p>
         wsfsf sey syewtww twt<br />wt awtseyess ese es awtwatwa twatw<br />ssesees
