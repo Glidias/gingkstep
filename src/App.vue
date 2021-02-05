@@ -29,6 +29,8 @@ body {
   margin: 0;
   overflow:hidden;
   touch-action: none;
+  user-select: none;
+
   width:100%;
   height:100%;
 }

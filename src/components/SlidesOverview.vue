@@ -1,5 +1,5 @@
 <template>
-  <div class="slide-overview" :data-columns="testC" :class="{'no-touch':!isTouchDevice}" @keydown.up="tapHandlerLeft2"  @keydown.down="tapHandlerRight2">
+  <div class="slide-overview" :data-columns="testC" :class="{'no-touch':!isTouchDevice, 'faint-select':faintSelect}" @keydown.up="tapHandlerLeft2"  @keydown.down="tapHandlerRight2">
     <div
       class="offseter"
        :style="{transform: `translateX(${rootOffsetH}px)`}"
@@ -10,7 +10,7 @@
             class="html-export"
             :class="{selected:s===splideIndex}"
             :style="{
-              'column-count': $data['testcc'+s],
+              'column-count':  $data['testcc'+s],
               transform: `translate(${testC > 1 ? $data['hOffset'+s] : 0}px, ${testC <= 1 ? $data['vOffset'+s] : 0}px)`,
             }"
           >
@@ -26,20 +26,23 @@
       </splide>
     </div>
     <div class="bottombar">
-      <button class="left" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">{{ testC > 1 ? '&lt;' : '↑' }}</button>
-      <button class="right" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">{{testC > 1 ? '&gt;' : '↓' }}</button>
-      <button class="left" v-touch:tap="returnTap" v-show="splideIndex  > lastScrolledSlideIndex">⏎</button>
-      <button class="right" v-touch:tap="returnTap" v-show="splideIndex < lastScrolledSlideIndex">⏎</button>
+      <div class="btn left" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">{{ testC > 1 ? '&lt;' : '↑' }}</div>
+      <div class="btn right" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">{{testC > 1 ? '&gt;' : '↓' }}</div>
+      <!--<div class="btn center" v-touch:swipe="swipeHandler" v-show="splideIndex === lastScrolledSlideIndex"></div>-->
+      <div class="btn left" v-touch:tap="returnTap" v-show="splideIndex  > lastScrolledSlideIndex">⏎</div>
+      <div class="btn right" v-touch:tap="returnTap" v-show="splideIndex < lastScrolledSlideIndex">⏎</div>
     </div>
   </div>
 </template>
 
-<script> //v-touch:swipe="swipeHandler"
+<script> //
 function isTouchDevice() {
   return (('ontouchstart' in window) ||
      (navigator.maxTouchPoints > 0) ||
      (navigator.msMaxTouchPoints > 0));
 }
+
+const NO_ABS_RECT_COORDS = document.body.getBoundingClientRect().x === undefined;
 
 function getNumColumnsFromViewport() {
   let w = window.innerWidth;
@@ -49,7 +52,11 @@ function getNumColumnsFromViewport() {
 export default {
   name: "HelloWorld",
   props: {
-    slideList: Array
+    slideList: Array,
+    faintSelect: {
+      type:Boolean,
+      default: false
+    }
   },
   data() {
     let initial = getNumColumnsFromViewport()
@@ -170,7 +177,7 @@ export default {
       }, 0);
       // this.$refs.splider.refresh();
     },
-    goto(i, tt, innerIndex) { //  innerIndex
+    goto(i, tt, innerIndex, suppressEvents) { //  innerIndex
       if (i !== this.splideIndex ) {
          this.$refs.splider.splide.go(i);
       }
@@ -183,17 +190,21 @@ export default {
         this.lastScrolledSlideIndex = i;
         this.innerIndex = innerIndex;
       }
+
+      if (!suppressEvents) this.$emit('goto', i, innerIndex);
     },
     scrollToElem(elem, i) { // within current context of div
       let horizontalMode = this.testC > 1;
-      let prop = horizontalMode ? "x" : "y";
+      let prop = NO_ABS_RECT_COORDS ? (horizontalMode ? "left" : "top") : (horizontalMode ? "x" : "y");
       let propD = horizontalMode ? "width" : "height";
       let parentRect = elem.parentNode.getBoundingClientRect();
       let rect = elem.getBoundingClientRect();
       let diff = rect[prop] - parentRect[prop];
       let dim = horizontalMode ? parentRect[propD] : elem.parentNode.parentNode.getBoundingClientRect().height;
+
       let lastRect = document.getElementById("omega_slide_"+i).getBoundingClientRect();
       let parentRectDim = lastRect[prop] - parentRect[prop] + lastRect[propD];
+
       // trim whitespace bounds
       let tryVal = -diff - rect[propD] * 0.5 + dim * 0.5;
       if (tryVal > 0) tryVal = 0;
@@ -268,24 +279,75 @@ export default {
 
   background-color: #110000;
 
-  ::v-deep button {
-    opacity:0.2;
-    width:40%;
+  ::v-deep .btn {
+
+    width:35%;
     height:100%;
     position:absolute;
+    border-radius:5px;
+    text-align:center;
+    display:flex;
+    flex-direction: column;
+    align-items:center;
+    justify-items: center;
+    //background-color: #333333;
+    touch-action:none;
+    padding-top:50px;
+    margin-top:-50px;
+    top:0;
+    box-sizing:content-box;
+    &.left {
+       border-left:3px solid white;
+    }
+    &.right {
+       border-right:3px solid white;
+    }
+    &.center {
+      left:50%;
+      transform:translateX(-50%);
+      width:30%;
+      height:100vh;
+      top:-100vh;
+      /*
+      &:before {
+        content: '';
+        left:0;
+        top:50%;
+         height:100%;
+
+         position:absolute;
+         border-left:1px solid rgba(255,255,255,0.4);
+      }
+        &:after {
+        content: '';
+        right:0;
+         top:35%;
+
+         position:absolute;
+         border-left:1px solid rgba(255,255,255,0.4);
+        height:100%;
+      }
+      */
+      position:relative;
+
+    }
+
   }
 
   .left {
     left:0;
+
   }
   .right {
     right:0;
+
   }
 }
 .offseter {
   transition: transform 0.25s cubic-bezier(0.37, 0, 0.63, 1);
 }
 .slide-overview {
+
     text-align: center;
   color: white;
   background-color: black;
@@ -331,7 +393,7 @@ export default {
     column-fill: auto;
     height: 100%;
 
-    column-count:auto;
+
 
     box-sizing: border-box;
     padding-bottom: 15px;
@@ -424,18 +486,33 @@ export default {
 
     .content {
       cursor: pointer;
+      z-index:112;
       padding: 1px 15px;
       box-sizing: border-box;
       // outline:rgb(16, 16, 16) 1px solid;
       margin: 0;
       &.selected {
-        outline:rgb(121, 78, 0) 1px solid;
+        outline:rgba(121, 78, 0) 1px solid;
         cursor:auto !important;
         background-color:#181818 !important;
       }
        .no-touch & {
         &:hover {
             background-color: #111111;
+          }
+      }
+    }
+
+    .faint-select .content {
+       &.selected {
+        outline:rgba(121, 78, 0, 0.2) 1px solid;
+        cursor:auto !important;
+        background-color:#111111 !important;//##181818 !important;
+
+      }
+       .no-touch & {
+        &:hover {
+            background-color: #080808;
           }
       }
     }
