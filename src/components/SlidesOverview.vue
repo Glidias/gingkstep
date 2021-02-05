@@ -6,7 +6,7 @@
     >
       <splide ref="splider" :options="splideOptions" class="scrollslides">
         <splide-slide v-for="(ul, s) in slideList" :key="s">
-          <article
+          <article v-touch:swipe="swipeHandler"
             class="html-export"
             :class="{selected:s===splideIndex}"
             :style="{
@@ -15,10 +15,10 @@
             }"
           >
             <div :ref="'splideh_'+s+'_'+i" v-for="(htm, i) in ul.slides" :key="i" :id="i === ul.slides.length - 1 ? `omega_slide_${s}` : undefined">
-              <div :class="{selected:lastScrolledSlideIndex === s && innerIndex === i}"  class="content" v-html="htm" @click="goto(s, $event.currentTarget.parentNode, i)" ></div>
-              <div v-if="i === ul.slides.length - 1" class="copyright-song" :class="{'-has-copyright': !!ul.copyright}" style="pointer-events:none">
+              <div :class="{selected:lastScrolledSlideIndex === s && innerIndex === i}"  class="content" v-html="htm" v-touch:tap="tapHandlerContentSlide"  :data-inner-index="i" :data-slide-index="s"></div>
+              <div v-if="i === ul.slides.length - 1" class="copyright-song" :class="{'-has-copyright': !!ul.copyright}" style="pointer-events:none; ">
                 <div v-html="ul.copyright || ul.slides[0]"></div>
-                <div class="rewind-button" style="pointer-events:auto" @click.stop="goto(s, 0, 0)">{{lastScrolledSlideIndex === s ? '⏮' : '⏵'}}</div>
+                <div class="arial rewind-button" style="pointer-events:auto" :data-slide-index="s" v-touch:tap="tapRewindHandler">{{lastScrolledSlideIndex === s ? '⏮' : '▶'}}</div>
               </div>
             </div>
           </article>
@@ -26,8 +26,8 @@
       </splide>
     </div>
     <div class="bottombar">
-      <div class="btn left" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">{{ testC > 1 ? '&lt;' : '↑' }}</div>
-      <div class="btn right" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">{{testC > 1 ? '&gt;' : '↓' }}</div>
+      <div class="btn left arial" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">{{ testC > 1 ? '&lt;' : '↑' }}</div>
+      <div class="btn right arial" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">{{testC > 1 ? '&gt;' : '↓' }}</div>
       <!--<div class="btn center" v-touch:swipe="swipeHandler" v-show="splideIndex === lastScrolledSlideIndex"></div>-->
       <div class="btn left" v-touch:tap="returnTap" v-show="splideIndex  > lastScrolledSlideIndex">⏎</div>
       <div class="btn right" v-touch:tap="returnTap" v-show="splideIndex < lastScrolledSlideIndex">⏎</div>
@@ -109,39 +109,53 @@ export default {
     */
   },
   methods: {
+    tapHandlerContentSlide(e) {
+      this.goto(parseInt(e.currentTarget.getAttribute('data-slide-index')), e.currentTarget.parentNode, parseInt(e.currentTarget.getAttribute('data-inner-index')));
+    },
+    tapRewindHandler(e) {
+      var s = parseInt(e.currentTarget.getAttribute('data-slide-index'));
+      this.goto(s, 0, 0);
+    },
     returnTap() {
       if (this._lastScrolledElem) this.goto(this.lastScrolledSlideIndex, this._lastScrolledElem, this.innerIndex);
     },
     tapHandlerLeft(e) {
-      this.swipeHandler("bottom");
+      this.swipeHandler("bottom", e, true);
     },
      tapHandlerLeft2(e) {
        if (this.splideIndex !== this.lastScrolledSlideIndex)  this.returnTap();
-      else this.swipeHandler("bottom");
+      else this.swipeHandler("bottom", e, true);
     },
     tapHandlerRight(e) {
       this.swipeHandler("top");
     },
-    tapHandlerRight2(e) {
+    tapHandlerRight2() {
       if (this.splideIndex !== this.lastScrolledSlideIndex) this.goto(this.splideIndex, 0, 0);
       else this.swipeHandler("top");
     },
-    swipeHandler(direction) {
+    swipeHandler(direction, ev, skipRetConsider) {
       if (direction === 'left' || direction === 'right') {
-        if (this.splideOptions.dragDistanceStartThreshold === Infinity) {
+        if (this.splideOptions.drag) {
             this.$refs.splider.splide.go(direction === 'left' ? '+' : '-')
         }
       }
       else {
         if (direction === 'top') {
+
+           if (!skipRetConsider && this.splideIndex !== this.lastScrolledSlideIndex) return this.goto(this.splideIndex, 0, 0);
           if (this._lastScrolledElem) {
             if( this._lastScrolledElem.nextSibling) {
+
                this.goto(this.lastScrolledSlideIndex, this._lastScrolledElem.nextSibling, ++this.innerIndex);
             }
           }
         } else {
+           if (!skipRetConsider && this.splideIndex !== this.lastScrolledSlideIndex)  return this.returnTap();
+
+
           if (this._lastScrolledElem) {
             if( this._lastScrolledElem.previousSibling) {
+
                this.goto(this.lastScrolledSlideIndex, this._lastScrolledElem.previousSibling, --this.innerIndex);
             }
           }
@@ -269,6 +283,10 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style  lang="scss" scoped>
 
+.arial {
+  font-family:Arial, sans-serif;
+}
+
 .bottombar {
   position:absolute;
   bottom:0px;
@@ -392,7 +410,7 @@ export default {
   ::v-deep article {
     column-fill: auto;
     height: 100%;
-
+    min-height:100%;
 
 
     box-sizing: border-box;

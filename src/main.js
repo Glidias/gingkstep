@@ -7,7 +7,7 @@ Vue.use(Vue2TouchEvents, {
   touchClass: '',
   tapTolerance: 10,
   touchHoldTolerance: 400,
-  swipeTolerance: 30
+  swipeTolerance: 25
 });
 Vue.use(VueSplide);
 Vue.config.productionTip = false;
