@@ -292,8 +292,8 @@ export default {
     justify-items: center;
     //background-color: #333333;
     touch-action:none;
-    padding-top:50px;
-    margin-top:-50px;
+   // padding-top:25px;
+   // margin-top:-25px;
     top:0;
     box-sizing:content-box;
     &.left {
