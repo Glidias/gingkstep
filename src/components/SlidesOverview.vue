@@ -302,15 +302,15 @@ export default {
     width:35%;
     height:100%;
     position:absolute;
+  // padding: 3px;
     border-radius:5px;
     text-align:center;
-    display:flex;
-    flex-direction: column;
+    vertical-align:center;
     align-items:center;
     justify-items: center;
     //background-color: #333333;
     touch-action:none;
-   // padding-top:25px;
+    padding-top:15px;
    // margin-top:-25px;
     top:0;
     box-sizing:content-box;
