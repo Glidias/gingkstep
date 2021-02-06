@@ -25,10 +25,13 @@
         </splide-slide>
       </splide>
     </div>
+    <div class="tray" :class="{collapsed:!showTray}">
+      <slot />
+    </div>
     <div class="bottombar">
       <div class="btn left arial" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">↑</div>
       <div class="btn right arial" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">↓</div>
-      <div class="btn center" v-show="splideIndex === lastScrolledSlideIndex"></div>
+      <div class="btn center" v-touch:tap="centerBtnTap"></div>
       <div class="btn left" v-touch:tap="returnTap" v-show="splideIndex  > lastScrolledSlideIndex">⏎</div>
       <div class="btn right" v-touch:tap="returnTap" v-show="splideIndex < lastScrolledSlideIndex">⏎</div>
     </div>
@@ -56,6 +59,10 @@ export default {
     faintSelect: {
       type:Boolean,
       default: false
+    },
+    stepIndex: {
+      type: Number,
+      required: false
     }
   },
   data() {
@@ -64,6 +71,7 @@ export default {
       testC: initial,
       rootOffsetH: 0,
       splideIndex: 0,
+      showTray: false,
 
       // refactor: this should be global retrive deriove and react to it
       lastScrolledSlideIndex:0,
@@ -96,7 +104,8 @@ export default {
         dragDistanceStartThreshold: 30,
         drag: true,
 
-         height: '100%' //'calc(100vh - 50px)'
+         height: '100%', //'calc(100vh - 50px)'
+
       };
     },
   },
@@ -109,6 +118,12 @@ export default {
     */
   },
   methods: {
+    centerBtnTap () {
+      this.showTray = !this.showTray;
+    },
+    onTapSlideOverview() {
+      this.showTray = false;
+    },
     tapHandlerContentSlide(e) {
       this.goto(parseInt(e.currentTarget.getAttribute('data-slide-index')), e.currentTarget.parentNode, parseInt(e.currentTarget.getAttribute('data-inner-index')));
     },
@@ -287,13 +302,15 @@ export default {
   font-family:Arial, sans-serif;
 }
 
+$bottom-bar-height:50px;
+
 .bottombar {
   position:absolute;
   bottom:0px;
   left:0;
   z-index:1;
   width:100%;
-  height:50px;
+  height:$bottom-bar-height;
 
   background-color: #110000;
 
@@ -534,4 +551,23 @@ export default {
           }
       }
     }
+
+.tray {
+    position:fixed;bottom:$bottom-bar-height;left:0;width:100%;height:auto;
+    transition:transform .35s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transform:translateY(0);
+    font-size:16px;
+    backdrop-filter: blur(10px);
+    color:white;
+    background-color:gray; padding:10px;
+    display:flex;
+    z-index:1;
+  }
+  .tray > div {
+    font-size:11px;
+    margin-left:15px;
+  }
+  .tray.collapsed {
+      transform:translateY(100%);
+  }
 </style>
