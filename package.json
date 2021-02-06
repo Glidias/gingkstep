@@ -12,11 +12,11 @@
     "@splidejs/splide": "Glidias/splide",
     "@splidejs/vue-splide": "Glidias/vue-splide",
     "@vue/cli-plugin-babel": "4.1.1",
+    "express": "^4.17.1",
+    "socket.io": "^3.0.3",
     "v-namespace": "1.0.1",
     "vue": "^2.6.11",
-    "vue2-touch-events": "^3.1.1",
-    "express": "^4.17.1",
-    "socket.io": "^3.0.3"
+    "vue2-touch-events": "^3.1.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-eslint": "4.1.1",

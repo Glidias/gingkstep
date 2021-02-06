@@ -26,9 +26,9 @@
       </splide>
     </div>
     <div class="bottombar">
-      <div class="btn left arial" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">{{ testC > 1 ? '&lt;' : '↑' }}</div>
-      <div class="btn right arial" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">{{testC > 1 ? '&gt;' : '↓' }}</div>
-      <!--<div class="btn center" v-touch:swipe="swipeHandler" v-show="splideIndex === lastScrolledSlideIndex"></div>-->
+      <div class="btn left arial" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">↑</div>
+      <div class="btn right arial" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">↓</div>
+      <div class="btn center" v-show="splideIndex === lastScrolledSlideIndex"></div>
       <div class="btn left" v-touch:tap="returnTap" v-show="splideIndex  > lastScrolledSlideIndex">⏎</div>
       <div class="btn right" v-touch:tap="returnTap" v-show="splideIndex < lastScrolledSlideIndex">⏎</div>
     </div>
@@ -324,13 +324,13 @@ export default {
       left:50%;
       transform:translateX(-50%);
       width:30%;
-      height:100vh;
-      top:-100vh;
-      /*
+     // max-width:80px;
+
+       position:relative;
       &:before {
         content: '';
         left:0;
-        top:50%;
+        top:0%;
          height:100%;
 
          position:absolute;
@@ -339,13 +339,13 @@ export default {
         &:after {
         content: '';
         right:0;
-         top:35%;
+         top:0%;
 
          position:absolute;
          border-left:1px solid rgba(255,255,255,0.4);
         height:100%;
       }
-      */
+
       position:relative;
 
     }
