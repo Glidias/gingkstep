@@ -1,19 +1,25 @@
 <template>
   <div id="app" :class="{'show-chords':showChords, 'show-overview':showOverview}">
     <div id="attempting-connection" v-show="attemptingConnect">Attempting connection...</div>
-    <slide-show :step-list="slidesFlattened" v-if="!showOverview"></slide-show>
-    <slides-overview :slide-list="slides" v-if="showOverview">
-      <div class="traycontents">
-        <div>
-          <p><label><input type="checkbox" v-model="showChords">Show Chords?</label> <span class="keyer" v-show="curDefKeyIndex >=0">Key: <select><option v-for="(li, i) in keyOptions" :key="i" :value="i" :selected="i === curKeyIndex ? true : undefined">{{li}}</option></select></span> <span v-show="curDefKeyIndex !== i && curDefKeyIndex>=0">{{curDefKeyIndex}}</span></p>
+    <div v-if="slides && slides.length">
+      <slide-show :step-list="slidesFlattened" v-if="!showOverview"></slide-show>
+      <slides-overview :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
+        <div class="traycontents">
+          <div>
+            <p><label><input type="checkbox" v-model="showChords">Show Chords?</label> <span class="keyer" v-show="curDefKeyIndex >=0">Key: <select><option v-for="(li, i) in keyOptions" :key="i" :value="i" :selected="i === curKeyIndex ? true : undefined">{{li}}</option></select></span> <span v-show="curDefKeyIndex !== i && curDefKeyIndex>=0">{{curDefKeyIndex}}</span></p>
+            <p v-if="!isHost"><label><input type="checkbox" v-model="strongHighlight">Select Highlight</label></p>
+          </div>
+          <div>
+            <p class="pin" v-if="sessionPin">Session Pin: <b>{{sessionPin}}</b></p>
+            <div class="button" v-else type="submit">Host Session</div>
+          </div>
         </div>
-        <div>
-          <p class="pin" v-if="sessionPin">Session Pin: <b>{{sessionPin}}</b></p>
-          <div class="button" v-else type="submit">Host Session</div>
-        </div>
-      </div>
-    </slides-overview>
-    <a id="hamburger" @click="showOverview = !showOverview"></a>
+      </slides-overview>
+      <a id="hamburger" @click="showOverview = !showOverview"></a>
+    </div>
+    <div v-else>
+
+    </div>
   </div>
 </template>
 
@@ -32,13 +38,14 @@ export default {
       showOverview: true,
       showChords: false,
       sessionPin: '',
-      attemptingConnect: false
+      attemptingConnect: false,
+      isHost: false,
+      strongHighlight: false,
+
+      slides: mockData
     }
   },
   computed: {
-    slides () {
-      return mockData;
-    },
     keyOptions () {
       return ['C', 'C#', 'D', 'E', 'Eb', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
     },

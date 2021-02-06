@@ -533,22 +533,22 @@ $bottom-bar-height:50px;
       }
        .no-touch & {
         &:hover {
-            background-color: #111111;
+            background-color: #090909;
           }
       }
     }
 
     .faint-select .content {
        &.selected {
-        outline:rgba(121, 78, 0, 0.2) 1px solid;
+        outline:rgba(121, 78, 0, 0.1) 1px solid;
         cursor:auto !important;
-        background-color:#111111 !important;//##181818 !important;
+        background-color:#080808 !important;//##181818 !important;
 
       }
        .no-touch & {
         &:hover {
-            background-color: #080808;
-          }
+            background-color: #080808 !important;
+        }
       }
     }
 
