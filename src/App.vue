@@ -353,6 +353,7 @@ body {
   .song ch {
     display:inline;
     position:relative;
+      color:yellow;
   }
 
   .song ch c{
@@ -361,6 +362,8 @@ body {
     top:-1.8em;
     display:block;
     font-size:0.75em;
+
+     letter-spacing:1px;
     font-weight:bold;
     left:0;
   }
@@ -368,6 +371,7 @@ body {
     position:absolute;
     top:-1.8em;
     font-size:0.75em;
+    letter-spacing:1px;
     font-weight:bold;
     left:0;
   }

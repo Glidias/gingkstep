@@ -98,7 +98,7 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 					}
 				}
 				@for $a from 1 through length($addSharps) {
-					$d: nth($addFlats, $a);
+					$d: nth($addSharps, $a);
 					>ch[t=#{$d}#{$k}]>c {
 						&:before {
 							content:'#{$d}#{$k}';
