@@ -1,7 +1,7 @@
 
 export default [
    { slides:[
-    `<p>Oing BB</p>`,
+    `<p class="introsong">Oing BB</p>`,
 
     `<p class="song"><br>This <ch n="c"><c>7+11</c>izing ve<br>That swace<br>That wll</span><br>This iingve<br>Th awu <ch n="C"><c>11</c>e my wrw<br>That w will<br></p>`,
 
@@ -66,12 +66,12 @@ export default [
     ]},
 
     { slides:[
-    `<p>Title goes here</p>`,
+    `<p class="introsong">Title goes here</p>`,
     `<p class="song">waest setse se esyse sey se taa yaaw a awwawa</p>`,
     ]},
 
     { slides:[
-        `<p>Oing BB 2</p>`,
+        `<p class="introsong">Oing BB 2</p>`,
 
         `<p class="song">
             Seif itwaaw t meant,<br />for awtawfre that is<br />
@@ -146,7 +146,7 @@ export default [
         ]},
 
     {copyright:'<p>(C) Only Tawt whing</p>', slides:[
-    `<p>Only Tawt watawhing</p>`,
+    `<p class="introsong">Only Tawt watawhing</p>`,
     `<p class="song">
         wsfsf sey syewtww twt<br />wt awtseyess ese es awtwatwa twatw<br />ssesees
         esseeseyyt estey es yesyese s e<br />

@@ -1,24 +1,34 @@
 <template>
-  <div id="app" :class="{'show-chords':showChords, 'show-overview':showOverview}">
-    <div id="attempting-connection" v-show="attemptingConnect">Attempting connection...</div>
+  <div id="app" :class="{'show-chords':showChords, 'show-overview':showOverview, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
     <div v-if="slides && slides.length">
-      <slide-show :step-list="slidesFlattened" v-if="!showOverview"></slide-show>
-      <slides-overview :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
+      <slides-overview @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
         <div class="traycontents">
           <div>
-            <p><label><input type="checkbox" v-model="showChords">Show Chords?</label> <span class="keyer" v-show="curDefKeyIndex >=0">Key: <select><option v-for="(li, i) in keyOptions" :key="i" :value="i" :selected="i === curKeyIndex ? true : undefined">{{li}}</option></select></span> <span v-show="curDefKeyIndex !== i && curDefKeyIndex>=0">{{curDefKeyIndex}}</span></p>
+            <p><label><input type="checkbox" v-model="showChords">Show Chords?</label> <span class="keyer" v-show="curDefKeyIndex >=0">Key:
+              <select @change="onKeyDropdownChange($event)">
+                <option v-for="(li, i) in keyOptions" :key="i" :value="i" :selected="i === curKeyIndex ? true : undefined">{{li}}</option>
+              </select></span> <span v-show="curDefKeyIndex !== curKeyIndex && curDefKeyIndex>=0">{{keyOptions[curDefKeyIndex]}}</span></p>
             <p v-if="!isHost"><label><input type="checkbox" v-model="strongHighlight">Select Highlight</label></p>
           </div>
-          <div>
+          <form @submit.prevent="hostSession">
             <p class="pin" v-if="sessionPin">Session Pin: <b>{{sessionPin}}</b></p>
-            <div class="button" v-else type="submit">Host Session</div>
-          </div>
+            <button class="button reset" v-else type="submit">Host Session</button>
+          </form>
         </div>
       </slides-overview>
+      <slide-show @goto="onGoto" :step-index="stepIndex" :step-list="slidesFlattened" v-if="!showOverview"></slide-show>
       <a id="hamburger" @click="showOverview = !showOverview"></a>
     </div>
-    <div v-else>
-
+    <div v-else style="padding:15px">
+      <form @submit.prevent="onSubmitJoin($event)">
+        <label>Join Room: <input type="text" name="roomid"></label>
+        <button type="submit">Join</button>
+      </form>
+      <br>
+      <form @submit.prevent="onSubmitLoad($event)">
+        <label>Open Tree: <input type="text" name="treeid"></label>
+        <button type="submit">Load</button>
+      </form>
     </div>
   </div>
 </template>
@@ -42,10 +52,17 @@ export default {
       isHost: false,
       strongHighlight: false,
 
-      slides: mockData
+      slides: null,
+
+      treeD: '',
+
+      stepIndex: 0,
     }
   },
   computed: {
+    isGuest () {
+      return !this.isHost && this.sessionPin;
+    },
     keyOptions () {
       return ['C', 'C#', 'D', 'E', 'Eb', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
     },
@@ -63,11 +80,91 @@ export default {
       return arr;
     }
   },
+  sockets: {
+    connect: function () {
+      console.log('socket connected: ' + this.$socket.id);
+      this.attemptingConnect = false;
+    },
+    disconnect: function () {
+      console.log('socket disconnected');
+      this.sessionPin = '';
+      this.isHost = false;
+    },
+    connect_error: function (err) {
+      console.log('socket connect error');
+       alert("Error occured while connecting...");
+    },
+
+    hostingTestRoom (sessionPin) {
+      this.attemptingConnect = false;
+      this.sessionPin = sessionPin;
+      this.isHost = true;
+    },
+    roomDoesntExist (id) {
+      alert("Room doesn't exist: "+id);
+      this.attemptingConnect = false;
+
+    },
+    slideChange(slideId) {
+      if (!this.isHost && this.sessionPin) {
+        this.stepIndex = parseInt(slideId);
+      }
+    },
+    joinedRoom: function(dataArr) { //sessionPin, treeD, keys
+      let sessionPin = dataArr[0];
+      let treeD = dataArr[1];
+      let keys = dataArr[2];
+      // attempt load treeD before
+
+      this.attemptingConnect = false;
+      this.sessionPin = sessionPin;
+      this.isHost = false;
+      this.slides = mockData;
+    },
+  },
+  methods: {
+    onKeyDropdownChange(event) {
+      console.log(event.currentTarget.selectedIndex);
+    },
+    onGoto(index) {
+      this.stepIndex = index;
+      if (this.isHost && this.sessionPin) {
+        this.$socket.emit('slide-change', index+'');
+      }
+    },
+    async lazyEmit(event, data, data2) {
+      this.attemptingConnect = true;
+      if (!this.$socket.connected) {
+        try {
+          let b = await this.$socket.connect();
+          console.log(b);
+        }
+        catch(err) {
+          console.log(err);
+          return;
+        }
+      }
+      this.$socket.emit(event, data, data2);
+    },
+    onSubmitJoin (e) {
+      if (!e.currentTarget.roomid.value) return;
+      this.lazyEmit('join-room', e.currentTarget.roomid.value);
+    },
+    onSubmitLoad (e) {
+      this.slides = mockData;
+    },
+    hostSession () {
+      this.lazyEmit('host-room', this.treeD);
+    }
+  },
   watch: {
     showChords () {
       window.dispatchEvent(new Event('resize'));
     }
-  }
+  },
+  mounted () {
+
+  },
 };
 </script>
 
@@ -88,11 +185,47 @@ body {
   color:white;
 }
 
+#impress {
+  .introsong {
+    .is-guest & {
+      visibility: hidden;
+    }
+  }
+}
+
 
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  .hidden-vis {
+    opacity:0;
+    pointer-events:none;
+    touch-action:none;
+  }
+   &.attempting-connect {
+    form {
+      opacity:.5;
+      pointer-events:none;
+      touch-action: none;
+    }
+  }
+
+  button.reset {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+
+    &:focus, &:active {
+      outline:none;
+      border:none;
+    }
+  }
 
   .traycontents {
     text-align:center; margin:0 auto 0 auto;
@@ -106,12 +239,14 @@ body {
   .pin {
     font-size:13px;
     b {
+      user-select: auto;
       font-size:1.8em;
     }
   }
 
-  .button {
+  button.button {
     $btnColor: #3e68ff;
+
 
     // Display
     display: inline-flex;
@@ -164,6 +299,8 @@ body {
  font-size:0.9em;
 }
 
+
+
   #hamburger {
         position:fixed;top:0;right:0;width:60px; height:60px;
         //background-color:#00FF00;
@@ -175,8 +312,8 @@ body {
         display:block;
 
         .show-overview & {
-          width:30px;
-          height:30px;
+          width:40px;
+          height:40px;
         }
         &:active {
          border-color:#00FF00;

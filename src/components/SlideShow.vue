@@ -9,12 +9,14 @@
 <script>
 export default {
    props: {
-    stepList: Array
+    stepList: Array,
+    stepIndex: Number
   },
   computed: {
     splideOptions() {
       // var cols = this.testC;
       return {
+        start: this.stepIndex !== undefined ? this.stepIndex : 0,
         autoWidth: true,
          easing: 'cubic-bezier(0.37, 0, 0.63, 1)',
         type  : 'fade',
@@ -29,6 +31,18 @@ export default {
         height: '100%' //'calc(100vh - 50px)'
       };
     },
+  },
+  mounted () {
+     this.$refs.splider.splide.on("move", (newIndex, oldIndex) => {
+       this.$emit('goto', newIndex);
+     });
+  },
+  watch: {
+    stepIndex (newVal) {
+      if (newVal !== undefined) {
+        this.$refs.splider.splide.go(newVal);
+      }
+    }
   }
 }
 </script>

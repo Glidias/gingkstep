@@ -1,5 +1,5 @@
 <template>
-  <div class="slide-overview" :data-columns="testC" :class="{'no-touch':!isTouchDevice, 'faint-select':faintSelect}" @keydown.up="tapHandlerLeft2"  @keydown.down="tapHandlerRight2">
+  <div class="slide-overview" :data-columns="testC" :class="{'no-transition': noTransition, 'no-touch':!isTouchDevice, 'faint-select':faintSelect}" @keydown.up="tapHandlerLeft2"  @keydown.down="tapHandlerRight2">
     <div
       class="offseter"
        :style="{transform: `translateX(${rootOffsetH}px)`}"
@@ -52,8 +52,18 @@ function getNumColumnsFromViewport() {
   return w >= 1300 ? 4 : w > 1000 ? 3 : w >= 700 ? 2 : 1;
 }
 
+function getSlideIndexFromStep(stepIndex, slideList) {
+  let count = 0;
+  let i=0, len = slideList.length;
+  for (i=0; i< len; i++) {
+    if (count >= stepIndex) break;
+    let slides = slideList[i].slides;
+    count += slides.length;
+  }
+  return i;
+}
+
 export default {
-  name: "HelloWorld",
   props: {
     slideList: Array,
     faintSelect: {
@@ -72,10 +82,11 @@ export default {
       rootOffsetH: 0,
       splideIndex: 0,
       showTray: false,
+      noTransition: false,
 
       // refactor: this should be global retrive deriove and react to it
-      lastScrolledSlideIndex:0,
-      innerIndex: 0,
+      lastScrolledSlideIndex_:0,
+      innerIndex_: 0,
     };
     let slideList = this.slideList;
     for (let i=0, len = slideList.length; i< len; i++) {
@@ -87,11 +98,40 @@ export default {
     return d;
   },
   computed: {
+    lastScrolledSlideIndex () {
+      return this.stepIndex !== undefined ? this.subIndexArr[this.stepIndex][0] : this.lastScrolledSlideIndex_;
+    },
+    innerIndex () {
+      return this.stepIndex !== undefined ? this.subIndexArr[this.stepIndex][1] : this.innerIndex_;
+    },
+    totalSlideAccum() {
+      let arr = [];
+      let count = 0;
+      let slideList = this.slideList;
+      for (let i=0, len = slideList.length; i< len; i++) {
+        let slides = slideList[i].slides;
+        arr.push(count);
+        count += slides.length;
+      }
+      return arr;
+    },
+    subIndexArr () {
+      let arr = [];
+      let slideList = this.slideList;
+      for (let i=0, len = slideList.length; i< len; i++) {
+        let slides = slideList[i].slides;
+        for (let u=0, uLen = slides.length; u< uLen; u++) {
+          arr.push([i, u]);
+        }
+      }
+      return arr;
+    },
     isTouchDevice: isTouchDevice,
     splideOptions() {
       // var cols = this.testC;
       return {
         autoWidth: true,
+        start: 0, //this.stepIndex !== undefined ? getSlideIndexFromStep(this.stepIndex, this.slideList) : 0,
         // trimSpace: cols > 1 ? true : false,
 
         easing: 'cubic-bezier(0.37, 0, 0.63, 1)',
@@ -116,6 +156,17 @@ export default {
       this.$refs.splider.refresh();
     }
     */
+   stepIndex (val) {
+
+     if (val !== undefined) {
+       let arr = this.subIndexArr;
+       let a = arr[val][0];
+       let b = arr[val][1];
+       if (a !== this.lastScrolledSlideIndex_ || b !== this.innerIndex_) {
+         this.goto(a, 0, b, true);
+       }
+     }
+   }
   },
   methods: {
     centerBtnTap () {
@@ -161,7 +212,7 @@ export default {
           if (this._lastScrolledElem) {
             if( this._lastScrolledElem.nextSibling) {
 
-               this.goto(this.lastScrolledSlideIndex, this._lastScrolledElem.nextSibling, ++this.innerIndex);
+               this.goto(this.lastScrolledSlideIndex, this._lastScrolledElem.nextSibling, ++this.innerIndex_);
             }
           }
         } else {
@@ -171,7 +222,7 @@ export default {
           if (this._lastScrolledElem) {
             if( this._lastScrolledElem.previousSibling) {
 
-               this.goto(this.lastScrolledSlideIndex, this._lastScrolledElem.previousSibling, --this.innerIndex);
+               this.goto(this.lastScrolledSlideIndex, this._lastScrolledElem.previousSibling, --this.innerIndex_);
             }
           }
         }
@@ -206,21 +257,20 @@ export default {
       }, 0);
       // this.$refs.splider.refresh();
     },
-    goto(i, tt, innerIndex, suppressEvents) { //  innerIndex
-      if (i !== this.splideIndex ) {
-         this.$refs.splider.splide.go(i);
-      }
+    goto (i, tt, innerIndex, suppressEvents) { //  innerIndex
+        if (i !== this.splideIndex) {
+          this.$refs.splider.splide.go(i);
+        }
 
-      if (tt != null) {
-        let targt = typeof tt !== 'number' ? tt : this.$refs[`splideh_${i}_${innerIndex}`][0];
+        if (tt != null) {
+          let targt = typeof tt !== 'number' ? tt : this.$refs[`splideh_${i}_${innerIndex}`][0];
 
-        this.scrollToElem(targt, i);
-        this._lastScrolledElem = targt;
-        this.lastScrolledSlideIndex = i;
-        this.innerIndex = innerIndex;
-      }
-
-      if (!suppressEvents) this.$emit('goto', i, innerIndex);
+          this.scrollToElem(targt, i);
+          this._lastScrolledElem = targt;
+          this.lastScrolledSlideIndex_ = i;
+          this.innerIndex_ = innerIndex;
+        }
+      if (!suppressEvents) this.$emit('goto', this.totalSlideAccum[i]+innerIndex);
     },
     scrollToElem(elem, i) { // within current context of div
       let horizontalMode = this.testC > 1;
@@ -258,6 +308,21 @@ export default {
     window.addEventListener('resize', this._resizeHandler);
 
     this.onResize();
+    if (this.stepIndex !== undefined && this.stepIndex !== 0) {
+      this.$el.classList.add('no-transition');
+      this.noTransition = true;
+      this.$nextTick(()=>{
+        setTimeout(()=> {
+          let arr = this.subIndexArr;
+          let val = this.stepIndex;
+          this.goto(arr[val][0], null, arr[val][1], true);
+          setTimeout(()=>{
+            this.noTransition = false;
+            this.$el.classList.remove('no-transition');
+          }, 250);
+        },0);
+      });
+    }
 
     this.$refs.splider.splide.on("move", (newIndex, oldIndex) => {
       if (oldIndex === newIndex) {
@@ -380,6 +445,9 @@ $bottom-bar-height:50px;
 }
 .offseter {
   transition: transform 0.25s cubic-bezier(0.37, 0, 0.63, 1);
+  .no-transition & {
+    transition:none !important;
+  }
 }
 .slide-overview {
 
@@ -454,6 +522,12 @@ $bottom-bar-height:50px;
     }
     transition: transform 0.25s ease-in-out;
   }
+
+  &.no-transition ::v-deep article {
+    transition:none !important;
+
+  }
+
   ::v-deep .splide {
     overflow: visible;
   }
@@ -464,6 +538,7 @@ $bottom-bar-height:50px;
   ::v-deep .splide__list {
     height:100%;
   }
+
 
  ::v-deep .splide__slide {
     //padding-bottom:50px;
