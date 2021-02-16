@@ -3,9 +3,9 @@ export default [
    { slides:[
     `<p class="introsong">Oing BB</p>`,
 
-    `<p class="song"><br>This <ch n="c"><c>7+11</c>izing ve<br>That swace<br>That wll</span><br>This iingve<br>Th awu <ch n="C"><c>11</c>e my wrw<br>That w will<br></p>`,
+    `<p class="song" key="C"><br>This <ch t="C"><c>7+11</c></ch>izing ve<br>That swace<br>That wll</span><br>This iingve<br>Th awu <ch t="Cm"><c b="Eb">11</c></ch>e my wrw<br>That w will<br></p>`,
 
-    `<p class="song"> sis sis s DJs sms d<br>Sjsjdkdjd dkskss skims<br>Sjsjdkkds<br>Sndjdjdjd<br>Xjxjjdkdj<ch n="c"><c>7+11</c>dkdd dks did did sksms</p>`,
+    `<p class="song" key="C"> sis sis s DJs sms d<br>Sjsjdkdjd dkskss skims<br>Sjsjdkkds<br>Sndjdjdjd<br>Xjxjjdkdj<ch t="hii"><c>7+11</c></ch>dkdd dks did did sksms</p>`,
 
     `<p class="song">
         Seif it t meant,<br />for cav that is<br />

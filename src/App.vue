@@ -92,7 +92,7 @@ export default {
     },
     connect_error: function (err) {
       console.log('socket connect error');
-       alert("Error occured while connecting...");
+       alert("Error with connection...");
     },
 
     hostingTestRoom (sessionPin) {
@@ -364,14 +364,6 @@ body {
     font-weight:bold;
     left:0;
   }
-
-  .song ch[n=c] c:before{
-    content: "Cm";
-  }
-  .song ch[n=C] c:before{
-    content: "C";
-  }
-
   .song ch:before {
     position:absolute;
     top:-1.8em;

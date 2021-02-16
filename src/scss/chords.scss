@@ -1,0 +1,132 @@
+$keys: C, 0, D, 0, E, F, 0, G, 0, A, 0, B, C, 0, D, 0, E, F, 0, G, 0, A, 0, B, C, 0, D, 0, E, F, 0, G, 0, A, 0, B;
+$keysSharp: 0, Ch, 0, Dh, 0, 0, Fh, 0, Gh, 0, Ah, 0, 0, Ch, 0, Dh, 0, 0, Fh, 0, Gh, 0, Ah, 0, 0, Ch, 0, Dh, 0, 0, Fh, 0, Gh, 0, Ah, 0;
+$keysFlat: 0, Db, 0, Eb, 0, 0, Gb, G, Ab, 0, Bb, 0, 0, 0, Db, 0, Eb, 0, 0, Gb, G, Ab, 0, Bb, 0, 0, 0, Db, 0, Eb, 0, 0, Gb, G, Ab, 0, Bb, 0, 0;
+
+$keysSharpV: 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B';
+$keysFlatV: 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B','C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B','C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B';
+$keysRegular: C, 'C#', D, 'Eb', E, F, 'F#', G, 'Ab', A, 'Bb', B, C, 'C#', D, 'Eb', E, F, 'F#', G, 'Ab', A, 'Bb', B, C, 'C#', D, 'Eb', E, F, 'F#', G, 'Ab', A, 'Bb', B;
+$keySignAsSharp: 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1;
+
+$numerals: 'I', 0, 'II', 0, 'III', 'IV', 0, 'V', 0, 'VI', 0, 'VII';
+$numeralsLc: 'i', 0, 'ii', 0, 'iii', 'iv', 0, 'v', 0, 'vi', 0, 'vii';
+
+// this will tend to bloat with >=2 variations!
+$addSharps: 'h', 'hh'; //, 'hhh';
+$addFlats: 'b', 'bb'; //, 'bbb';
+
+@mixin generate-numeric-keys($numerals, $keys, $daKeys, $isMinor:0) {
+	$m: if($isMinor==1, 'm', '');
+	@for $i from 1 through 12 {
+		$k: nth($keys, $i);
+		@if ($k != 0) {
+			//$ks: nth($keySignAsSharp, $i); // piano keys signature prefeence
+			$offset: ($i - 1);
+			.song[key=#{$k}] {
+			@for $i from 1 through 12 {
+				$n: nth($numerals, $i);
+				@if ($n != 0) {
+					$c: nth($daKeys, 12 + $i + $offset);
+					ch[t=#{$n}] {
+						&:before {
+							content:'#{$c}#{$m}';
+						}
+					}
+					@if ($isMinor == 0) {
+						c[b=#{$n}] {
+							&:after {
+								content:'/#{$c}';
+							}
+						}
+					}
+					@for $a from 1 through length($addSharps) {
+						$c: nth($keysSharpV,  $i + $offset + $a);
+						$d: nth($addSharps, $a);
+						ch[t=#{$d}#{$n}] {
+							&:before {
+								content:'#{$c}#{$m}';
+							}
+						}
+						@if ($isMinor == 0) {
+							c[b=#{$d}#{$n}] {
+								&:after {
+									content:'/#{$c}';
+								}
+							}
+						}
+					}
+					@for $a from 1 through length($addFlats) {
+						$c: nth($keysFlatV, 12 + $i + $offset - $a);
+						$d: nth($addFlats, $a);
+						ch[t=#{$d}#{$n}] {
+							&:before {
+								content:'#{$c}#{$m}';
+							}
+						}
+						@if ($isMinor == 0) {
+							c[b=#{$d}#{$n}] {
+								&:after {
+									content:'/#{$c}';
+								}
+							}
+						}
+					}
+			}
+			}
+			}
+	}
+	}
+}
+
+@mixin generate-letter-keys($keys, $daKeys, $isMinor:0) {
+	$m: if($isMinor==1, 'm', '');
+
+	@for $i from 1 through 12 {
+		$k: nth($keys, $i);
+		@if ($k != 0) {
+			$c: nth($daKeys, $i);
+			.song {
+				ch[t=#{$k}#{$m}] {
+					&:before {
+						content:'#{$c}#{$m}';
+					}
+				}
+				@if ($isMinor == 0) {
+					c[b=#{$k}] {
+						&:after {
+							content:'/#{$c}';
+						}
+					}
+				}
+			}
+		}
+
+	}
+}
+
+// general letter keys
+///*
+@include generate-letter-keys($keys, $keysSharpV);
+@include generate-letter-keys($keysSharp, $keysSharpV);
+@include generate-letter-keys($keysFlat, $keysFlatV);
+//*/
+
+// general letter keys with minor suffix
+///*
+@include generate-letter-keys($keys, $keysSharpV, 1);
+@include generate-letter-keys($keysSharp, $keysSharpV, 1);
+@include generate-letter-keys($keysFlat, $keysFlatV, 1);
+//*/
+
+// major numeral keys
+///*
+@include generate-numeric-keys($numerals, $keys, $keysSharpV);
+@include generate-numeric-keys($numerals, $keysSharp, $keysSharpV);
+@include generate-numeric-keys($numerals, $keysFlat, $keysFlatV);
+//*/
+
+// include minor numeral keys?
+///*
+@include generate-numeric-keys($numeralsLc, $keys, $keysSharpV, 1);
+@include generate-numeric-keys($numeralsLc, $keysSharp, $keysSharpV, 1);
+@include generate-numeric-keys($numeralsLc, $keysFlat, $keysFlatV, 1);
+//*/
