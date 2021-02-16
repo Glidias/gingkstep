@@ -12,6 +12,7 @@ $numeralsLc: 'i', 0, 'ii', 0, 'iii', 'iv', 0, 'v', 0, 'vi', 0, 'vii';
 
 // this will tend to bloat with >=2 variations!
 $addSharps: 'h', 'hh'; //, 'hhh';
+$addSharpsV: '#', '##';
 $addFlats: 'b', 'bb'; //, 'bbb';
 
 // tranposable numeric keys
@@ -99,9 +100,10 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 				}
 				@for $a from 1 through length($addSharps) {
 					$d: nth($addSharps, $a);
+					$c: nth($addSharpsV, $a);
 					>ch[t=#{$d}#{$k}]>c {
 						&:before {
-							content:'#{$d}#{$k}';
+							content:'#{$c}#{$k}';
 						}
 					}
 					@if ($isMinor == 0) {
