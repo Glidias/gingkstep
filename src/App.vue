@@ -299,6 +299,22 @@ body {
  font-size:0.9em;
 }
 
+///*
+.song {
+  em {
+    font-weight:normal;
+    text-decoration:none;
+    text-transform:none;
+    font-style:normal;
+    >* {
+      font-weight:inherit;
+      text-decoration:inherit;
+      text-transform:inherit;
+      font-style:inherit;
+    }
+  }
+}
+//*/
 
 
   #hamburger {
@@ -330,18 +346,18 @@ body {
     }
   }
 
-  .song ch {
-
+ .song em {
     &:after {
       display:none;
     }
     &:before {
       display:none;
     }
-    c {
+    >* {
       display:none;
     }
   }
+
 
 .show-chords {
   .song {
@@ -350,14 +366,13 @@ body {
     //
   }
 
-  .song ch {
+  .song em {
     display:inline;
     position:relative;
-      color:yellow;
+    color:yellow;
   }
 
-  .song ch c{
-
+  .song em>*{
     position:absolute;
     top:-1.8em;
     display:block;
@@ -367,16 +382,6 @@ body {
     font-weight:bold;
     left:0;
   }
-  .song ch:before {
-    position:absolute;
-    top:-1.8em;
-    font-size:0.75em;
-    letter-spacing:1px;
-    font-weight:bold;
-    left:0;
-  }
-  .song ch:before {
-    content: attr(c);
-  }
+
 }
 </style>

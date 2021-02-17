@@ -3,16 +3,24 @@ export default [
    { slides:[
     `<p class="introsong">Oing BB</p>`,
 
-    `<p class="song" key="C"><br>This <ch t="C"><c>7+11</c></ch>izing ve<br>That swace<br>That wll</span><br>This iingve<br>Th awu <ch t="Cm"><c b="Eb">11</c></ch>e my wrw<br>That w will<br></p>`,
-
-    `<p class="song" keyX="C"> sis sis s DJs sms d<br>Sjsjdkdjd dkskss skims<br>Sjsjdkkds<br>Sndjdjdjd<br>Xjxjjdkdj<ch t="hii"><c>7+11</c></ch>dkdd dks did did sksms</p>`,
-
     `<p class="song">
+        Swing <em t="D"><i></i></em>low, sweet <em t="G"><i></i></em>chari<em t="D"><i></i></em>ot,<br>
+        Comin’ for to carry me <em t="A"><i>7</i></em>home.<br>
+        Swing <em t="D"><i>7</i></em>low, sweet <em t="G"><i></i></em>chari<em t="D"><i></i></em>ot,<br>
+        Comin’ for to <em t="7"><i></i></em>carry me <em t="D"><i></i></em>home.
+    </p>
+    `,
+
+    `<p class="song" key="C"><br>This <em t="C"><i>7+11</i></em>izing ve<br>That swace<br>That wll</span><br>This iingve<br>Th awu <em t="Cm" b="Eb"><i>11</i></em>e my wrw<br>That w will<br></p>`,
+
+    `<p class="song" keyX="C"> sis sis s DJs sms d<br>Sjsjdkdjd dkskss skims<br>Sjsjdkkds<br>Sndjdjdjd<br>Xjxjjdkdj<em t="hii"><i>7+11</i></em>dkdd dks did did sksms</p>`,
+
+    `<p class="song" key="C">
         Seif it t meant,<br />for cav that is<br />
     </p>`,
 
-    `<p class="song">
-        Grouawfwacome and go<br />On a river where
+    `<p class="song" key="C">
+        Grouawfwacome <em t="C" b="G"><i>m7b6</i></em>and go<br />On a river where
         crowwads woul rarwr awaw wad flow<br />Lspeak y
         claed<br />to make their snd
     </p>`,
