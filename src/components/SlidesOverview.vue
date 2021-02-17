@@ -562,6 +562,9 @@ $bottom-bar-height:50px;
 
 .copyright-song { // mandatory copyright per song
   cursor:auto !important;
+  ::v-deep .song {
+    display:none;
+  }
   &:hover {
     background-color:inherit !important;
   }

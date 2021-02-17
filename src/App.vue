@@ -293,6 +293,8 @@ body {
   }
 }
 
+
+
 .song {
 
   line-height:1.4em;
@@ -364,6 +366,19 @@ body {
     vertical-align:bottom;
     line-height:2.2em !important;
     //
+
+  &.nolyrics {
+    line-height:auto;
+    em {
+        display: inline;
+
+        margin-right:1em;
+        >* {
+
+          display:inline;
+        }
+      }
+    }
   }
 
   .song em {
