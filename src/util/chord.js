@@ -9,6 +9,40 @@ const nashVilleRegex = /(^([h#b]+)?([1-7]+))([^/\s]*)(\/([h#b]+)?([1-7]+))?$/;
 const A = 'A'.charCodeAt(0);
 const G = 'G'.charCodeAt(0);
 
+/*
+const ROMAN_TO_DECIMAL_MAP = {
+  'i': '1',
+  'I': '1',
+  'ii': '2',
+  'II': '2',
+  'iii': '3',
+  'III': '3',
+  'iv': '4',
+  'IV': '4',
+  'V': '5',
+  'V': '5',
+  'vi': '6',
+  'VI': '6',
+  'vii': '7',
+  'VII': '7',
+};
+*/
+const DECIMAL_TO_ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+
+const decimalToRoman = (s, isMinor) => {
+  s = parseInt(s);
+  s--;
+  s = DECIMAL_TO_ROMAN[s];
+  if (!s) {
+    return s;
+  }
+  if (isMinor) {
+    s = s.toLowerCase();
+  }
+  return s;
+}
+
+
 const keyChange = (key, delta) => {
   let charCode;
   charCode = key.toUpperCase().charCodeAt(0);
@@ -195,6 +229,8 @@ class Chord {
     this.modifier = modifier || null;
     this.suffix = suffix || null;
 
+    if (bassBase) bassBase = bassBase.toUpperCase();
+
     let minorLen = 0;
     if (mode !== 1) {
       minorLen = this.suffix !== null ? isMinorFromSuffixLen(this.suffix) : 0;
@@ -261,15 +297,30 @@ class Chord {
     return chordString;
   }
 
-  toHTMLString() {
-    // modifier+base in roman
+  toHTMLString(key) {
+    let bassChord;
+    let trebleChord;
+    if (this.mode === 1) {
+      trebleChord = this.modifier + this.base;
+      bassChord = this.bassBase ? `${this.bassModifier ?  this.bassModifier.replace(/#/g, 'h') : ''}${this.bassBase}` : '';
+    } else if (this.mode === 2) { // nashville to roman numerals
+      // modifier+base in roman
+      trebleChord = decimalToRoman(this.base, this.isMinor);
+      // bassModifier + bass in roman
+      if (this.bassBase) {
+        bassChord = this.bassBase ? `${this.bassModifier ?  this.bassModifier.replace(/#/g, 'h') : ''}${decimalToRoman(this.bassBase, this.isMinor)}` : '';
+      }
+    } else { // letters in roman
+      if (key) { // TODO: convert to roman in relation to key
 
-
-    // bassModifier + bass in roman
-    if (this.bassBase) {
-
+      } else {
+        trebleChord = this.base + (this.isMinor ? 'm' : '');
+        if (this.bassBase) {
+          bassChord = this.bassBase ? `${this.bassBase}${this.bassModifier ?  this.bassModifier.replace(/#/g, 'h') : ''}` : '';
+        }
+      }
     }
-    return `<em t=""${this.bassBase ? ` b=""` : ''}><i>${this.extension || ''}</i></em>`;
+    return `<em t="${trebleChord}"${this.bassBase ? ` b="${bassChord}"` : ''}><i>${this.extension || ''}</i></em>`;
   }
 }
 

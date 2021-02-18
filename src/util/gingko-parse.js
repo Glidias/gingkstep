@@ -21,7 +21,8 @@ const PIANO_KEYS_FLAT = [0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0, 0, '
 // piano keys signature preference (for sharps)
 const SIGN_AS_SHARP = [0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,  0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,  0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1];
 
-console.log(Chord.parse('##Viiminor6/bI'));
+console.log(Chord.parse('##7minor6/#3').toHTMLString());
+console.log(Chord.parse('Bmin6/C').toHTMLString());
 
 /*
 function test_pianoBiasedRelativeMajorKeys() {
