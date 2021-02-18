@@ -1,15 +1,22 @@
 const express = require('express');
+
 //const cors = require('cors');
 const app = express();
-//app.use(cors);
+const IS_DEV = !process.env.BUILDPACK_URL;
+//app.use(cors());
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {
-  cors: (!process.env.BUILDPACK_URL ? {
+  cors: (IS_DEV ? {
     origin: 'http://localhost:8080',
     methods: ["GET", "POST"],
     credentials: true
   } : undefined)
 });
+
+const { curly } = require('node-libcurl');
+const { parseGingkoTree } = require('./src/util/gingko-parse.js');
+
+
 const port = process.env.PORT || 3000;
 
 /*
@@ -51,9 +58,25 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/dist/index.html');
 });
 
- // to deprecrate
-app.get('/testroom.html', (req, res) => {
-  res.sendFile(__dirname + '/testroom.html');
+app.get('/loadtree', async (req, res) => {
+  let errorCode = 0;
+  let result = null;
+  if (req.query.s) {
+    try {
+      const curlOpts = {
+        httpHeader: ['Content-type: application/json'],
+        SSL_VERIFYPEER: 0
+      };
+      const { statusCode, data, headers } = await curly.get('https://gingkoapp.com/' + req.query.s + '.json', curlOpts);
+      result = await parseGingkoTree(data);
+    } catch(err) {
+      if (IS_DEV) console.log(err);
+      errorCode |= 2;
+    }
+  } else {
+    errorCode |= 1;
+  }
+  res.json({error: errorCode, result});
 });
 
 io.on('connection', (socket) => {

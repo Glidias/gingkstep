@@ -2,7 +2,7 @@
 export default [
    { slides:[
     `<p class="introsong">Oing BB</p>
-    <p class="song nolyrics"><em t="D"><i></i></em><em t="G"><i></i></em><em t="A"><i></i></em><em t="D"><i></i></em><p>
+     <p class="introsong song nolyrics"><em t="D"><i></i></em><em t="G"><i></i></em><em t="A"><i></i></em><em t="D"><i></i></em><p>
     `,
     `<p class="song">
         Swing <em t="D"><i></i></em>low, sweet <em t="G"><i></i></em>chari<em t="D"><i></i></em>ot,<br>

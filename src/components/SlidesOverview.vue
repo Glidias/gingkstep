@@ -618,9 +618,9 @@ $bottom-bar-height:50px;
 
     .faint-select .content {
        &.selected {
-        outline:rgba(121, 78, 0, 0.1) 1px solid;
+        outline:rgba(121, 78, 0, 0.2) 1px solid;
         cursor:auto !important;
-        background-color:#080808 !important;//##181818 !important;
+        background-color:#101010 !important;//##181818 !important;
 
       }
        .no-touch & {

@@ -2,7 +2,10 @@
 https://github.com/martijnversluis/ChordJS
 */
 
-const chordRegex = /([A-G])(#|b)?([^/\s]*)(\/([A-G])(#|b)?)?/i;
+const chordRegex = /(^[A-Ga-g])([h#b]+)?([^/\s]*)(\/([A-Ga-g])([h#b]+)?)?$/; ///([A-G])(h|#|b)?([^/\s]*)(\/([A-G])(h|#|b)?)?/i;
+const romanRegex = /(^([h#b]+)?([ivIV]+))([^/\s]*)(\/([h#b]+)?([ivIV]+))?$/;
+const nashVilleRegex = /(^([h#b]+)?([1-7]+))([^/\s]*)(\/([h#b]+)?([1-7]+))?$/;
+
 const A = 'A'.charCodeAt(0);
 const G = 'G'.charCodeAt(0);
 
@@ -137,24 +140,73 @@ const processChord = (sourceChord, processor, processorArg) => {
   return chord;
 };
 
+
+/**
+ *
+ * @param {String} suffix
+ */
+const isMinorFromSuffixLen = (suffix) => {
+  suffix = suffix.toLowerCase();
+  if (suffix.charAt(0) !== 'm') return false;
+
+  suffix = suffix.split(/[0-9]/)[0];
+  return (suffix === 'm' || suffix === 'min' || suffix ==='minor') ? suffix.length : 0;
+}
+
 class Chord {
   static parse(chordString) {
-    const parts = chordRegex.exec(chordString);
+    let parts = chordRegex.exec(chordString);
 
     if (parts) {
-      const [, base, modifier, suffix, , bassBase, bassModifier] = parts;
-      return new Chord({ base, modifier, suffix, bassBase, bassModifier });
+
+      let [, base, modifier, suffix, , bassBase, bassModifier] = parts;
+      if (base) {
+        base = base.toUpperCase();
+        return new Chord({ base, modifier, suffix, bassBase, bassModifier });
+      }
     }
+
+    parts = romanRegex.exec(chordString);
+
+    if (parts) {
+      let [, , modifier, base, suffix, , bassModifier, bassBase] = parts;
+      let mode = 1;
+      if (base) {
+        base = base.charAt(0).toUpperCase() === base.charAt(0) ? base.toUpperCase() : base.toLowerCase();
+        return new Chord({ base, modifier, suffix, bassBase, bassModifier, mode });
+      }
+    }
+
+    parts = nashVilleRegex.exec(chordString);
+    if (parts) {
+      let [, , modifier, base, suffix, , bassModifier, bassBase] = parts;
+      let mode = 2;
+      if (base) {
+        return new Chord({ base, modifier, suffix, bassBase, bassModifier, mode });
+      }
+    }
+
 
     return null;
   }
 
-  constructor({ base, modifier, suffix, bassBase, bassModifier }) {
+  constructor({ base, modifier, suffix, bassBase, bassModifier, mode }) {
     this.base = base || null;
     this.modifier = modifier || null;
     this.suffix = suffix || null;
+
+    let minorLen = 0;
+    if (mode !== 1) {
+      minorLen = this.suffix !== null ? isMinorFromSuffixLen(this.suffix) : 0;
+      this.isMinor = minorLen >= 1;
+    } else {
+      this.isMinor = base.charAt(0).toLowerCase() === base.charAt(0);
+    }
+    this.extension = this.isMinor ? suffix.slice(minorLen) : this.suffix;
     this.bassBase = bassBase || null;
     this.bassModifier = bassModifier || null;
+    this.mode = mode;
+
   }
 
   clone() {
@@ -187,14 +239,40 @@ class Chord {
   }
 
   toString() {
-    const chordString = this.base + (this.modifier || '') + (this.suffix || '');
+    let chordString = "[Chord]"
+    let minorSuffix = this.isMinor ? 'm' : '';
+    if (!this.mode) {
+      chordString = this.base + (this.modifier || '') + minorSuffix + (this.extension || '');
 
-    if (this.bassBase) {
-      return `${chordString}/${this.bassBase}${this.bassModifier || ''}`;
+      if (this.bassBase) {
+        chordString += `/${this.bassBase}${this.bassModifier || ''}`;
+      }
+    } else if (this.mode === 1) { // roman
+       chordString =  (this.modifier || '') + this.base + minorSuffix + (this.extension || '');
+      if (this.bassBase) {
+        chordString += `/${this.bassModifier || ''}${this.bassBase}`;
+      }
+    } else if (this.mode === 2) {
+      chordString =  (this.modifier || '') + this.base + minorSuffix + (this.extension || '');
+      if (this.bassBase) {
+        chordString += `/${this.bassModifier || ''}${this.bassBase}`;
+      }
     }
-
     return chordString;
+  }
+
+  toHTMLString() {
+    // modifier+base in roman
+
+
+    // bassModifier + bass in roman
+    if (this.bassBase) {
+
+    }
+    return `<em t=""${this.bassBase ? ` b=""` : ''}><i>${this.extension || ''}</i></em>`;
   }
 }
 
-export default Chord;
+module.exports = {
+  Chord
+}

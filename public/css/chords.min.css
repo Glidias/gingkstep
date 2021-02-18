@@ -28,8 +28,6 @@
 .song>em[b=Eb]>*:after{content:"/Eb";}
 .song>em[t=Gb]>*:before{content:"Gb";}
 .song>em[b=Gb]>*:after{content:"/Gb";}
-.song>em[t=G]>*:before{content:"G";}
-.song>em[b=G]>*:after{content:"/G";}
 .song>em[t=Ab]>*:before{content:"Ab";}
 .song>em[b=Ab]>*:after{content:"/Ab";}
 .song>em[t=Bb]>*:before{content:"Bb";}
@@ -49,7 +47,6 @@
 .song>em[t=Dbm]>*:before{content:"Dbm";}
 .song>em[t=Ebm]>*:before{content:"Ebm";}
 .song>em[t=Gbm]>*:before{content:"Gbm";}
-.song>em[t=Gm]>*:before{content:"Gm";}
 .song>em[t=Abm]>*:before{content:"Abm";}
 .song>em[t=Bbm]>*:before{content:"Bbm";}
 .song>em[t=I]>*:before{content:"I";}
@@ -157,6 +154,111 @@
 .song>em[t=hhvii]>*:before{content:"##vii";}
 .song>em[t=bvii]>*:before{content:"bvii";}
 .song>em[t=bbvii]>*:before{content:"bbvii";}
+.nashville .song>em[t=I]>*:before{content:"1";}
+.nashville .song>em>*[b=I]:after{content:"/1";}
+.nashville .song>em[t=hI]>*:before{content:"#1";}
+.nashville .song>em[b=hI]>*:after{content:"/h1";}
+.nashville .song>em[t=hhI]>*:before{content:"##1";}
+.nashville .song>em[b=hhI]>*:after{content:"/hh1";}
+.nashville .song>em[t=bI]>*:before{content:"b1";}
+.nashville .song>em[b=bI]>*:after{content:"/b1";}
+.nashville .song>em[t=bbI]>*:before{content:"bb1";}
+.nashville .song>em[b=bbI]>*:after{content:"/bb1";}
+.nashville .song>em[t=II]>*:before{content:"2";}
+.nashville .song>em>*[b=II]:after{content:"/2";}
+.nashville .song>em[t=hII]>*:before{content:"#2";}
+.nashville .song>em[b=hII]>*:after{content:"/h2";}
+.nashville .song>em[t=hhII]>*:before{content:"##2";}
+.nashville .song>em[b=hhII]>*:after{content:"/hh2";}
+.nashville .song>em[t=bII]>*:before{content:"b2";}
+.nashville .song>em[b=bII]>*:after{content:"/b2";}
+.nashville .song>em[t=bbII]>*:before{content:"bb2";}
+.nashville .song>em[b=bbII]>*:after{content:"/bb2";}
+.nashville .song>em[t=III]>*:before{content:"3";}
+.nashville .song>em>*[b=III]:after{content:"/3";}
+.nashville .song>em[t=hIII]>*:before{content:"#3";}
+.nashville .song>em[b=hIII]>*:after{content:"/h3";}
+.nashville .song>em[t=hhIII]>*:before{content:"##3";}
+.nashville .song>em[b=hhIII]>*:after{content:"/hh3";}
+.nashville .song>em[t=bIII]>*:before{content:"b3";}
+.nashville .song>em[b=bIII]>*:after{content:"/b3";}
+.nashville .song>em[t=bbIII]>*:before{content:"bb3";}
+.nashville .song>em[b=bbIII]>*:after{content:"/bb3";}
+.nashville .song>em[t=IV]>*:before{content:"4";}
+.nashville .song>em>*[b=IV]:after{content:"/4";}
+.nashville .song>em[t=hIV]>*:before{content:"#4";}
+.nashville .song>em[b=hIV]>*:after{content:"/h4";}
+.nashville .song>em[t=hhIV]>*:before{content:"##4";}
+.nashville .song>em[b=hhIV]>*:after{content:"/hh4";}
+.nashville .song>em[t=bIV]>*:before{content:"b4";}
+.nashville .song>em[b=bIV]>*:after{content:"/b4";}
+.nashville .song>em[t=bbIV]>*:before{content:"bb4";}
+.nashville .song>em[b=bbIV]>*:after{content:"/bb4";}
+.nashville .song>em[t=V]>*:before{content:"5";}
+.nashville .song>em>*[b=V]:after{content:"/5";}
+.nashville .song>em[t=hV]>*:before{content:"#5";}
+.nashville .song>em[b=hV]>*:after{content:"/h5";}
+.nashville .song>em[t=hhV]>*:before{content:"##5";}
+.nashville .song>em[b=hhV]>*:after{content:"/hh5";}
+.nashville .song>em[t=bV]>*:before{content:"b5";}
+.nashville .song>em[b=bV]>*:after{content:"/b5";}
+.nashville .song>em[t=bbV]>*:before{content:"bb5";}
+.nashville .song>em[b=bbV]>*:after{content:"/bb5";}
+.nashville .song>em[t=VI]>*:before{content:"6";}
+.nashville .song>em>*[b=VI]:after{content:"/6";}
+.nashville .song>em[t=hVI]>*:before{content:"#6";}
+.nashville .song>em[b=hVI]>*:after{content:"/h6";}
+.nashville .song>em[t=hhVI]>*:before{content:"##6";}
+.nashville .song>em[b=hhVI]>*:after{content:"/hh6";}
+.nashville .song>em[t=bVI]>*:before{content:"b6";}
+.nashville .song>em[b=bVI]>*:after{content:"/b6";}
+.nashville .song>em[t=bbVI]>*:before{content:"bb6";}
+.nashville .song>em[b=bbVI]>*:after{content:"/bb6";}
+.nashville .song>em[t=VII]>*:before{content:"8";}
+.nashville .song>em>*[b=VII]:after{content:"/8";}
+.nashville .song>em[t=hVII]>*:before{content:"#8";}
+.nashville .song>em[b=hVII]>*:after{content:"/h8";}
+.nashville .song>em[t=hhVII]>*:before{content:"##8";}
+.nashville .song>em[b=hhVII]>*:after{content:"/hh8";}
+.nashville .song>em[t=bVII]>*:before{content:"b8";}
+.nashville .song>em[b=bVII]>*:after{content:"/b8";}
+.nashville .song>em[t=bbVII]>*:before{content:"bb8";}
+.nashville .song>em[b=bbVII]>*:after{content:"/bb8";}
+.nashville .song>em[t=i]>*:before{content:"1m";}
+.nashville .song>em[t=hi]>*:before{content:"#1m";}
+.nashville .song>em[t=hhi]>*:before{content:"##1m";}
+.nashville .song>em[t=bi]>*:before{content:"b1m";}
+.nashville .song>em[t=bbi]>*:before{content:"bb1m";}
+.nashville .song>em[t=ii]>*:before{content:"2m";}
+.nashville .song>em[t=hii]>*:before{content:"#2m";}
+.nashville .song>em[t=hhii]>*:before{content:"##2m";}
+.nashville .song>em[t=bii]>*:before{content:"b2m";}
+.nashville .song>em[t=bbii]>*:before{content:"bb2m";}
+.nashville .song>em[t=iii]>*:before{content:"3m";}
+.nashville .song>em[t=hiii]>*:before{content:"#3m";}
+.nashville .song>em[t=hhiii]>*:before{content:"##3m";}
+.nashville .song>em[t=biii]>*:before{content:"b3m";}
+.nashville .song>em[t=bbiii]>*:before{content:"bb3m";}
+.nashville .song>em[t=iv]>*:before{content:"4m";}
+.nashville .song>em[t=hiv]>*:before{content:"#4m";}
+.nashville .song>em[t=hhiv]>*:before{content:"##4m";}
+.nashville .song>em[t=biv]>*:before{content:"b4m";}
+.nashville .song>em[t=bbiv]>*:before{content:"bb4m";}
+.nashville .song>em[t=v]>*:before{content:"5m";}
+.nashville .song>em[t=hv]>*:before{content:"#5m";}
+.nashville .song>em[t=hhv]>*:before{content:"##5m";}
+.nashville .song>em[t=bv]>*:before{content:"b5m";}
+.nashville .song>em[t=bbv]>*:before{content:"bb5m";}
+.nashville .song>em[t=vi]>*:before{content:"6m";}
+.nashville .song>em[t=hvi]>*:before{content:"#6m";}
+.nashville .song>em[t=hhvi]>*:before{content:"##6m";}
+.nashville .song>em[t=bvi]>*:before{content:"b6m";}
+.nashville .song>em[t=bbvi]>*:before{content:"bb6m";}
+.nashville .song>em[t=vii]>*:before{content:"8m";}
+.nashville .song>em[t=hvii]>*:before{content:"#8m";}
+.nashville .song>em[t=hhvii]>*:before{content:"##8m";}
+.nashville .song>em[t=bvii]>*:before{content:"b8m";}
+.nashville .song>em[t=bbvii]>*:before{content:"bb8m";}
 .song[key=C]>em[t=I]>*:before{content:"C";}
 .song[key=C]>em[b=I]>*:after{content:"/C";}
 .song[key=C]>em[t=hI]>*:before{content:"C#";}
@@ -1207,76 +1309,6 @@
 .song[key=Gb]>em[b=bVII]>*:after{content:"/E";}
 .song[key=Gb]>em[t=bbVII]>*:before{content:"Eb";}
 .song[key=Gb]>em[b=bbVII]>*:after{content:"/Eb";}
-.song[key=G]>em[t=I]>*:before{content:"G";}
-.song[key=G]>em[b=I]>*:after{content:"/G";}
-.song[key=G]>em[t=hI]>*:before{content:"G#";}
-.song[key=G]>em[b=hI]>*:after{content:"/G#";}
-.song[key=G]>em[t=hhI]>*:before{content:"A";}
-.song[key=G]>em[b=hhI]>*:after{content:"/A";}
-.song[key=G]>em[t=bI]>*:before{content:"Gb";}
-.song[key=G]>em[b=bI]>*:after{content:"/Gb";}
-.song[key=G]>em[t=bbI]>*:before{content:"F";}
-.song[key=G]>em[b=bbI]>*:after{content:"/F";}
-.song[key=G]>em[t=II]>*:before{content:"A";}
-.song[key=G]>em[b=II]>*:after{content:"/A";}
-.song[key=G]>em[t=hII]>*:before{content:"A#";}
-.song[key=G]>em[b=hII]>*:after{content:"/A#";}
-.song[key=G]>em[t=hhII]>*:before{content:"B";}
-.song[key=G]>em[b=hhII]>*:after{content:"/B";}
-.song[key=G]>em[t=bII]>*:before{content:"Ab";}
-.song[key=G]>em[b=bII]>*:after{content:"/Ab";}
-.song[key=G]>em[t=bbII]>*:before{content:"G";}
-.song[key=G]>em[b=bbII]>*:after{content:"/G";}
-.song[key=G]>em[t=III]>*:before{content:"B";}
-.song[key=G]>em[b=III]>*:after{content:"/B";}
-.song[key=G]>em[t=hIII]>*:before{content:"C";}
-.song[key=G]>em[b=hIII]>*:after{content:"/C";}
-.song[key=G]>em[t=hhIII]>*:before{content:"C#";}
-.song[key=G]>em[b=hhIII]>*:after{content:"/C#";}
-.song[key=G]>em[t=bIII]>*:before{content:"Bb";}
-.song[key=G]>em[b=bIII]>*:after{content:"/Bb";}
-.song[key=G]>em[t=bbIII]>*:before{content:"A";}
-.song[key=G]>em[b=bbIII]>*:after{content:"/A";}
-.song[key=G]>em[t=IV]>*:before{content:"C";}
-.song[key=G]>em[b=IV]>*:after{content:"/C";}
-.song[key=G]>em[t=hIV]>*:before{content:"C#";}
-.song[key=G]>em[b=hIV]>*:after{content:"/C#";}
-.song[key=G]>em[t=hhIV]>*:before{content:"D";}
-.song[key=G]>em[b=hhIV]>*:after{content:"/D";}
-.song[key=G]>em[t=bIV]>*:before{content:"B";}
-.song[key=G]>em[b=bIV]>*:after{content:"/B";}
-.song[key=G]>em[t=bbIV]>*:before{content:"Bb";}
-.song[key=G]>em[b=bbIV]>*:after{content:"/Bb";}
-.song[key=G]>em[t=V]>*:before{content:"D";}
-.song[key=G]>em[b=V]>*:after{content:"/D";}
-.song[key=G]>em[t=hV]>*:before{content:"D#";}
-.song[key=G]>em[b=hV]>*:after{content:"/D#";}
-.song[key=G]>em[t=hhV]>*:before{content:"E";}
-.song[key=G]>em[b=hhV]>*:after{content:"/E";}
-.song[key=G]>em[t=bV]>*:before{content:"Db";}
-.song[key=G]>em[b=bV]>*:after{content:"/Db";}
-.song[key=G]>em[t=bbV]>*:before{content:"C";}
-.song[key=G]>em[b=bbV]>*:after{content:"/C";}
-.song[key=G]>em[t=VI]>*:before{content:"E";}
-.song[key=G]>em[b=VI]>*:after{content:"/E";}
-.song[key=G]>em[t=hVI]>*:before{content:"F";}
-.song[key=G]>em[b=hVI]>*:after{content:"/F";}
-.song[key=G]>em[t=hhVI]>*:before{content:"F#";}
-.song[key=G]>em[b=hhVI]>*:after{content:"/F#";}
-.song[key=G]>em[t=bVI]>*:before{content:"Eb";}
-.song[key=G]>em[b=bVI]>*:after{content:"/Eb";}
-.song[key=G]>em[t=bbVI]>*:before{content:"D";}
-.song[key=G]>em[b=bbVI]>*:after{content:"/D";}
-.song[key=G]>em[t=VII]>*:before{content:"Gb";}
-.song[key=G]>em[b=VII]>*:after{content:"/Gb";}
-.song[key=G]>em[t=hVII]>*:before{content:"G";}
-.song[key=G]>em[b=hVII]>*:after{content:"/G";}
-.song[key=G]>em[t=hhVII]>*:before{content:"G#";}
-.song[key=G]>em[b=hhVII]>*:after{content:"/G#";}
-.song[key=G]>em[t=bVII]>*:before{content:"F";}
-.song[key=G]>em[b=bVII]>*:after{content:"/F";}
-.song[key=G]>em[t=bbVII]>*:before{content:"E";}
-.song[key=G]>em[b=bbVII]>*:after{content:"/E";}
 .song[key=Ab]>em[t=I]>*:before{content:"Ab";}
 .song[key=Ab]>em[b=I]>*:after{content:"/Ab";}
 .song[key=Ab]>em[t=hI]>*:before{content:"A";}
@@ -1942,41 +1974,6 @@
 .song[key=Gb]>em[t=hhvii]>*:before{content:"Gm";}
 .song[key=Gb]>em[t=bvii]>*:before{content:"Em";}
 .song[key=Gb]>em[t=bbvii]>*:before{content:"Ebm";}
-.song[key=G]>em[t=i]>*:before{content:"Gm";}
-.song[key=G]>em[t=hi]>*:before{content:"G#m";}
-.song[key=G]>em[t=hhi]>*:before{content:"Am";}
-.song[key=G]>em[t=bi]>*:before{content:"Gbm";}
-.song[key=G]>em[t=bbi]>*:before{content:"Fm";}
-.song[key=G]>em[t=ii]>*:before{content:"Am";}
-.song[key=G]>em[t=hii]>*:before{content:"A#m";}
-.song[key=G]>em[t=hhii]>*:before{content:"Bm";}
-.song[key=G]>em[t=bii]>*:before{content:"Abm";}
-.song[key=G]>em[t=bbii]>*:before{content:"Gm";}
-.song[key=G]>em[t=iii]>*:before{content:"Bm";}
-.song[key=G]>em[t=hiii]>*:before{content:"Cm";}
-.song[key=G]>em[t=hhiii]>*:before{content:"C#m";}
-.song[key=G]>em[t=biii]>*:before{content:"Bbm";}
-.song[key=G]>em[t=bbiii]>*:before{content:"Am";}
-.song[key=G]>em[t=iv]>*:before{content:"Cm";}
-.song[key=G]>em[t=hiv]>*:before{content:"C#m";}
-.song[key=G]>em[t=hhiv]>*:before{content:"Dm";}
-.song[key=G]>em[t=biv]>*:before{content:"Bm";}
-.song[key=G]>em[t=bbiv]>*:before{content:"Bbm";}
-.song[key=G]>em[t=v]>*:before{content:"Dm";}
-.song[key=G]>em[t=hv]>*:before{content:"D#m";}
-.song[key=G]>em[t=hhv]>*:before{content:"Em";}
-.song[key=G]>em[t=bv]>*:before{content:"Dbm";}
-.song[key=G]>em[t=bbv]>*:before{content:"Cm";}
-.song[key=G]>em[t=vi]>*:before{content:"Em";}
-.song[key=G]>em[t=hvi]>*:before{content:"Fm";}
-.song[key=G]>em[t=hhvi]>*:before{content:"F#m";}
-.song[key=G]>em[t=bvi]>*:before{content:"Ebm";}
-.song[key=G]>em[t=bbvi]>*:before{content:"Dm";}
-.song[key=G]>em[t=vii]>*:before{content:"Gbm";}
-.song[key=G]>em[t=hvii]>*:before{content:"Gm";}
-.song[key=G]>em[t=hhvii]>*:before{content:"G#m";}
-.song[key=G]>em[t=bvii]>*:before{content:"Fm";}
-.song[key=G]>em[t=bbvii]>*:before{content:"Em";}
 .song[key=Ab]>em[t=i]>*:before{content:"Abm";}
 .song[key=Ab]>em[t=hi]>*:before{content:"Am";}
 .song[key=Ab]>em[t=hhi]>*:before{content:"A#m";}
@@ -2047,4 +2044,3 @@
 .song[key=Bb]>em[t=hhvii]>*:before{content:"Bm";}
 .song[key=Bb]>em[t=bvii]>*:before{content:"Abm";}
 .song[key=Bb]>em[t=bbvii]>*:before{content:"Gm";}
-
