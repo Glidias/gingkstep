@@ -387,7 +387,9 @@ class Chord {
         if (offset < 0 || offset >= 12) {
           throw new Error("Assertion failed:: Offset of half-steps still out of range between 0 to 11!")
         }
-        if (PIANO_ROMAN_KEYS[offset] && !this.modifier) { // diatonic natural major match keynote
+
+        // && !this.modifier
+        if (PIANO_ROMAN_KEYS[offset]) { // diatonic natural major match keynote
           console.log("CASE 0:")
           trebleChord = this.isMinor ? PIANO_ROMAN_KEYS[offset].toLowerCase() : PIANO_ROMAN_KEYS[offset];
         } else { // display as either sharp or flat for non-diatonic keynote?
@@ -408,7 +410,7 @@ class Chord {
             trebleChord = this.modifier + trebleChord;
           } else {
             console.log("CASE 2:");
-            let nonDiatonicPreferSharp = SIGN_AS_SHARP[rootKeyVal + offset];
+            let nonDiatonicPreferSharp = SIGN_AS_SHARP[rootKeyVal];
             let nonDiatonicRep = nonDiatonicPreferSharp ? PIANO_KEYS_SHARP[offset] : PIANO_KEYS_FLAT[offset];
             trebleChord = this.isMinor || this.dimed ? nonDiatonicRep.toLowerCase() :nonDiatonicRep;
           }
