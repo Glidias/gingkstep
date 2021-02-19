@@ -7,40 +7,6 @@ const cheerio = require('cheerio');
 const e = require('express');
 const {Chord, A, G, PIANO_KEYS, PIANO_KEYS_SHARP, PIANO_KEYS_FLAT, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP} = require("./chord.js");
 
-let testKeyChord = Chord.parse("F#");
-console.log(Chord.parse("Bb").toHTMLString(testKeyChord));
-
-//console.log(Chord.parse('##7minor6/#3').toHTMLString());
-//console.log(Chord.parse('Bmin6/C').toHTMLString());
-/*
-function test_pianoBiasedRelativeMajorKeys() {
-  let arr = [];
-  for (let i =0; i< 12; i++) {
-    let m = i;
-    let M = i + 3;s
-    let majorKey = null;
-    let minorKey = null;
-
-    if (!PIANO_KEYS[m]) {
-      minorKey = (SIGN_AS_SHARP[m] ? PIANO_KEYS_SHARP : PIANO_KEYS_FLAT)[m];
-    } else {
-      minorKey = PIANO_KEYS[m];
-    }
-
-    if (!PIANO_KEYS[M]) {
-      majorKey = (SIGN_AS_SHARP[M] ? PIANO_KEYS_SHARP : PIANO_KEYS_FLAT)[M];
-    } else {
-      majorKey = PIANO_KEYS[M];
-    }
-    arr.push(minorKey + 'm => ' + majorKey);
-  }
-
-  console.log(arr.join('\n'));
-}
-test_pianoBiasedRelativeMajorKeys();
-*/
-
-
 marked.setOptions({
   gfm: true,
   /*
@@ -96,25 +62,6 @@ function getSharpFlatDelta(sharpsOrFlats) {
   return c;
 }
 
-
-/**
- *
- * @param {String} chordStr
- */
-function getChordHTML(chordStr, key) {
-  /*
-  let chords = chordStr.split('/');
-  let bass = null;
-  if (chords.length >= 2) {
-    chords.pop();
-    bass = chords[chords.length - 1];
-    bass = bass.toUpperCase();
-  }
-  return '<em t="'+chords[0]+'"'+(bass ? ` b="${bass}"` : '')+'>'+`<i></i></em>`;
-  */
-
-}
-
 /**
  * Converts to natural major key signature (piano-biased)
  * @param {String} key
@@ -153,19 +100,15 @@ function normalizeKeyAsMajor(key) {
 /**
  *
  * @param {import('chordsheetjs').Song} song
- * @param {String} [firstSlideContent] Any first slide content to refer to for backup song key/capo sniffing
+ * @param {String} [headerSlideContent] Any first slide content to refer to for backup song key/capo sniffing
  */
-function formatSongToHTML(song, headerSlideContent) {
+function getSongOutput(song, headerSlideContent) {
   let $ = null;
   let songKey = null;
   let songKeyLabel = null;
   let songCapo = null;
-  if (song.metadata.key) {
-    songKey = normalizeKeyAsMajor(song.metadata.key);
-    if (songKey !== null) {
-      songKeyLabel = song.metadata.key;
-    }
-  } else if (headerSlideContent) {
+
+  if (headerSlideContent) {
     if ($ === null) $ = cheerio.load('<div>'+headerSlideContent+"</div>");
     let key = findAttrIn($('.song'), 'key');
     if (key !== null) {
@@ -174,14 +117,6 @@ function formatSongToHTML(song, headerSlideContent) {
         songKeyLabel = key;
       }
     }
-  }
-  if (song.metadata.capo) {
-    let capoAmt = parseInt(song.metadata.capoAmt);
-    if (!isNaN(capoAmt) && capoAmt > 0) {
-      songCapo = capoAmt;
-    }
-  } else if (headerSlideContent) {
-    if ($ === null) $ = cheerio.load('<div>'+headerSlideContent+"</div>");
     let capo = findAttrIn($('.song'), 'capo');
     if (capo !== null) {
       let capoAmt = parseInt(capo);
@@ -189,10 +124,73 @@ function formatSongToHTML(song, headerSlideContent) {
         songCapo = capoAmt;
       }
     }
+
+  }
+  if (songKey === null && song.metadata.key) {
+    songKey = normalizeKeyAsMajor(song.metadata.key);
+    if (songKey !== null) {
+      songKeyLabel = song.metadata.key;
+    }
   }
 
+  if (songCapo === null && song.metadata.capo) {
+    let capoAmt = parseInt(song.metadata.capoAmt);
+    if (!isNaN(capoAmt) && capoAmt > 0) {
+      songCapo = capoAmt;
+    }
+  }
 
+  let rootChord = (songKey && songKeyLabel) || song.metadata.key ? Chord.parse(song.metadata.key || songKeyLabel) : null;
 
+  return {
+    songCapo,
+    songKey,
+    songKeyLabel,
+    paragraphs: getSongParagraphs(song, songKey, rootChord)
+  }
+}
+
+/**
+ *
+ * @param {import('chordsheetjs').Song} song
+ * @param {String} songKey key attribute
+ * @param {Chord} rootChord
+ * @retur {[string]}
+ */
+function getSongParagraphs(song, songKey, rootChord) {
+
+  let arr = [];
+  song.paragraphs.forEach((p)=>{
+    //if (p.type === 'none') return;
+    let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}>`;
+
+    p.lines.forEach((line, lineIndex, linesArr)=> {
+      //if (line.type === 'none') return;
+      let numLinesE = linesArr.length - 1;
+      if (line.items && line.items.length) {
+        let lle = line.items.length - 1;
+        for (let i =0, l=line.items.length; i<l; i++) {
+          let li = line.items[i];
+          let lyric = li.lyrics; //.trim();
+          let chordStr = li.chords.trim();
+          if (!lyric && !chordStr) {
+            continue;
+          }
+
+          let chord = chordStr ? Chord.parse(chordStr) : null;
+          output += (chord ? chord.toHTMLString(rootChord) : '') + (lyric || "");
+
+          //output += i < lle ? ' ' : '';
+        }
+
+      }
+      output += lineIndex < numLinesE ? '<br>' : '';
+    });
+    output += '</p>';
+    arr.push(output);
+  })
+
+  return arr;
 }
 
 
@@ -240,12 +238,17 @@ async function parseGingkoTree(tree) {
         content = content.trim();
         let p = parserTag === 'cp' ? new CS.ChordProParser() : parserTag === 'ug' ? new CS.UltimateGuitarParser() : new CS.ChordSheetParser();
         let song = p.parse(content);
-        formatSongToHTML(song, slides[0]);
+        let songOutput = getSongOutput(song, slides[0]);
+
+        if (songOutput.paragraphs) {
+          slides.push(...songOutput.paragraphs);
+        }
 
       } else {
         content = await markDownParse(content);
+        slides.push(content);
       }
-      slides.push(content);
+
     }
     let obj = {
       slides
@@ -260,6 +263,77 @@ async function parseGingkoTree(tree) {
 module.exports = {
   parseGingkoTree,
   markDownParse,
-  formatSongToHTML,
+  getSongOutput,
   normalizeKeyAsMajor,
 }
+
+// ---- TESTS
+
+/*
+let testKeyChord = Chord.parse("Bb");
+console.log(Chord.parse("F#Maj7/D").toHTMLString(testKeyChord));
+testKeyChord = Chord.parse("F");
+console.log(Chord.parse("Bb/D").toHTMLString(testKeyChord));
+console.log(Chord.parse("B/D").toHTMLString(testKeyChord));
+console.log(Chord.parse("C/D").toHTMLString(testKeyChord));
+*/
+
+/*
+function test_KeyChord(key){
+  console.log(key + " => " + Chord.parse(key).getSignAsSharp());
+}
+test_KeyChord("Cb"); test_KeyChord("Dbb");
+test_KeyChord("C");
+test_KeyChord("C#"); test_KeyChord("Db");
+test_KeyChord("E"); test_KeyChord("Fb");
+test_KeyChord("F");
+test_KeyChord("F#"); test_KeyChord("Gb");
+test_KeyChord("G"); test_KeyChord("G#b");
+test_KeyChord("G#"); test_KeyChord("Ab");
+test_KeyChord("A");
+test_KeyChord("A#"); test_KeyChord("Bb");
+test_KeyChord("B"); test_KeyChord("A##");
+
+
+test_KeyChord("Cbm");
+test_KeyChord("Cm");
+test_KeyChord("C#m"); test_KeyChord("Dbm");
+test_KeyChord("Em"); test_KeyChord("Fbm");
+test_KeyChord("Fm");
+test_KeyChord("F#m"); test_KeyChord("Gbm");
+test_KeyChord("Gm"); test_KeyChord("G#bm");
+test_KeyChord("G#m"); test_KeyChord("Abm");
+test_KeyChord("Am");
+test_KeyChord("A#m"); test_KeyChord("Bbm");
+test_KeyChord("Bm");  test_KeyChord("A##m");
+*/
+
+//console.log(Chord.parse('##7minor6/#3').toHTMLString());
+//console.log(Chord.parse('Bmin6/C').toHTMLString());
+/*
+function test_pianoBiasedRelativeMajorKeys() {
+  let arr = [];
+  for (let i =0; i< 12; i++) {
+    let m = i;
+    let M = i + 3;s
+    let majorKey = null;
+    let minorKey = null;
+
+    if (!PIANO_KEYS[m]) {
+      minorKey = (SIGN_AS_SHARP[m] ? PIANO_KEYS_SHARP : PIANO_KEYS_FLAT)[m];
+    } else {
+      minorKey = PIANO_KEYS[m];
+    }
+
+    if (!PIANO_KEYS[M]) {
+      majorKey = (SIGN_AS_SHARP[M] ? PIANO_KEYS_SHARP : PIANO_KEYS_FLAT)[M];
+    } else {
+      majorKey = PIANO_KEYS[M];
+    }
+    arr.push(minorKey + 'm => ' + majorKey);
+  }
+
+  console.log(arr.join('\n'));
+}
+test_pianoBiasedRelativeMajorKeys();
+*/
