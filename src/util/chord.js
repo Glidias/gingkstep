@@ -306,6 +306,7 @@ class Chord {
     return processChord(this, transpose, delta);
   }
 
+  // TODO: consider takeout minor prefix only truncate for extension for non-roman, forHTMLString as well. For roman representation in toString, add minor prefix for extension.
   toString() {
     let chordString = "[Chord]"
     let minorSuffix = this.isMinor ? 'm' : '';
