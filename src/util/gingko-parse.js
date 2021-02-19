@@ -5,25 +5,13 @@ const marked = require('marked');
 const CS = require('chordsheetjs').default;
 const cheerio = require('cheerio');
 const e = require('express');
-const {Chord} = require("./chord.js");
+const {Chord, A, G, PIANO_KEYS, PIANO_KEYS_SHARP, PIANO_KEYS_FLAT, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP} = require("./chord.js");
 
-// Piano key constants
-const A = 'A'.charCodeAt(0);
-const G = 'G'.charCodeAt(0);
-// white keys
-const PIANO_KEYS = ['C', 0, 'D', 0, 'E', 'F', 0, 'G', 0, 'A', 0, 'B', 'C', 0, 'D', 0, 'E', 'F', 0, 'G', 0, 'A', 0, 'B', 'C', 0, 'D', 0, 'E', 'F', 0, 'G', 0, 'A', 0, 'B'];
-const WHITE_KEY_INDICES_FROM_A = [21, 23, 24, 26, 28, 29, 31];
-// console.log(WHITE_KEY_INDICES_FROM_A.map((i)=>PIANO_KEYS[i]))
-// black keys
-const PIANO_KEYS_SHARP = [0, 'Ch', 0, 'Dh', 0, 0, 'Fh', 0, 'Gh', 0, 'Ah', 0, 0, 'Ch', 0, 'Dh', 0, 0, 'Fh', 0, 'Gh', 0, 'Ah', 0, 0, 'Ch', 0, 'Dh', 0, 0, 'Fh', 0, 'Gh', 0, 'Ah', 0];
-const PIANO_KEYS_FLAT = [0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0, 0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0, 0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0];
+let testKeyChord = Chord.parse("F#");
+console.log(Chord.parse("Bb").toHTMLString(testKeyChord));
 
-// piano keys signature preference (for sharps)
-const SIGN_AS_SHARP = [0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,  0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,  0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1];
-
-console.log(Chord.parse('##7minor6/#3').toHTMLString());
-console.log(Chord.parse('Bmin6/C').toHTMLString());
-
+//console.log(Chord.parse('##7minor6/#3').toHTMLString());
+//console.log(Chord.parse('Bmin6/C').toHTMLString());
 /*
 function test_pianoBiasedRelativeMajorKeys() {
   let arr = [];
@@ -113,7 +101,7 @@ function getSharpFlatDelta(sharpsOrFlats) {
  *
  * @param {String} chordStr
  */
-function getChordHTML(chordStr) {
+function getChordHTML(chordStr, key) {
   /*
   let chords = chordStr.split('/');
   let bass = null;
@@ -133,7 +121,6 @@ function getChordHTML(chordStr) {
  * @return The piano-biased key signature
  */
 function normalizeKeyAsMajor(key) {
-  console.log(key);
   key = key.trim();
   key = key.charAt(0).toUpperCase() + key.slice(1);
 
@@ -275,7 +262,4 @@ module.exports = {
   markDownParse,
   formatSongToHTML,
   normalizeKeyAsMajor,
-  PIANO_KEYS,
-  PIANO_KEYS_SHARP,
-  PIANO_KEYS_FLAT
 }
