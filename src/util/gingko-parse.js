@@ -100,46 +100,75 @@ function normalizeKeyAsMajor(key) {
 /**
  *
  * @param {import('chordsheetjs').Song} song
- * @param {String} [headerSlideContent] Any first slide content to refer to for backup song key/capo sniffing
+ * @param {String|Object} [headerSlide] Any first slide content to refer to for backup song key/capo sniffing or already parsed songInfo
  * @param {Boolean} [noTranspose]
  */
-function getSongOutput(song, headerSlideContent, noTranspose) {
+function getSongOutput(song, headerSlide, noTranspose) {
   let $ = null;
   let songKey = null;
   let songKeyLabel = null;
   let songCapo = null;
 
-  if (headerSlideContent) {
-    if ($ === null) $ = cheerio.load('<div>'+headerSlideContent+"</div>");
-    let key = findAttrIn($('.song'), 'key');
-    if (key !== null) {
-      songKey = normalizeKeyAsMajor(key);
-      if (songKey !== null) {
-        songKeyLabel = key;
+  if (headerSlide) {
+    if (typeof headerSlide === 'object') {
+      songKey = headerSlide.songKey;
+      songCapo = headerSlide.songCapo;
+      songKeyLabel = headerSlide.songKeyLabel;
+      if ( song.metadata.key) {
+        let newKey = normalizeKeyAsMajor(song.metadata.key);
+
+        // modulation
+        if (songKey && newKey !== songKey ) {
+          let a =  Chord.parse(songKey).getTrebleVal() !== Chord.parse(newKey).getTrebleVal();
+          let b =  Chord.parse(songKey).getTrebleVal() !== Chord.parse(newKey).getTrebleVal();
+          if (a !== b) {
+            songKey = newKey;
+
+          }
+        }
+      }
+
+      if ( song.metadata.capo) {
+        let capoAmt = parseInt(song.metadata.capoAmt);
+        if (!isNaN(capoAmt) && capoAmt > 0) {
+          songCapo = capoAmt;
+        }
+      }
+
+    } else {
+      if ($ === null) $ = cheerio.load('<div>'+headerSlide+"</div>");
+      let key = findAttrIn($('.song'), 'key');
+      if (key !== null) {
+        songKey = normalizeKeyAsMajor(key);
+        if (songKey !== null) {
+          songKeyLabel = key;
+        }
+      }
+      let capo = findAttrIn($('.song'), 'capo');
+      if (capo !== null) {
+        let capoAmt = parseInt(capo);
+        if (!isNaN(capoAmt) && capoAmt > 0) {
+          songCapo = capoAmt;
+        }
       }
     }
-    let capo = findAttrIn($('.song'), 'capo');
-    if (capo !== null) {
-      let capoAmt = parseInt(capo);
+
+    if (songKey === null && song.metadata.key) {
+      songKey = normalizeKeyAsMajor(song.metadata.key);
+      if (songKey !== null) {
+        songKeyLabel = song.metadata.key;
+      }
+    }
+
+    if (songCapo === null && song.metadata.capo) {
+      let capoAmt = parseInt(song.metadata.capoAmt);
       if (!isNaN(capoAmt) && capoAmt > 0) {
         songCapo = capoAmt;
       }
     }
 
   }
-  if (songKey === null && song.metadata.key) {
-    songKey = normalizeKeyAsMajor(song.metadata.key);
-    if (songKey !== null) {
-      songKeyLabel = song.metadata.key;
-    }
-  }
 
-  if (songCapo === null && song.metadata.capo) {
-    let capoAmt = parseInt(song.metadata.capoAmt);
-    if (!isNaN(capoAmt) && capoAmt > 0) {
-      songCapo = capoAmt;
-    }
-  }
 
   let rootChord = (songKey && songKeyLabel) || song.metadata.key ? Chord.parse(song.metadata.key || songKeyLabel) : null;
 
@@ -156,9 +185,10 @@ function getSongOutput(song, headerSlideContent, noTranspose) {
  * @param {import('chordsheetjs').Song} song
  * @param {String} songKey key attribute
  * @param {Chord} rootChord
+ * @param {String} keyChange indicator for key change
  * @retur {[string]}
  */
-function getSongParagraphs(song, songKey, rootChord) {
+function getSongParagraphs(song, songKey, rootChord, keyChange) {
 
   let arr = [];
   song.paragraphs.forEach((p)=>{
@@ -222,39 +252,51 @@ async function parseGingkoTree(tree) {
      */
     let children = c.children ? c.children : [];
 
+    let isSongMode = false;
+    let parserParams;
+    let parserTag;
+    let songOutput;
+
     for (let ci = 0, cl = children.length; ci< cl; ci++) {
       let c = children[ci];
       if (c.content === '') continue;
       let content = c.content.trim();
+      let toContinue = false;
 
-      if (content.slice(0, 3) === '```') {
-        let firstLineSpl = content.indexOf('\n');
-        /**
-         * @type String
-         */
-        let parserParams = content.slice(3, firstLineSpl).split("-");
-        let parserTag = parserParams[0];
-        if (parserTag) {
-          parserTag = parserTag.trim().toLowerCase();
+      if (content.slice(0, 3) === '```' || (toContinue = isSongMode)) {
+        if (!toContinue) {
+          let firstLineSpl = content.indexOf('\n');
+          /**
+           * @type String
+           */
+          parserParams = content.slice(3, firstLineSpl).split("-");
+          parserTag = parserParams[0];
+          if (parserTag) {
+            parserTag = parserTag.trim().toLowerCase();
+          }
+          // console.log(parserTag);
+          content = content.slice(firstLineSpl + 1);
         }
-        // console.log(parserTag);
-        content = content.slice(firstLineSpl + 1);
         // console.log(content);
+
         if (content.slice(content.length - 3) === '```') {
           content = content.slice(0, content.length - 3);
-        } else if (!parserTag) {
+        } if (!parserTag) {
           parserTag = 'cp';
         }
-
         content = content.trim();
 
         let p = parserTag === 'cp' ? new CS.ChordProParser() : parserTag === 'ug' ? new CS.UltimateGuitarParser() : new CS.ChordSheetParser();
+        if (parserTag === 'cp') {
+          content = content.replace(/#/g, "h").replace(/\]\[/g, '] [');
+        }
         let song = p.parse(content);
-        let songOutput = getSongOutput(song, slides[0], parserParams[parserParams.length -  1] === 'notranspose');
+        songOutput = getSongOutput(song, songOutput ? songOutput : slides[0], parserParams[parserParams.length -  1] === 'notranspose');
 
         if (songOutput.paragraphs) {
           slides.push(...songOutput.paragraphs);
         }
+        isSongMode = true;
         /*
         if (ci === 0) {
           if (songOutput.paragraphs) {
