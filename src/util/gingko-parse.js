@@ -101,8 +101,9 @@ function normalizeKeyAsMajor(key) {
  *
  * @param {import('chordsheetjs').Song} song
  * @param {String} [headerSlideContent] Any first slide content to refer to for backup song key/capo sniffing
+ * @param {Boolean} [noTranspose]
  */
-function getSongOutput(song, headerSlideContent) {
+function getSongOutput(song, headerSlideContent, noTranspose) {
   let $ = null;
   let songKey = null;
   let songKeyLabel = null;
@@ -146,7 +147,7 @@ function getSongOutput(song, headerSlideContent) {
     songCapo,
     songKey,
     songKeyLabel,
-    paragraphs: getSongParagraphs(song, songKey, rootChord)
+    paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord)
   }
 }
 
@@ -172,7 +173,7 @@ function getSongParagraphs(song, songKey, rootChord) {
         for (let i =0, l=line.items.length; i<l; i++) {
           let li = line.items[i];
           let lyric = li.lyrics; //.trim();
-          let chordStr = li.chords.trim();
+          let chordStr = li.chords ? li.chords.trim() : null;
           if (!lyric && !chordStr) {
             continue;
           }
@@ -206,12 +207,20 @@ async function parseGingkoTree(tree) {
     if (c.content === '') continue;
 
     let content = c.content.trim();// c.content.replace(/^\s+|\n|\s+$/g);
+
+    // look for enclosing content
+    // /^```([a-z|\- ]*$\n)/gm
+
+    // look for ending
+    // /^``` *$/gm
+
     let ht = await markDownParse(content);
+
     let slides = [ht];
     /**
      * @type {Array}
      */
-    let children = c.children;
+    let children = c.children ? c.children : [];
 
     for (let ci = 0, cl = children.length; ci< cl; ci++) {
       let c = children[ci];
@@ -223,7 +232,8 @@ async function parseGingkoTree(tree) {
         /**
          * @type String
          */
-        let parserTag = content.slice(3, firstLineSpl);
+        let parserParams = content.slice(3, firstLineSpl).split("-");
+        let parserTag = parserParams[0];
         if (parserTag) {
           parserTag = parserTag.trim().toLowerCase();
         }
@@ -235,15 +245,23 @@ async function parseGingkoTree(tree) {
         } else if (!parserTag) {
           parserTag = 'cp';
         }
+
         content = content.trim();
+
         let p = parserTag === 'cp' ? new CS.ChordProParser() : parserTag === 'ug' ? new CS.UltimateGuitarParser() : new CS.ChordSheetParser();
         let song = p.parse(content);
-        let songOutput = getSongOutput(song, slides[0]);
+        let songOutput = getSongOutput(song, slides[0], parserParams[parserParams.length -  1] === 'notranspose');
 
         if (songOutput.paragraphs) {
           slides.push(...songOutput.paragraphs);
         }
+        /*
+        if (ci === 0) {
+          if (songOutput.paragraphs) {
 
+          }
+        }
+        */
       } else {
         content = await markDownParse(content);
         slides.push(content);

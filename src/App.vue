@@ -349,54 +349,60 @@ body {
   }
 
  .song em {
-    &:after {
-      display:none;
-    }
-    &:before {
-      display:none;
-    }
-    >* {
-      display:none;
-    }
+    display:none;
   }
 
 
 .show-chords {
   .song {
-    vertical-align:bottom;
-    line-height:2.2em !important;
+
+    line-height:2.3em !important;
     //
-
-  &.nolyrics {
-    line-height:auto;
-    em {
-        display: inline;
-
-        margin-right:1em;
-        >* {
-
-          display:inline;
-        }
-      }
+    >* {
+        vertical-align:bottom;
     }
+
+
   }
 
   .song em {
     display:inline;
     position:relative;
-    color:yellow;
+    > i {
+      color:yellow;
+    }
   }
 
-  .song em>*{
-    position:absolute;
-    top:-1.8em;
-    display:block;
+  .song em>* {
     font-size:0.75em;
-
      letter-spacing:1px;
     font-weight:bold;
+  }
+  .song>em>*{
+    position:absolute;
+    top:-2.1em;
+    display:block;
+
     left:0;
   }
+
+  .song >span {
+    display:inline-flex;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content: flex-end;
+    line-height:1.6;
+    >* {
+      line-height:1;
+      margin-right:0.65em;
+    }
+    /*
+    &.spaced {
+      margin-right:0.5em;
+    }
+    */
+  }
+
 
 }
 </style>

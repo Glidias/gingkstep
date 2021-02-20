@@ -27,13 +27,13 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 				$n: nth($numerals, $i);
 				@if ($n != 0) {
 					$c: nth($daKeys, 12 + $i + $offset);
-					>em[t=#{$n}]>* {
+					em[t=#{$n}]>* {
 						&:before {
 							content:'#{$c}';
 						}
 					}
 					@if ($isMinor == 0) {
-						>em[b=#{$n}]>* {
+						em[b=#{$n}]>* {
 							&:after {
 								content:'/#{$c}';
 							}
@@ -42,13 +42,13 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 					@for $a from 1 through length($addSharps) {
 						$c: nth($keysSharpV,  $i + $offset + $a);
 						$d: nth($addSharps, $a);
-						>em[t=#{$d}#{$n}]>* {
+						em[t=#{$d}#{$n}]>* {
 							&:before {
 								content:'#{$c}';
 							}
 						}
 						@if ($isMinor == 0) {
-							>em[b=#{$d}#{$n}]>* {
+							em[b=#{$d}#{$n}]>* {
 								&:after {
 									content:'/#{$c}';
 								}
@@ -58,13 +58,13 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 					@for $a from 1 through length($addFlats) {
 						$c: nth($keysFlatV, 12 + $i + $offset - $a);
 						$d: nth($addFlats, $a);
-						>em[t=#{$d}#{$n}]>* {
+						em[t=#{$d}#{$n}]>* {
 							&:before {
 								content:'#{$c}';
 							}
 						}
 						@if ($isMinor == 0) {
-							>em[b=#{$d}#{$n}]>* {
+							em[b=#{$d}#{$n}]>* {
 								&:after {
 									content:'/#{$c}';
 								}
@@ -86,13 +86,13 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 		@if ($k != 0) {
 			$v: nth($keysV, $i);
 			.song {
-				>em[t=#{$k}]>* {
+				em[t=#{$k}]>* {
 					&:before {
 						content:'#{$v}#{$m}';
 					}
 				}
 				@if ($isMinor == 0) {
-					>em>*[b=#{$k}] {
+					em>*[b=#{$k}] {
 						&:after {
 							content:'/#{$v}';
 						}
@@ -101,13 +101,13 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 				@for $a from 1 through length($addSharps) {
 					$d: nth($addSharps, $a);
 					$c: nth($addSharpsV, $a);
-					>em[t=#{$d}#{$k}]>* {
+					em[t=#{$d}#{$k}]>* {
 						&:before {
 							content:'#{$c}#{$v}#{$m}';
 						}
 					}
 					@if ($isMinor == 0) {
-						>em[b=#{$d}#{$k}]>* {
+						em[b=#{$d}#{$k}]>* {
 							&:after {
 								content:'/#{$d}#{$v}';
 							}
@@ -116,13 +116,13 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 				}
 				@for $a from 1 through length($addFlats) {
 					$d: nth($addFlats, $a);
-					>em[t=#{$d}#{$k}]>* {
+					em[t=#{$d}#{$k}]>* {
 						&:before {
 							content:'#{$d}#{$v}#{$m}';
 						}
 					}
 					@if ($isMinor == 0) {
-						>em[b=#{$d}#{$k}]>* {
+						em[b=#{$d}#{$k}]>* {
 							&:after {
 								content:'/#{$d}#{$v}';
 							}
@@ -142,13 +142,13 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 		@if ($k != 0) {
 			$c: nth($daKeys, $i);
 			.song {
-				>em[t=#{$k}#{$m}]>* {
+				em[t=#{$k}#{$m}]>* {
 					&:before {
 						content:'#{$c}#{$m}';
 					}
 				}
 				@if ($isMinor == 0) {
-					>em[b=#{$k}]>* {
+					em[b=#{$k}]>* {
 						&:after {
 							content:'/#{$c}';
 						}
@@ -168,11 +168,9 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 //*/
 
 // general letter keys with minor suffix
-///*
 @include generate-letter-keys($keys, $keysSharpV, 1);
 @include generate-letter-keys($keysSharp, $keysSharpV, 1);
 @include generate-letter-keys($keysFlat, $keysFlatV, 1);
-//*/
 
 // numeral keys
 @include generate-numeric-keys($numerals, $numerals, 0);	// major roman

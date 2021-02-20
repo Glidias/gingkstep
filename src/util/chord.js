@@ -247,13 +247,13 @@ const getSharpFlatDelta = (sharpsOrFlats) => {
 
 
 /**
- *
+ * Infers whether chord suffix represents a minor chord
  * @param {String} suffix
  */
 const isMinorFromSuffixLen = (suffix) => {
+  suffix = suffix.toLowerCase();
   if (suffix.charAt(0) !== 'm') return false;
-
-  suffix = suffix.split(/[0-9]/)[0];
+  suffix = suffix.split(/[^a-z]|(sus)?(dim)?(maj)?/)[0];
   return (suffix === 'm' || suffix === 'min' || suffix ==='minor') ? suffix.length : 0;
 }
 
@@ -313,7 +313,7 @@ class Chord {
       this.isMinor = base.charAt(0).toLowerCase() === base.charAt(0);
     }
 
-    this.dimed = this.suffix !== null ? this.suffix.toLowerCase().slice(0, 3) === 'dim' : false;
+    this.dimed = this.suffix !== null ? this.suffix.toLowerCase().slice(0, 3) === 'dim' || this.suffix.charAt(0) === 'o' : false;
 
     this.extension = this.isMinor ? suffix.slice(minorLen) : this.suffix;
     this.bassBase = bassBase || null;
@@ -350,7 +350,6 @@ class Chord {
     return processChord(this, transpose, delta);
   }
 
-  // TODO: consider takeout minor prefix only truncate for extension for non-roman, forHTMLString as well. For roman representation in toString, add minor prefix for extension.
   toString() {
     let chordString = "[Chord]"
     let minorSuffix = this.isMinor ? 'm' : '';

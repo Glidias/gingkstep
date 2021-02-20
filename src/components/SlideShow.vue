@@ -212,67 +212,7 @@ transform-style: preserve-3d;
         line-height: 44px;
       }
 
-      .fallback-message {
-        font-family: sans-serif;
-        line-height: 1.3;
-        width: 780px;
-        padding: 10px 10px 0;
-        margin: 20px auto;
-        border: 1px solid #E4C652;
-        border-radius: 10px;
-        background: #EEDC94;
-      }
 
-      .fallback-message p {
-        margin-bottom: 10px;
-      }
-
-      .impress-supported .fallback-message {
-        display: none;
-      }
-
-      span,strong {
-        -webkit-transition: 0.5s;
-        -moz-transition: 0.5s;
-        -ms-transition: 0.5s;
-        -o-transition: 0.5s;
-        transition: 0.5s;
-        display: inline-block;
-      }
-
-      .present .positioning {
-        -webkit-transform: translateY(-10px);
-        -moz-transform: translateY(-10px);
-        -ms-transform: translateY(-10px);
-        -o-transform: translateY(-10px);
-        transform: translateY(-10px);
-      }
-
-      .present .rotating {
-        -webkit-transform: rotate(-10deg);
-        -moz-transform: rotate(-10deg);
-        -ms-transform: rotate(-10deg);
-        -o-transform: rotate(-10deg);
-        transform: rotate(-10deg);
-        -webkit-transition-delay: 0.25s;
-        -moz-transition-delay: 0.25s;
-        -ms-transition-delay: 0.25s;
-        -o-transition-delay: 0.25s;
-        transition-delay: 0.25s;
-      }
-
-      .present .scaling {
-        -webkit-transform: scale(0.7);
-        -moz-transform: scale(0.7);
-        -ms-transform: scale(0.7);
-        -o-transform: scale(0.7);
-        transform: scale(0.7);
-        -webkit-transition-delay: 0.5s;
-        -moz-transition-delay: 0.5s;
-        -ms-transition-delay: 0.5s;
-        -o-transition-delay: 0.5s;
-        transition-delay: 0.5s;
-      }
     }
   }
 </style>
