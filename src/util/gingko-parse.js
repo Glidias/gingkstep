@@ -123,7 +123,6 @@ function getSongOutput(song, headerSlide, noTranspose) {
           let b =  Chord.parse(songKey).getTrebleVal() !== Chord.parse(newKey).getTrebleVal();
           if (a !== b) {
             songKey = newKey;
-
           }
         }
       }
@@ -192,9 +191,10 @@ function getSongParagraphs(song, songKey, rootChord, keyChange) {
 
   let arr = [];
   song.paragraphs.forEach((p)=>{
+
     //if (p.type === 'none') return;
     let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}>`;
-
+    let gotChordOrLyric = false;
     p.lines.forEach((line, lineIndex, linesArr)=> {
       //if (line.type === 'none') return;
       let numLinesE = linesArr.length - 1;
@@ -205,12 +205,13 @@ function getSongParagraphs(song, songKey, rootChord, keyChange) {
           let lyric = li.lyrics; //.trim();
           let chordStr = li.chords ? li.chords.trim() : null;
           if (!lyric && !chordStr) {
+
             continue;
           }
 
           let chord = chordStr ? Chord.parse(chordStr) : null;
           output += (chord ? chord.toHTMLString(rootChord) : '') + (lyric || "");
-
+          gotChordOrLyric = true;
           //output += i < lle ? ' ' : '';
         }
 
@@ -218,7 +219,7 @@ function getSongParagraphs(song, songKey, rootChord, keyChange) {
       output += lineIndex < numLinesE ? '<br>' : '';
     });
     output += '</p>';
-    arr.push(output);
+    if (gotChordOrLyric) arr.push(output);
   })
 
   return arr;
