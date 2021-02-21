@@ -125,18 +125,23 @@ function getSongOutput(song, headerSlide, noTranspose) {
   let songKey = null;
   let songKeyLabel = null;
   let songCapo = null;
-  let headerSlideAddedSongs;
+  let headerSlideAddedIntros;
+  let rootChord = null;
 
   if (headerSlide) {
     if (typeof headerSlide === 'object') {
       songKey = headerSlide.songKey;
       songCapo = headerSlide.songCapo;
       songKeyLabel = headerSlide.songKeyLabel;
-      if ( song.metadata.key) {
-        let newKey = normalizeKeyAsMajor(song.metadata.key);
+      rootChord = headerSlide.rootChord;
 
-        // modulation
+      // possible overwrites from headerSlide
+      if ( song.metadata.key) {
+        // a new key signature always created per song slide
+        rootChord = Chord.parse(song.metadata.key);
+        let newKey = normalizeKeyAsMajor(song.metadata.key);
         if (songKey && newKey !== songKey ) {
+          // modulation
           let a =  Chord.parse(songKey).getTrebleVal() !== Chord.parse(newKey).getTrebleVal();
           let b =  Chord.parse(songKey).getTrebleVal() !== Chord.parse(newKey).getTrebleVal();
           if (a !== b) {
@@ -144,7 +149,6 @@ function getSongOutput(song, headerSlide, noTranspose) {
           }
         }
       }
-
       if ( song.metadata.capo) {
         let capoAmt = parseInt(song.metadata.capoAmt);
         if (!isNaN(capoAmt) && capoAmt > 0) {
@@ -153,53 +157,76 @@ function getSongOutput(song, headerSlide, noTranspose) {
       }
     } else {
       if ($ === null) $ = cheerio.load('<body>'+headerSlide+"</body>");
+      let lastSongKeyLabel = song.metadata.key;
+      let extraSongBits = [];
       $('pre > code').each((index, el) =>{
-        let songBit = parseChordProBody($(el).text().trim());
+        let elContent = $(el).text().trim();
+        let songBit = parseChordProBody(elContent);
         if (songBit) {
+          if (song.metadata.key) lastSongKeyLabel = song.metadata.key;
           if (songBit.metadata.key) {
-            songKey = normalizeKeyAsMajor(songBit.metadata.key);
-            if (songKeyLabel === null) {
-              songKeyLabel = songBit.metadata.key;
-            }
+            lastSongKeyLabel = songBit.metadata.key;
           }
-          if (!songCapo && songBit.metadata.capo) {
-            let capoAmt = parseInt(songBit.metadata.capo);
-            if (!isNaN(capoAmt) && capoAmt > 0) {
-              songCapo = capoAmt;
-            }
-          }
-          if (songBit.paragraphs.length) {
+           // also check if the song an empty song or not?
+          let songParas = getSongParagraphs(songBit,
+            songKey ? songKey : lastSongKeyLabel  ? normalizeKeyAsMajor(lastSongKeyLabel) : null,
+            lastSongKeyLabel ? Chord.parse(lastSongKeyLabel) : null
+          );
 
-            console.log('a:'+$(el).text());
+          if (!songParas) {
+            //console.log("Processing empty directive:" + elContent);
+            if (songBit.metadata.key) {
+              if (songKey === null) {
+                songKey = normalizeKeyAsMajor(songBit.metadata.key);
+              }
+              if (songKeyLabel === null) {
+                songKeyLabel = songBit.metadata.key;
+              }
+            }
+            if (!songCapo && songBit.metadata.capo) {
+              let capoAmt = parseInt(songBit.metadata.capo);
+              if (!isNaN(capoAmt) && capoAmt > 0) {
+                songCapo = capoAmt;
+              }
+            }
+          } else {
+            extraSongBits.push(songParas);
           }
         }
       });
-    }
 
-    if (songKey === null && song.metadata.key) {
-      songKey = normalizeKeyAsMajor(song.metadata.key);
-      if (songKey !== null) {
-        songKeyLabel = song.metadata.key;
+      if (extraSongBits.length) {
+        headerSlideAddedIntros = extraSongBits.join("");
+        //console.log(headerSlideAddedIntros);
       }
-    }
-
-    if (songCapo === null && song.metadata.capo) {
-      let capoAmt = parseInt(song.metadata.capoAmt);
-      if (!isNaN(capoAmt) && capoAmt > 0) {
-        songCapo = capoAmt;
+      if (lastSongKeyLabel) {
+        rootChord = Chord.parse(lastSongKeyLabel);
       }
-    }
 
+      if (songKey === null && song.metadata.key) {
+        songKey = normalizeKeyAsMajor(song.metadata.key);
+        if (songKey !== null) {
+          songKeyLabel = song.metadata.key;
+        }
+      }
+
+      if (songCapo === null && song.metadata.capo) {
+        let capoAmt = parseInt(song.metadata.capoAmt);
+        if (!isNaN(capoAmt) && capoAmt > 0) {
+          songCapo = capoAmt;
+        }
+      }
+
+    }
   }
 
-
-  let rootChord = (songKey && songKeyLabel) || song.metadata.key ? Chord.parse(song.metadata.key || songKeyLabel) : null;
 
   return {
     songCapo,
     songKey,
     songKeyLabel,
-    headerSlideAddedSongs,
+    headerSlideAddedIntros,
+    rootChord,
     paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord)
   }
 }
@@ -277,7 +304,7 @@ function getSongParagraphs(song, songKey, rootChord, keyChange) {
     if (gotChordOrLyric) arr.push(output);
   })
 
-  return arr;
+  return arr.length ? arr : null;
 }
 
 
@@ -347,10 +374,14 @@ async function parseGingkoTree(tree) {
           content = content.replace(/#/g, "h").replace(/\]\[/g, '] [');
         }
         let song = p.parse(content);
-        songOutput = getSongOutput(song, songOutput ? songOutput : slides[0], parserParams[parserParams.length -  1] === 'notranspose');
+        songOutput = getSongOutput(song, songOutput ? songOutput : slides[0], parserParams.indexOf('notranspose') >= 0);
 
         if (songOutput.paragraphs) {
-          slides.push(...songOutput.paragraphs);
+          if (parserParams.indexOf("join") < 0) {
+            slides.push(...songOutput.paragraphs);
+          } else {
+            slides.push(songOutput.paragraphs.join(""));
+          }
         }
         isSongMode = true;
         /*
@@ -362,6 +393,7 @@ async function parseGingkoTree(tree) {
         */
       } else {
         content = await markDownParse(content);
+
         slides.push(content);
       }
 

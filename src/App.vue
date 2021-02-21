@@ -16,7 +16,7 @@
           </form>
         </div>
       </slides-overview>
-      <slide-show @goto="onGoto" :step-index="stepIndex" :step-list="slidesFlattened" v-if="!showOverview"></slide-show>
+      <slide-show @goto="onGoto" :step-index="stepIndex" :step-list="slidesFlattened" :slides-header-indices="slideHeaderIndices" v-if="!showOverview"></slide-show>
       <a id="hamburger" @click="showOverview = !showOverview"></a>
     </div>
     <div v-else style="padding:15px">
@@ -36,7 +36,6 @@
 <script>
 import SlidesOverview from "./components/SlidesOverview";
 import SlideShow from "./components/SlideShow";
-import mockData from '././model/mockdata';
 import axios from 'axios';
 import {HOST_PREFIX} from './constants';
 
@@ -76,10 +75,21 @@ export default {
     },
     slidesFlattened() {
       let arr = [];
-      for (let i =0; i<mockData.length; i++) {
-        arr.push(...mockData[i].slides);
+      let slides = this.slides;
+      for (let i =0; i<slides.length; i++) {
+        arr.push(...slides[i].slides);
       }
       return arr;
+    },
+    slideHeaderIndices () {
+      let obj = {};
+      let slides = this.slides;
+      let count = 0;
+      for (let i =0; i<slides.length; i++) {
+        obj[count] = true;
+        count += slides[i].slides.length;
+      }
+      return obj;
     }
   },
   sockets: {

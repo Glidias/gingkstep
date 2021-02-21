@@ -1,7 +1,7 @@
 <template>
   <div id="impress" data-transition-duration="0">
      <splide ref="splider" :options="splideOptions" class="scrollslides">
-        <splide-slide class="step" v-for="(li, i) in stepList" :key="i" v-html="li"></splide-slide>
+        <splide-slide class="step" v-for="(li, i) in stepList" :key="i" v-html="li" :class="{intro:slidesHeaderIndices && slidesHeaderIndices[i]}"></splide-slide>
       </splide>
   </div>
 </template>
@@ -10,7 +10,8 @@
 export default {
    props: {
     stepList: Array,
-    stepIndex: Number
+    stepIndex: Number,
+    slidesHeaderIndices: Object,
   },
   computed: {
     splideOptions() {
@@ -53,6 +54,8 @@ export default {
     line-height: .8;
     font-size: 45px;
 
+    // todo: this will remove all pres! not good for non-song presentations!
+
 
     position: absolute; transform-origin: left top; transition: all 0ms ease-in-out 0ms; transform-style: preserve-3d; top: 50%; left: 50%;
      perspective: 1154.89px; transform: scale(0.865885);
@@ -72,6 +75,11 @@ export default {
 
     .step {
     width: 1060px;
+    &.intro {
+       pre {
+        display:none;
+      }
+    }
 
 
 

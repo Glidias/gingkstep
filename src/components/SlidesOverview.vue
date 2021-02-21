@@ -509,9 +509,19 @@ $bottom-bar-height:50px;
     }
     > * {
       &:first-child {
+         pre {
+          display:none;
+        }
         p:first-child {
           text-decoration:underline;
         }
+        p + br {
+          display:none;
+        }
+        pre + br {
+          display:none
+        }
+
       }
       flex: 1;
       break-inside: avoid-column;
@@ -563,6 +573,9 @@ $bottom-bar-height:50px;
 .copyright-song { // mandatory copyright per song
   cursor:auto !important;
   ::v-deep .song {
+    display:none;
+  }
+  ::v-deep pre {
     display:none;
   }
   &:hover {
