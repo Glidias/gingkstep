@@ -418,6 +418,9 @@ body {
 
     left:0;
   }
+  .song em>i>sup:after {
+    content: attr(e);
+  }
 
   .song >span {
     display:inline-flex;

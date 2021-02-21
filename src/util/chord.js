@@ -317,6 +317,7 @@ class Chord {
     this.dimed = this.suffix !== null ? this.suffix.toLowerCase().slice(0, 3) === 'dim' || this.suffix.charAt(0) === 'o' : false;
 
     this.extension = this.isMinor ? suffix.slice(minorLen) : this.suffix;
+    if (this.extension) this.extension = this.extension.replace('/\"/', `'`);
     this.bassBase = bassBase || null;
     this.bassModifier = bassModifier || null;
     this.mode = mode;
@@ -488,7 +489,7 @@ class Chord {
         }
       }
     }
-    return `<em t="${trebleChord}"${this.bassBase ? ` b="${bassChord}"` : ''}><i><sup>${this.extension || ''}</sup></i></em>`;
+    return `<em t="${trebleChord}"${this.bassBase ? ` b="${bassChord}"` : ''}><i>${this.extension ? `<sup e="${this.extension}"></sup>` : ''}</i></em>`;
   }
 }
 
