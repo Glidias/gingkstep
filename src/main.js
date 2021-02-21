@@ -4,6 +4,7 @@ import VueSplide from "@splidejs/vue-splide";
 import Vue2TouchEvents from 'vue2-touch-events';
 import VueSocketIO from 'vue-socket.io';
 import io from 'socket.io-client';
+import {HOST_PREFIX} from './constants';
 
 
 Vue.use(Vue2TouchEvents, {
@@ -14,7 +15,7 @@ Vue.use(Vue2TouchEvents, {
 });
 Vue.use(VueSplide);
 
-const connection = io(process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/', {
+const connection = io(HOST_PREFIX, {
   withCredentials: true
 });
 

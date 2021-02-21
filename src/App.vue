@@ -26,7 +26,7 @@
       </form>
       <br>
       <form @submit.prevent="onSubmitLoad($event)">
-        <label>Open Tree: <input type="text" name="treeid"></label>
+        <label>Open Tree: <input type="text" name="treeid" v-model="formValueTreeId"></label>
         <button type="submit">Load</button>
       </form>
     </div>
@@ -37,6 +37,8 @@
 import SlidesOverview from "./components/SlidesOverview";
 import SlideShow from "./components/SlideShow";
 import mockData from '././model/mockdata';
+import axios from 'axios';
+import {HOST_PREFIX} from './constants';
 
 export default {
   name: "App",
@@ -54,7 +56,7 @@ export default {
 
       slides: null,
 
-      treeD: '',
+      formValueTreeId: 'g1zdt6',
 
       stepIndex: 0,
     }
@@ -95,7 +97,7 @@ export default {
        alert("Error with connection...");
     },
 
-    hostingTestRoom (sessionPin) {
+    hostingRoom (sessionPin) {
       this.attemptingConnect = false;
       this.sessionPin = sessionPin;
       this.isHost = true;
@@ -110,19 +112,40 @@ export default {
         this.stepIndex = parseInt(slideId);
       }
     },
-    joinedRoom: function(dataArr) { //sessionPin, treeD, keys
+    joinedRoom: async function(dataArr) { //sessionPin, treeD, keys
       let sessionPin = dataArr[0];
       let treeD = dataArr[1];
       let keys = dataArr[2];
-      // attempt load treeD before
+      //this.treeD = treeD;
+      await this.loadTree(treeD);
 
-      this.attemptingConnect = false;
       this.sessionPin = sessionPin;
       this.isHost = false;
-      this.slides = mockData;
     },
   },
   methods: {
+     async loadTree(treeD) {
+       this.attemptingConnect = true;
+        // attempt load treeD before
+      try {
+        const response = await axios.get(HOST_PREFIX + 'loadtree', {
+          params: {
+            s: treeD
+          }
+        });
+        if (response.data.error) {
+          console.log(response.data.error + ":: error code found.");
+          alert(`Error code: ${response.data.error}, found.`);
+        } else {
+          this.slides = response.data.result;
+        }
+      }
+      catch(err) {
+        console.log(err);
+        alert("Failed to load tree id: " + treeD);
+      }
+      this.attemptingConnect = false;
+    },
     onKeyDropdownChange(event) {
       console.log(event.currentTarget.selectedIndex);
     },
@@ -137,7 +160,7 @@ export default {
       if (!this.$socket.connected) {
         try {
           let b = await this.$socket.connect();
-          console.log(b);
+          // console.log(b);
         }
         catch(err) {
           console.log(err);
@@ -150,8 +173,11 @@ export default {
       if (!e.currentTarget.roomid.value) return;
       this.lazyEmit('join-room', e.currentTarget.roomid.value);
     },
-    onSubmitLoad (e) {
-      this.slides = mockData;
+     onSubmitLoad (e) {
+      if (!e.currentTarget.treeid.value) {
+        return;
+      }
+      this.loadTree(e.currentTarget.treeid.value);
     },
     hostSession () {
       this.lazyEmit('host-room', this.treeD);
@@ -352,6 +378,13 @@ body {
     display:none;
   }
 
+/*
+.song > span del {
+  display:none;
+  text-decoration:none;
+}
+*/
+
 
 .show-chords {
   .song {
@@ -392,8 +425,21 @@ body {
     align-items:flex-start;
     justify-content: flex-end;
     line-height:1.6;
+    /*
+    del {
+      display:inline;
+    }
+    */
+
+    /*
+    ins:before {
+      content: ' ';
+    }
+    */
     >* {
       line-height:1;
+    }
+    >em {
       margin-right:0.65em;
     }
     /*

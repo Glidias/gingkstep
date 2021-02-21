@@ -4,9 +4,9 @@
  *  @author Glenn Ko
  */
 
-const chordRegex = /(^[A-Ga-g])([h#b]+)?([^/\s]*)(\/([A-Ga-g])([h#b]+)?)?$/; ///([A-G])(h|#|b)?([^/\s]*)(\/([A-G])(h|#|b)?)?/i;
-const romanRegex = /(^([h#b]+)?([ivIV]+))([^/\s]*)(\/([h#b]+)?([ivIV]+))?$/;
-const nashVilleRegex = /(^([h#b]+)?([1-7]+))([^/\s]*)(\/([h#b]+)?([1-7]+))?$/;
+const chordRegex = /(^[A-Ga-g])([h#b]*)?([^/\s]*)(\/([A-Ga-g])([h#b]*)?)?$/; ///([A-G])(h|#|b)?([^/\s]*)(\/([A-G])(h|#|b)?)?/i;
+const romanRegex = /(^([h#b]*)?([ivIV]+))([^/\s]*)(\/([h#b]*)?([ivIV]+))?$/;
+const nashVilleRegex = /(^([h#b]*)?([1-7]+))([^/\s]*)(\/([h#b]*)?([1-7]+))?$/;
 
 const A = 'A'.charCodeAt(0);
 const G = 'G'.charCodeAt(0);
@@ -259,6 +259,7 @@ const isMinorFromSuffixLen = (suffix) => {
 
 class Chord {
   static parse(chordString) {
+    chordString = chordString.trim();
     let parts = chordRegex.exec(chordString);
 
     if (parts) {

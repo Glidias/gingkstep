@@ -99,6 +99,23 @@ function normalizeKeyAsMajor(key) {
 
 /**
  *
+ * @param {string} body
+ * @return {import('chordsheetjs').Song}
+ */
+function parseChordProBody(body) {
+  body = body.replace(/#/g, "h").replace(/\]\[/g, '] [');
+  try {
+    let song = new CS.ChordProParser().parse(body);
+    return song;
+  }
+  catch(err) {
+    //console.log(err);
+    return null;
+  }
+}
+
+/**
+ *
  * @param {import('chordsheetjs').Song} song
  * @param {String|Object} [headerSlide] Any first slide content to refer to for backup song key/capo sniffing or already parsed songInfo
  * @param {Boolean} [noTranspose]
@@ -108,6 +125,7 @@ function getSongOutput(song, headerSlide, noTranspose) {
   let songKey = null;
   let songKeyLabel = null;
   let songCapo = null;
+  let headerSlideAddedSongs;
 
   if (headerSlide) {
     if (typeof headerSlide === 'object') {
@@ -133,23 +151,29 @@ function getSongOutput(song, headerSlide, noTranspose) {
           songCapo = capoAmt;
         }
       }
-
     } else {
-      if ($ === null) $ = cheerio.load('<div>'+headerSlide+"</div>");
-      let key = findAttrIn($('.song'), 'key');
-      if (key !== null) {
-        songKey = normalizeKeyAsMajor(key);
-        if (songKey !== null) {
-          songKeyLabel = key;
+      if ($ === null) $ = cheerio.load('<body>'+headerSlide+"</body>");
+      $('pre > code').each((index, el) =>{
+        let songBit = parseChordProBody($(el).text().trim());
+        if (songBit) {
+          if (songBit.metadata.key) {
+            songKey = normalizeKeyAsMajor(songBit.metadata.key);
+            if (songKeyLabel === null) {
+              songKeyLabel = songBit.metadata.key;
+            }
+          }
+          if (!songCapo && songBit.metadata.capo) {
+            let capoAmt = parseInt(songBit.metadata.capo);
+            if (!isNaN(capoAmt) && capoAmt > 0) {
+              songCapo = capoAmt;
+            }
+          }
+          if (songBit.paragraphs.length) {
+
+            console.log('a:'+$(el).text());
+          }
         }
-      }
-      let capo = findAttrIn($('.song'), 'capo');
-      if (capo !== null) {
-        let capoAmt = parseInt(capo);
-        if (!isNaN(capoAmt) && capoAmt > 0) {
-          songCapo = capoAmt;
-        }
-      }
+      });
     }
 
     if (songKey === null && song.metadata.key) {
@@ -175,8 +199,18 @@ function getSongOutput(song, headerSlide, noTranspose) {
     songCapo,
     songKey,
     songKeyLabel,
+    headerSlideAddedSongs,
     paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord)
   }
+}
+
+function repeatStr(str, i) {
+  i--;
+  let s = str;
+  while(--i > -1) {
+    s += str;
+  }
+  return s;
 }
 
 /**
@@ -202,15 +236,36 @@ function getSongParagraphs(song, songKey, rootChord, keyChange) {
         let lle = line.items.length - 1;
         for (let i =0, l=line.items.length; i<l; i++) {
           let li = line.items[i];
-          let lyric = li.lyrics; //.trim();
-          let chordStr = li.chords ? li.chords.trim() : null;
-          if (!lyric && !chordStr) {
-
+          let lyric = li.lyrics || ""; //.trim();
+          let chordStr = li.chords ? li.chords : null; //
+          let trimLyric = lyric.trim();
+          if (!trimLyric && !chordStr) {
             continue;
           }
 
           let chord = chordStr ? Chord.parse(chordStr) : null;
-          output += (chord ? chord.toHTMLString(rootChord) : '') + (lyric || "");
+          //let lastLength = lyric.length;
+
+          let prefixSpaces = '';
+          let suffixSpaces = '';
+          let whitespaceMatch = lyric.match(/(^ +)|( +$)/g);
+          if (whitespaceMatch) {
+            if (whitespaceMatch.length === 1) {
+              if (lyric.charAt(0) === ' ') {
+                prefixSpaces = whitespaceMatch[0];
+              } else {
+                suffixSpaces = whitespaceMatch[0];
+              }
+            } else {
+              prefixSpaces = whitespaceMatch[0];
+              suffixSpaces = whitespaceMatch[1];
+            }
+          }
+          let tailEndLyric = lyric.slice(trimLyric.length);
+          //if (tailEndLyric.charAt(0)!== ' ') console.log(tailEndLyric);
+          //+ '<span>' + (lyric ? lyric.replace(/  +/g, (str)=>{return ` <del>${repeatStr('&nbsp;', str.length-1)}</del>`}) : '&nbsp;</span>');
+
+          output += prefixSpaces + '<span>'+(chord ? chord.toHTMLString(rootChord) : '') + (trimLyric || "&nbsp;") + '</span>'+ suffixSpaces;
           gotChordOrLyric = true;
           //output += i < lle ? ' ' : '';
         }

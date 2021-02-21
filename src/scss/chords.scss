@@ -18,8 +18,9 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 
 // tranposable numeric keys
 @mixin generate-numeric-keys-trans($numerals, $keys, $daKeys, $isMinor:0) {
+	$m: if($isMinor==1, 'm', '');
 	@for $i from 1 through 12 {
-		$k: nth($keys, $i); 
+		$k: nth($keys, $i);
 		@if ($k != 0) {
 			$offset: ($i - 1);
 			.song[key=#{$k}] {
@@ -29,7 +30,7 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 					$c: nth($daKeys, 12 + $i + $offset);
 					em[t=#{$n}]>* {
 						&:before {
-							content:'#{$c}';
+							content:'#{$c}#{$m}';
 						}
 					}
 					@if ($isMinor == 0) {
@@ -44,7 +45,7 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 						$d: nth($addSharps, $a);
 						em[t=#{$d}#{$n}]>* {
 							&:before {
-								content:'#{$c}';
+								content:'#{$c}#{$m}';
 							}
 						}
 						@if ($isMinor == 0) {
@@ -60,7 +61,7 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 						$d: nth($addFlats, $a);
 						em[t=#{$d}#{$n}]>* {
 							&:before {
-								content:'#{$c}';
+								content:'#{$c}#{$m}';
 							}
 						}
 						@if ($isMinor == 0) {

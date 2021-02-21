@@ -1,9 +1,9 @@
 const express = require('express');
 
-//const cors = require('cors');
+const cors = require('cors');
 const app = express();
 const IS_DEV = !process.env.BUILDPACK_URL;
-//app.use(cors());
+if (IS_DEV) app.use(cors());
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {
   cors: (IS_DEV ? {
@@ -83,7 +83,7 @@ io.on('connection', (socket) => {
 
   socket.on("host-room", async (treeD, keys)=> {
     const sessionPin = await startSession(socket, treeD, keys);
-    io.to(socket.id).emit("hostingTestRoom", sessionPin);
+    io.to(socket.id).emit("hostingRoom", sessionPin);
     socket.on('slide-change', msg => {
       io.to(sessionPin).emit("slideChange", msg);
     });
