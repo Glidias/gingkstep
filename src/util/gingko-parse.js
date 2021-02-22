@@ -98,6 +98,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
             rootChord = newKeyChord;
             songKey = normalizeKeyAsMajor(songKey, delta);
 
+
           //  let oldChordKey = headerSlide.songKeyLabelPrefered instanceof Chord ? headerSlide.songKeyLabelPrefered : Chord.parse(headerSlide.songKeyLabelPrefered);
 
             // consider: factor this into actual transpose method?
@@ -114,17 +115,25 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
 
             songKeyLabelPrefered = newKeyChord.toString();
             modulate = oldChordKey + ` to ` + newKeyChord;
+            // songKeyLabel =  newKeyChord.modifier && newKeyChord.getSignAsSharp() !== rootChord.getSignAsSharp() ?  rootChord.switchModifier.toString() :  rootChord.toString();
+            let songKeyChord = Chord.parse(songKey);
+            if (newKeyChord.modifier && newKeyChord.getSignAsSharp() !== songKeyChord.getSignAsSharp()) {
+              songKey = songKeyChord.switchModifier().toString();
+            }
 
-            songKeyLabel = rootChord.toString();
           } else if (oldChordKey.isMinor !== newKeyChord.isMinor) {
             rootChord = newKeyChord;
 
             newKeyChord = oldChordKey.getRelativeChord();
-
             //rootChord = Chord.parse(""+rootChord).getRelativeChord();
 
             songKeyLabelPrefered = newKeyChord.toString();
             modulate = oldChordKey + ` to ` + newKeyChord;
+
+            let songKeyChord = Chord.parse(songKey);
+            if (newKeyChord.modifier && newKeyChord.getSignAsSharp() !== songKeyChord.getSignAsSharp()) {
+              songKey = songKeyChord.switchModifier().toString();
+            }
           }
         }
       }

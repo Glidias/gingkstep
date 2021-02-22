@@ -37,13 +37,14 @@ function normalizeKeyAsMajor(key, offset=0) {
 
   // let flatPreference = sharpFlats.charAt(0) === 'b';
 
+  index %= PIANO_KEYS.length;
   let normKey = PIANO_KEYS[index];
   if (!normKey) {
     normKey = (SIGN_AS_SHARP[index] ? PIANO_KEYS_SHARP : PIANO_KEYS_FLAT)[index];
   }
   if (!normKey) {
-    console.error("Norm key could not be found!" + normKey + ', at index:'+ index);
-    return null;
+    throw new Error("Norm key could not be found!" + normKey + ', at index:'+ index);
+    //return null;
   }
 
   return normKey;

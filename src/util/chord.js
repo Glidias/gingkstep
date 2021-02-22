@@ -189,6 +189,7 @@ const processChord = (sourceChord, processor, processorArg) => {
   const getSimpleRoman = (theVal, modifier, rootChord) => {
      let rootKeyVal = rootChord.getKeyVal();
       let offset = theVal - rootKeyVal;
+      offset %=12;
       if (offset < 0) offset = 12 + offset;
       else if (offset >= 12) offset = offset - 12;
       //console.log(offset);
