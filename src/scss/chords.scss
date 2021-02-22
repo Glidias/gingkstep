@@ -110,7 +110,7 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 					@if ($isMinor == 0) {
 						em[b=#{$d}#{$k}]>* {
 							&:after {
-								content:'/#{$d}#{$v}';
+								content:'/#{$c}#{$v}';
 							}
 						}
 					}
