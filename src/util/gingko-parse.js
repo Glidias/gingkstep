@@ -87,6 +87,9 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
   let rootChord = null;
   let songBitMetaData;
   let songHeaderTitle;
+
+  let songKeyLabelPrefered;
+  let songCapoPrefered;
   if (headerSlide) {
     if (typeof headerSlide === 'object') {
       songKey = headerSlide.songKey;
@@ -95,24 +98,31 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
       rootChord = headerSlide.rootChord;
 
       // possible overwrites from headerSlide
-      if ( song.metadata.key) {
+      if ( song.metadata.capo) { // capo change in middle of song?? wow!
+        let capoAmt = parseInt(song.metadata.capo);
+        if (!isNaN(capoAmt) && capoAmt > 0) {
+          songCapo = capoAmt;
+          songCapo %= 12;
+          if (songKeyLabel) rootChord = Chord.parse(songKeyLabel).transpose(songCapo);
+        }
+      }
+      if (song.metadata.key) {
         // a new key signature always created per song slide
         rootChord = Chord.parse(song.metadata.key);
         let newKey = normalizeKeyAsMajor(song.metadata.key);
         if (songKey && newKey !== songKey ) {
           // modulation
-          let a =  Chord.parse(songKey).getTrebleVal() !== Chord.parse(newKey).getTrebleVal();
+          let a =  Chord.parse(newKey).getTrebleVal() !== Chord.parse(newKey).getTrebleVal();
           let b =  Chord.parse(songKey).getTrebleVal() !== Chord.parse(newKey).getTrebleVal();
           if (a !== b) {
-            songKey = newKey;
+            songKey = normalizeKeyAsMajor(newKey); // TODO; measure newKey in relation to original headerFirst key!
+
+            songKeyLabel = newKey;
+            rootChord = Chord.parse(songKeyLabel);
+            if (songCapo) {
+              rootChord = rootChord.transpose(-songCapo);
+            }
           }
-        }
-      }
-      if ( song.metadata.capo) {
-        let capoAmt = parseInt(song.metadata.capo);
-        if (!isNaN(capoAmt) && capoAmt > 0) {
-          songCapo = capoAmt;
-          songCapo %= 12;
         }
       }
     } else { // process headerSlide html body
@@ -125,7 +135,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
         let elContent = $(el).text().trim();
         let songBit = parseChordProBody(elContent);
         if (songBit) {
-          if (song.metadata.key) lastSongKeyLabel = song.metadata.key;
+          if (song.metadata.key)  lastSongKeyLabel = song.metadata.key;
           if (songBit.metadata.key) {
             lastSongKeyLabel = songBit.metadata.key;
           }
@@ -138,26 +148,26 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
           if (!songParas) {
             //console.log("Processing empty directive:" + elContent);
             if (songBit.metadata.key) {
-              if (songKey === null) {
-                songKey = normalizeKeyAsMajor(songBit.metadata.key);
-              }
-              if (songKeyLabel === null) {
-                songKeyLabel = songBit.metadata.key;
+              songKeyLabel = songBit.metadata.key;
+              if (!songKeyLabelPrefered) {
+                songKey = normalizeKeyAsMajor(songKeyLabel);
+                songKeyLabelPrefered = songKeyLabel;
               }
             }
-            if (!songCapo && songBit.metadata.capo) {
+            if (songBit.metadata.capo) {
               let capoAmt = parseInt(songBit.metadata.capo);
               if (!isNaN(capoAmt) && capoAmt > 0) {
                 songCapo = capoAmt;
                 songCapo %= 12;
+                if (!songCapoPrefered) {
+                  songCapoPrefered = songCapo;
+                }
               }
             }
           } else {
             extraSongBits.push(songParas);
           }
-
           Object.assign(songBitMetaData, songBit.metadata);
-
         }
       });
 
@@ -165,39 +175,43 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
         headerSlideAddedIntros = extraSongBits.join("");
         //console.log(headerSlideAddedIntros);
       }
+
       if (lastSongKeyLabel) {
-        rootChord = Chord.parse(lastSongKeyLabel);
+        songKeyLabel = lastSongKeyLabel;
       }
 
-      /*
-      if (songKey === null && song.metadata.key) {
-        songKey = normalizeKeyAsMajor(song.metadata.key);
-        if (songKey !== null) {
+      // pick from last metadata if not available on root slide
+      if (!songKeyLabelPrefered && song.metadata.key) {
+        songKeyLabelPrefered = song.metadata.key;
+        songKey = normalizeKeyAsMajor( song.metadata.key);
+      }
+      if (!songCapoPrefered && song.metadata.capo) {
+        let capoAmt = parseInt(song.metadata.capo);
+        if (!isNaN(capoAmt) && capoAmt > 0) {
+          songCapoPrefered = capoAmt;
+          songCapoPrefered %= 12;
+        }
+      }
+
+      // finalise starting rootchord
+      if (song.metadata.key) {
+        if (!songKeyLabel) {
           songKeyLabel = song.metadata.key;
         }
       }
 
-      if (songCapo === null && song.metadata.capo) {
-        let capoAmt = parseInt(song.metadata.capoAmt);
-        if (!isNaN(capoAmt) && capoAmt > 0) {
-          songCapo = capoAmt;
-          songCapo %= 12;
+      if (songKeyLabel) {
+        rootChord = Chord.parse(songKeyLabel);
+        if (songCapo) {
+          rootChord = rootChord.transpose(-songCapo);
         }
       }
-      */
 
     }
   }
 
-
-  if (songKey === null && song.metadata.key) {
-    songKey = normalizeKeyAsMajor(song.metadata.key);
-    if (songKey !== null) {
-      songKeyLabel = song.metadata.key;
-    }
-  }
-
-  if (songCapo === null && song.metadata.capo) {
+    /*
+  if (song.metadata.capo) {
     let capoAmt = parseInt(song.metadata.capo);
     if (!isNaN(capoAmt) && capoAmt > 0) {
       songCapo = capoAmt;
@@ -205,8 +219,23 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
     }
   }
 
+  if (song.metadata.key) {
+    if (!songKeyLabel) {
+      songKeyLabel = song.metadata.key;
+    }
+  }
+
+  if (songKeyLabel) {
+    rootChord = Chord.parse(songKeyLabel);
+    if (songCapo) {
+      rootChord = rootChord.transpose(-songCapo);
+    }
+  }
+  */
 
   return {
+    songCapoPrefered,
+    songKeyLabelPrefered,
     songCapo,
     songKey,
     songKeyLabel,
@@ -390,16 +419,16 @@ async function parseGingkoTree(tree) {
           songMeta = song.metadata;
         }
         if (!alreadyGotSongOutput) { // fresh first songOutput to process
-          if (songOutput.songKeyLabel) {
-            slides[0] += `<div class="songinfo-label key-signature" data-songid="${songIndex}">${songOutput.songKeyLabel}</div>`;
-            songKeyLabel = songOutput.songKeyLabel;
+          if (songOutput.songKeyLabelPrefered) {
+            slides[0] += `<div class="songinfo-label key-signature" data-songid="${songIndex}">${songOutput.songKeyLabelPrefered}</div>`;
+            songKeyLabel = songOutput.songKeyLabelPrefered;
             songKey = songOutput.songKey;
-
             origSongKeyLabel =  songMeta.key ? songMeta.key : null;
           }
-          if (songOutput.songCapo) {
-            slides[0] += `<div class="songinfo-label capo" data-songid="${songIndex}">${songOutput.songCapo} <span>${Chord.parse(songOutput.songKeyLabel).transpose(-songOutput.songCapo).toString()}</span></div>`;
-            songCapo = songOutput.songCapo;
+          if (songOutput.songCapoPrefered) {
+            let resolvedKeySpan = songOutput.songKeyLabelPrefered ?  ` <span>${Chord.parse(songOutput.songKeyLabelPrefered).transpose(-capoResult).toString()}</span>` : '';
+            slides[0] += `<div class="songinfo-label capo" data-songid="${songIndex}">${songOutput.songCapoPrefered}${resolvedKeySpan}</div>`;
+            songCapo = songOutput.songCapoPrefered;
           }
           if (songOutput.headerSlideAddedIntros) slides[0] += songOutput.headerSlideAddedIntros;
         }

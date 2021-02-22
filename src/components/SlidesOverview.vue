@@ -521,6 +521,9 @@ $bottom-bar-height:50px;
 
          p.song {
           display:none;
+           > i {
+            font-size:0.9em;
+          }
           .show-chords  & {
             display:block;
           }
@@ -587,11 +590,10 @@ $bottom-bar-height:50px;
       display:inline;
     }
   }
-
-
   cursor:auto !important;
   ::v-deep .song {
     display:none;
+
   }
   ::v-deep pre {
     display:none;

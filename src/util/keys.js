@@ -14,11 +14,12 @@ const SIGN_AS_SHARP = [false, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,  false, 1, 1, 0, 
 const MIDDLE_C_INDEX = WHITE_KEY_INDICES_FROM_A[2];
 
 /**
- * Converts key to (piano-based) natural major key signature for CSS key signature declarations
+ * Converts key to natural major key signature for CSS key signature declarations
  * @param {String} key
+ * @param {number} offset Any offset in halfsteps. Defaults to zero
  * @return The piano-biased natural major key signature
  */
-function normalizeKeyAsMajor(key) {
+function normalizeKeyAsMajor(key, offset=0) {
   key = key.trim();
   key = key.charAt(0).toUpperCase() + key.slice(1);
 
@@ -31,7 +32,7 @@ function normalizeKeyAsMajor(key) {
   // total delta of sharps/flats, including relative major 3rd if minor key
   let totalDelta = getSharpFlatDelta(sharpFlats);
 
-  totalDelta +=  (key.charAt(key.length-1) === 'm' ? 3 : 0);
+  totalDelta +=  (key.charAt(key.length-1) === 'm' ? 3 : 0) + offset;
   index = WHITE_KEY_INDICES_FROM_A[index] + totalDelta;
 
   // let flatPreference = sharpFlats.charAt(0) === 'b';

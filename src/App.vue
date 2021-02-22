@@ -1,5 +1,5 @@
 <template>
-  <div id="app" :class="{'nashville': chordMode === Constants.CHORD_MODE_NASHVILLE, 'using-capo': useCapo, 'show-chords':showChords, 'show-overview':showOverview, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
+  <div id="app" :class="{'nashville': chordMode === Constants.CHORD_MODE_NASHVILLE, 'using-capo': useCapo, 'show-chords':showChords, 'show-overview':showOverview, 'is-host':isHost, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
     <div v-if="slides && slides.length">
       <slides-overview @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
         <div class="traycontents">
@@ -19,7 +19,7 @@
             <p v-if="!isHost"><label><input type="checkbox" v-model="strongHighlight">Select Highlight</label></p>
           </div>
           <form @submit.prevent="hostSession">
-            <p class="pin" v-if="sessionPin">Session Pin: <b>{{sessionPin}}</b></p>
+            <p class="pin" v-if="sessionPin"><span :style="{textDecoration:isHost ? 'underline' : 'none'}">Session Pin</span>: <b>{{sessionPin}}</b></p>
             <button class="button reset" v-else type="submit">Host Session</button>
           </form>
         </div>
@@ -400,8 +400,17 @@ body {
     font-size:13px;
     b {
       user-select: auto;
-      font-size:1.8em;
+       font-size:1.8em;
+      //font-size:inherit;
     }
+
+    /*
+    &.is-host {
+      .pin b {
+        font-size:1.8em;
+      }
+    }
+    */
   }
 
   button.button {

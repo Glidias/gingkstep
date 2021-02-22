@@ -54,6 +54,14 @@ export default {
     line-height: .8;
     font-size: 45px;
 
+    .song {
+      >i {
+        text-decoration:underline;
+        margin-bottom:0.4em;
+        font-size:0.8em;
+      }
+    }
+
     // todo: this will remove all pres! not good for non-song presentations!
 
 

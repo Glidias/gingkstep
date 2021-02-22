@@ -16,11 +16,13 @@ Vue.use(Vue2TouchEvents, {
 Vue.use(VueSplide);
 
 const connection = io(HOST_PREFIX, {
-  withCredentials: true
+  withCredentials: true,
+  autoConnect: false,
 });
 
 Vue.use(new VueSocketIO({
   connection,
+
   debug: process.env.NODE_ENV === 'development'
 }))
 
