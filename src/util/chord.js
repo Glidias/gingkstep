@@ -7,20 +7,11 @@
 const chordRegex = /(^[A-Ga-g])([h#b]*)?([^/\s]*)(\/([A-Ga-g])([h#b]*)?)?$/; ///([A-G])(h|#|b)?([^/\s]*)(\/([A-G])(h|#|b)?)?/i;
 const romanRegex = /(^([h#b]*)?([ivIV]+))([^/\s]*)(\/([h#b]*)?([ivIV]+))?$/;
 const nashVilleRegex = /(^([h#b]*)?([1-7]+))([^/\s]*)(\/([h#b]*)?([1-7]+))?$/;
+const {
+	getSharpFlatDelta,
+	A, G, PIANO_KEYS, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP
+  } = require("./keys");
 
-const A = 'A'.charCodeAt(0);
-const G = 'G'.charCodeAt(0);
-// white keys
-const PIANO_KEYS = ['C', 0, 'D', 0, 'E', 'F', 0, 'G', 0, 'A', 0, 'B', 'C', 0, 'D', 0, 'E', 'F', 0, 'G', 0, 'A', 0, 'B', 'C', 0, 'D', 0, 'E', 'F', 0, 'G', 0, 'A', 0, 'B'];
-const WHITE_KEY_INDICES_FROM_A = [21, 23, 24, 26, 28, 29, 31];
-const MIDDLE_C_INDEX = WHITE_KEY_INDICES_FROM_A[2];
-const PIANO_ROMAN_KEYS = ['I', 0, 'II', 0, 'III', 'IV', 0, 'V', 0, 'VI', 0, 'VII',  'I', 0, 'II', 0, 'III', 'IV', 0, 'V', 0, 'VI', 0, 'VII'];
-// console.log(WHITE_KEY_INDICES_FROM_A.map((i)=>PIANO_KEYS[i]))
-// black keys
-const PIANO_KEYS_SHARP = [0, 'Ch', 0, 'Dh', 0, 0, 'Fh', 0, 'Gh', 0, 'Ah', 0, 0, 'Ch', 0, 'Dh', 0, 0, 'Fh', 0, 'Gh', 0, 'Ah', 0, 0, 'Ch', 0, 'Dh', 0, 0, 'Fh', 0, 'Gh', 0, 'Ah', 0];
-const PIANO_KEYS_FLAT = [0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0, 0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0, 0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0];
-// piano keys signature preference (for sharps)
-const SIGN_AS_SHARP = [false, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,  false, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,  false, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1];
 /*
 const ROMAN_TO_DECIMAL_MAP = {
   'i': '1',
@@ -39,6 +30,7 @@ const ROMAN_TO_DECIMAL_MAP = {
   'VII': '7',
 };
 */
+const PIANO_ROMAN_KEYS = ['I', 0, 'II', 0, 'III', 'IV', 0, 'V', 0, 'VI', 0, 'VII',  'I', 0, 'II', 0, 'III', 'IV', 0, 'V', 0, 'VI', 0, 'VII'];
 const DECIMAL_TO_ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 
 const decimalToRoman = (s, isMinor) => {
@@ -186,19 +178,6 @@ const processChord = (sourceChord, processor, processorArg) => {
   return chord;
 };
 
-/**
- * @param {String} sharpsOrFlats
- */
-const getSharpFlatDelta = (sharpsOrFlats) => {
-  let i = 0;
-  let c = 0;
-  for (let i =0, l=sharpsOrFlats.length; i< l; i++) {
-    let ch = sharpsOrFlats.charAt(i);
-    c += ch === '#' ? 1 : ch === 'b' ? -1 : 0;
-   }
-  return c;
-}
-
   /**
    * Get roman numeral symbol of a given val against key root chord via naive method (only maximum 1 flat or 1 sharp used for non-diatonics).
    * Prefers use of symbol or flat against key signature of rootchord to minimise amount of sharp/flat accidentals via prefered natural.
@@ -317,7 +296,7 @@ class Chord {
     this.dimed = this.suffix !== null ? this.suffix.toLowerCase().slice(0, 3) === 'dim' || this.suffix.charAt(0) === 'o' : false;
 
     this.extension = this.isMinor ? suffix.slice(minorLen) : this.suffix;
-    if (this.extension) this.extension = this.extension.replace('/\"/', `'`);
+    if (this.extension) this.extension = this.extension.replace('/"/g', `'`);
     this.bassBase = bassBase || null;
     this.bassModifier = bassModifier || null;
     this.mode = mode;
@@ -494,5 +473,6 @@ class Chord {
 }
 
 module.exports = {
-  Chord, A, G, PIANO_KEYS, PIANO_KEYS_FLAT, PIANO_KEYS_SHARP, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP
+  Chord,
+  PIANO_ROMAN_KEYS
 }

@@ -5,10 +5,11 @@ const marked = require('marked');
 const CS = require('chordsheetjs').default;
 const cheerio = require('cheerio');
 const e = require('express');
-const {Chord, A, G, PIANO_KEYS, PIANO_KEYS_SHARP, PIANO_KEYS_FLAT, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP} = require("./chord.js");
+const {Chord} = require('./chord.js');
+const {normalizeKeyAsMajor} = require('./keys.js');
 
 // TODO:  Check modulations,
-//  Display key signature, Display modulations, Show Capo,  [[Show copyright, year, Show artist, (show everything else except Show artist,Copyright, Year, Capo and Key)]]
+//  Display modulations, [[Show copyright, year, Show artist, (show everything else except Show artist,Copyright, Year, Capo and Key)]]
 // (runtime modulations key changes, runtime use capo, runtime show roman/nashville)
 
 marked.setOptions({
@@ -54,55 +55,6 @@ function findAttrIn(els, attr) {
 
 /**
  *
- * @param {String} sharpsOrFlats
- */
-function getSharpFlatDelta(sharpsOrFlats) {
-  let i = 0;
-  let c = 0;
-  for (let i =0, l=sharpsOrFlats.length; i< l; i++) {
-    let ch = sharpsOrFlats.charAt(i);
-    c += ch === '#' || ch === 'h' ? 1 : ch === 'b' ? -1 : 0;
-   }
-  return c;
-}
-
-/**
- * Converts key to (piano-based) natural major key signature for CSS key signature declarations
- * @param {String} key
- * @return The piano-biased natural major key signature
- */
-function normalizeKeyAsMajor(key) {
-  key = key.trim();
-  key = key.charAt(0).toUpperCase() + key.slice(1);
-
-  let index = key.charCodeAt(0) - A;
-  if (index < 0 || index >= 7) { // no valid white key found in range!
-    return null;
-  }
-
-  let sharpFlats = key.slice(1);
-  // total delta of sharps/flats, including relative major 3rd if minor key
-  let totalDelta = getSharpFlatDelta(sharpFlats);
-
-  totalDelta +=  (key.charAt(key.length-1) === 'm' ? 3 : 0);
-  index = WHITE_KEY_INDICES_FROM_A[index] + totalDelta;
-
-  // let flatPreference = sharpFlats.charAt(0) === 'b';
-
-  let normKey = PIANO_KEYS[index];
-  if (!normKey) {
-    normKey = (!!SIGN_AS_SHARP[index] ? PIANO_KEYS_SHARP : PIANO_KEYS_FLAT)[index];
-  }
-  if (!normKey) {
-    console.error("Norm key could not be found!" + normKey + ', at index:'+ index);
-    return null;
-  }
-
-  return normKey;
-}
-
-/**
- *
  * @param {string} body
  * @return {import('chordsheetjs').Song}
  */
@@ -123,8 +75,10 @@ function parseChordProBody(body) {
  * @param {import('chordsheetjs').Song} song
  * @param {String|Object} [headerSlide] Any first slide content to refer to for backup song key/capo sniffing or already parsed songInfo
  * @param {Boolean} [noTranspose]
+ * @param {Number} [songIndex]
+ * @return {Object}
  */
-function getSongOutput(song, headerSlide, noTranspose) {
+function getSongOutput(song, headerSlide, noTranspose, songIndex) {
   let $ = null;
   let songKey = null;
   let songKeyLabel = null;
@@ -155,9 +109,10 @@ function getSongOutput(song, headerSlide, noTranspose) {
         }
       }
       if ( song.metadata.capo) {
-        let capoAmt = parseInt(song.metadata.capoAmt);
+        let capoAmt = parseInt(song.metadata.capo);
         if (!isNaN(capoAmt) && capoAmt > 0) {
           songCapo = capoAmt;
+          songCapo %= 12;
         }
       }
     } else { // process headerSlide html body
@@ -194,6 +149,7 @@ function getSongOutput(song, headerSlide, noTranspose) {
               let capoAmt = parseInt(songBit.metadata.capo);
               if (!isNaN(capoAmt) && capoAmt > 0) {
                 songCapo = capoAmt;
+                songCapo %= 12;
               }
             }
           } else {
@@ -225,6 +181,7 @@ function getSongOutput(song, headerSlide, noTranspose) {
         let capoAmt = parseInt(song.metadata.capoAmt);
         if (!isNaN(capoAmt) && capoAmt > 0) {
           songCapo = capoAmt;
+          songCapo %= 12;
         }
       }
       */
@@ -241,9 +198,10 @@ function getSongOutput(song, headerSlide, noTranspose) {
   }
 
   if (songCapo === null && song.metadata.capo) {
-    let capoAmt = parseInt(song.metadata.capoAmt);
+    let capoAmt = parseInt(song.metadata.capo);
     if (!isNaN(capoAmt) && capoAmt > 0) {
       songCapo = capoAmt;
+      songCapo %= 12;
     }
   }
 
@@ -256,7 +214,7 @@ function getSongOutput(song, headerSlide, noTranspose) {
     songBitMetaData,
     rootChord,
     songHeaderTitle,
-    paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord)
+    paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord, songIndex)
   }
 }
 
@@ -274,16 +232,16 @@ function repeatStr(str, i) {
  * @param {import('chordsheetjs').Song} song
  * @param {String} songKey key attribute
  * @param {Chord} rootChord
- * @param {String} keyChange indicator for key change
- * @retur {[string]}
+ * @param {Number} songIndex
+ * @return {[Array]}
  */
-function getSongParagraphs(song, songKey, rootChord, keyChange) {
+function getSongParagraphs(song, songKey, rootChord, songIndex) {
 
   let arr = [];
   song.paragraphs.forEach((p)=>{
 
     //if (p.type === 'none') return;
-    let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}>`;
+    let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}${songIndex != null ? ` data-songid="${songIndex}"` : ''}>`;
     let gotChordOrLyric = false;
     p.lines.forEach((line, lineIndex, linesArr)=> {
       //if (line.type === 'none') return;
@@ -351,6 +309,7 @@ function getSongParagraphs(song, songKey, rootChord, keyChange) {
  */
 async function parseGingkoTree(tree) {
   var shows = [];
+  let songIndex = 0;
 
   for (let i = 0, l = tree.length; i< l; i++) {
     let c = tree[i];
@@ -382,6 +341,9 @@ async function parseGingkoTree(tree) {
     let songCapo;
     let songMeta;
     let copyright;
+
+
+
 
     for (let ci = 0, cl = children.length; ci< cl; ci++) {
       let c = children[ci];
@@ -421,7 +383,7 @@ async function parseGingkoTree(tree) {
          */
         let song = p.parse(content);
         let alreadyGotSongOutput = !!songOutput;
-        songOutput = getSongOutput(song, alreadyGotSongOutput ? songOutput : slides[0], parserParams.indexOf('notranspose') >= 0);
+        songOutput = getSongOutput(song, alreadyGotSongOutput ? songOutput : slides[0], parserParams.indexOf('notranspose') >= 0, shows.length, songIndex);
         if (songOutput.songBitMetaData) {
           Object.assign(songMeta = songOutput.songBitMetaData, song.metadata);
         } else {
@@ -429,14 +391,14 @@ async function parseGingkoTree(tree) {
         }
         if (!alreadyGotSongOutput) { // fresh first songOutput to process
           if (songOutput.songKeyLabel) {
-            slides[0] += `<div class="songinfo-label key-signature">${songOutput.songKeyLabel}</div>`;
+            slides[0] += `<div class="songinfo-label key-signature" data-songid="${songIndex}">${songOutput.songKeyLabel}</div>`;
             songKeyLabel = songOutput.songKeyLabel;
             songKey = songOutput.songKey;
 
             origSongKeyLabel =  songMeta.key ? songMeta.key : null;
           }
           if (songOutput.songCapo) {
-            slides[0] += `<div class="songinfo-label capo">${songOutput.songCapo}</div>`;
+            slides[0] += `<div class="songinfo-label capo" data-songid="${songIndex}">${songOutput.songCapo} <span>${Chord.parse(songOutput.songKeyLabel).transpose(-songOutput.songCapo).toString()}</span></div>`;
             songCapo = songOutput.songCapo;
           }
           if (songOutput.headerSlideAddedIntros) slides[0] += songOutput.headerSlideAddedIntros;
@@ -446,7 +408,7 @@ async function parseGingkoTree(tree) {
           copyright = (songMeta.title ? songMeta.title + (songOutput.songHeaderTitle && songOutput.songHeaderTitle !== songMeta.title ? '<br><i>['+songOutput.songHeaderTitle+']</i>' : '') +"<br>" :
           songOutput.songHeaderTitle ? songOutput.songHeaderTitle + "<br>" : "")
           + (songMeta.artist ? 'artist: '+songMeta.artist + "<br>" : "")
-          + (origSongKeyLabel && origSongKeyLabel!==songKeyLabel ? '<em>original key: '+origSongKeyLabel + `<br>(&gt;${songKeyLabel})<br></em>` : "")
+          + (origSongKeyLabel && origSongKeyLabel!==songKeyLabel ? '<em>original key: '+origSongKeyLabel + `<br>(&gt;<span class="songinfo-label key-signature" data-songid="${songIndex}">${songKeyLabel}</span>)<br></em>` : "")
           + (songMeta.copyright ? "&copy; " + songMeta.copyright : "")
         }
 
@@ -467,14 +429,15 @@ async function parseGingkoTree(tree) {
     }
     let obj = {
       slides,
-      songKeyLabel,
-      origSongKeyLabel,
-      songKey,
-      songCapo,
-      songMeta,
+      keyLabel: songKeyLabel,
+      origKey: origSongKeyLabel,
+      key: songKey,
+      capo: songCapo,
+      meta: songMeta,
       copyright
     };
     shows.push(obj);
+    songIndex++;
   }
 
   return shows;
@@ -484,7 +447,6 @@ module.exports = {
   parseGingkoTree,
   markDownParse,
   getSongOutput,
-  normalizeKeyAsMajor,
 }
 
 // ---- TESTS

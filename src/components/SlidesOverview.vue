@@ -355,6 +355,8 @@ export default {
         }
       }
 
+      this.$emit('songFocusChange', newIndex);
+
     });
   },
 };

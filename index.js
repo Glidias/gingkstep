@@ -82,6 +82,7 @@ app.get('/loadtree', async (req, res) => {
 io.on('connection', (socket) => {
 
   socket.on("host-room", async (treeD, keys)=> {
+    console.log(treeD + ', '+ keys);
     const sessionPin = await startSession(socket, treeD, keys);
     io.to(socket.id).emit("hostingRoom", sessionPin);
     socket.on('slide-change', msg => {
@@ -95,7 +96,8 @@ io.on('connection', (socket) => {
     }
     await socket.join(sessionPin);
     var data = sessions[sessionPin];
-    io.to(socket.id).emit("joinedRoom", sessionPin, data.treeId, data.transpose);
+    console.log(data);
+    io.to(socket.id).emit("joinedRoom", [sessionPin, data.treeId, data.transpose]);
   });
 
 });

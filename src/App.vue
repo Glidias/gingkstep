@@ -1,10 +1,12 @@
 <template>
-  <div id="app" :class="{'show-chords':showChords, 'show-overview':showOverview, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
+  <div id="app" :class="{'using-capo': useCapo, 'show-chords':showChords, 'show-overview':showOverview, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
     <div v-if="slides && slides.length">
-      <slides-overview @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
+      <slides-overview @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
         <div class="traycontents">
           <div>
-            <p><label><input type="checkbox" v-model="showChords">Show Chords?</label> <span class="keyer" v-show="curDefKeyIndex >=0">Key:
+            <p><label><input type="checkbox" v-model="showChords">Show Chords?</label>
+              <label v-show="showChords" v-if="gotCapoMeta"><input type="checkbox" v-model="useCapo">Use Capo?</label>
+            <span class="keyer" v-show="curDefKeyIndex >=0">Key:
               <select @change="onKeyDropdownChange($event)">
                 <option v-for="(li, i) in keyOptions" :key="i" :value="i" :selected="i === curKeyIndex ? true : undefined">{{li}}</option>
               </select></span> <span v-show="curDefKeyIndex !== curKeyIndex && curDefKeyIndex>=0">{{keyOptions[curDefKeyIndex]}}</span></p>
@@ -38,6 +40,7 @@ import SlidesOverview from "./components/SlidesOverview";
 import SlideShow from "./components/SlideShow";
 import axios from 'axios';
 import {HOST_PREFIX} from './constants';
+import {Chord} from './util/chord';
 
 export default {
   name: "App",
@@ -52,6 +55,8 @@ export default {
       attemptingConnect: false,
       isHost: false,
       strongHighlight: false,
+      songFocusIndex: 0,
+      useCapo: false, // ux: currently, this is simply a global setting for convention
 
       slides: null,
 
@@ -61,6 +66,32 @@ export default {
     }
   },
   computed: {
+    gotCapoMeta () {
+      let slides = this.slides;
+       for (let i =0, l =slides.length; i<l; i++) {
+        if (slides[i].capo) {
+          return true;
+        }
+      }
+      return false;
+    },
+    transposeSongKeys () {
+      let slides = this.slides;
+      if (!this.slides) return [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+
+      let usingCapo = this.useCapo;
+      let keys = [];
+      for (let i =0, l =slides.length; i<l; i++) {
+        let song = slides[i];
+        let transposeAmt = 0;
+        let keyLabel = song.keyLabel ?song.keyLabel : null;
+        if (usingCapo && keyLabel && song.capo) {
+          transposeAmt = -song.capo;
+        }
+        keys[i] = transposeAmt;
+      }
+      return keys;
+    },
     isGuest () {
       return !this.isHost && this.sessionPin;
     },
@@ -68,9 +99,11 @@ export default {
       return ['C', 'C#', 'D', 'E', 'Eb', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
     },
     curKeyIndex () {
+      // based off this.songFocusIndex
       return -1;
     },
     curDefKeyIndex () {
+      // based off this.songFocusIndex
       return -1;
     },
     slidesFlattened() {
@@ -126,11 +159,12 @@ export default {
       let sessionPin = dataArr[0];
       let treeD = dataArr[1];
       let keys = dataArr[2];
-      //this.treeD = treeD;
       await this.loadTree(treeD);
 
       this.sessionPin = sessionPin;
       this.isHost = false;
+
+      // check for modulations from keys and apply them
     },
   },
   methods: {
@@ -156,8 +190,66 @@ export default {
       }
       this.attemptingConnect = false;
     },
+    onSongFocusChange(songFocusIndex) {
+      this.songFocusIndex = songFocusIndex;
+    },
+    handleNoKeys() {
+      let slides = this.slides;
+      for (let i =0, l=slides.length; i < l; i++) {
+        document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q)=>{
+          if (!q.getAttribute('key')) return;
+          q.setAttribute('keyx', q.getAttribute('key'));
+          q.removeAttribute('key');
+        });
+      }
+    },
+    handleGotKeys() {
+      let slides = this.slides;
+      for (let i =0, l=slides.length; i < l; i++) {
+        document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q)=>{
+          if (!q.hasAttribute('keyx')) return;
+          q.setAttribute('key', q.getAttribute('keyx'));
+          q.removeAttribute('keyx');
+       });
+      }
+    },
+    handleTranposeSongKeys(newArr, oldArr) {
+      let slides = this.slides;
+      for (let i =0, l=newArr.length; i < l; i++) {
+
+        if (newArr[i] !== oldArr[i]) {
+          let songPrepKey = slides[i].key;
+          let songPrepKeyLabel = slides[i].keyLabel;
+
+
+          // precompute songPrepKey tranposition
+
+          // typical key tranpsition
+          document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q)=>{
+            let keyAttr = q.hasAttribute('key') ? 'key' : 'keyx';
+            if (!q.hasAttribute(keyAttr)) return;
+
+            if (!q.getAttribute('origkey')) {
+              q.setAttribute('origkey', q.getAttribute(keyAttr));
+            }
+            // transpose from local origkey
+            if (q.getAttribute('origkey') != songPrepKey) {
+              // todo: calculate local tranposed section key
+
+            } else { // use songPrepKey transposition precomputed
+              q.setAttribute(keyAttr, songPrepKey);
+            }
+
+          });
+          document.querySelectorAll(`.songinfo-label.key-signature[data-songid="${i}"]`).forEach((q)=>{});
+          document.querySelectorAll(`.songinfo-label.capo[data-songid="${i}"] > span`).forEach((q)=>{});
+        }
+      }
+    },
     onKeyDropdownChange(event) {
+      // attempt modulation chosen key to server and wait for response back
       console.log(event.currentTarget.selectedIndex);
+
     },
     onGoto(index) {
       this.stepIndex = index;
@@ -190,12 +282,15 @@ export default {
       this.loadTree(e.currentTarget.treeid.value);
     },
     hostSession () {
-      this.lazyEmit('host-room', this.treeD);
+      this.lazyEmit('host-room', this.formValueTreeId);
     }
   },
   watch: {
     showChords () {
       window.dispatchEvent(new Event('resize'));
+    },
+    transposeSongKeys(newArr, oldArr) {
+      this.handleTranposeSongKeys(newArr, oldArr);
     }
   },
   mounted () {
@@ -427,6 +522,22 @@ div.songinfo-label {
   &.capo {
     &:before {
       content: "Capo: ";
+    }
+    > span {
+      display:none;
+      &:before {
+        content:"(key: ";
+      }
+      &:after {
+        content:")";
+      }
+    }
+    text-decoration: line-through;
+    .using-capo & {
+       text-decoration: underline;
+       > span {
+         display:inline;
+       }
     }
   }
 }
