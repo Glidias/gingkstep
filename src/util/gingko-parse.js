@@ -9,8 +9,8 @@ const {Chord} = require('./chord.js');
 const {normalizeKeyAsMajor} = require('./keys.js');
 
 // TODO:  Check modulations,
-//  Display modulations, [[Show copyright, year, Show artist, (show everything else except Show artist,Copyright, Year, Capo and Key)]]
-// (runtime modulations key changes, runtime use capo, runtime show roman/nashville)
+//  Display modulations
+// (runtime modulations key changes)
 
 marked.setOptions({
   gfm: true,

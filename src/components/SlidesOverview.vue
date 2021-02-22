@@ -469,7 +469,7 @@ $bottom-bar-height:50px;
         max-width: 100vw;
       }
      ::v-deep article {
-       font-size:0.9em;
+       font-size:0.94em;
        height:auto;
        width:100vw;
      }

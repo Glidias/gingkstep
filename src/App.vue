@@ -1,11 +1,17 @@
 <template>
-  <div id="app" :class="{'using-capo': useCapo, 'show-chords':showChords, 'show-overview':showOverview, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
+  <div id="app" :class="{'nashville': chordMode === Constants.CHORD_MODE_NASHVILLE, 'using-capo': useCapo, 'show-chords':showChords, 'show-overview':showOverview, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
     <div v-if="slides && slides.length">
       <slides-overview @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
         <div class="traycontents">
           <div>
             <p><label><input type="checkbox" v-model="showChords">Show Chords?</label>
-              <label v-show="showChords" v-if="gotCapoMeta"><input type="checkbox" v-model="useCapo">Use Capo?</label>
+            <select v-show="showChords" v-model="chordMode" @keydown.stop="">
+                <option :value="Constants.CHORD_MODE_LETTER">Letters</option>
+                <option :value="Constants.CHORD_MODE_ROMAN">Roman</option>
+                <option :value="Constants.CHORD_MODE_NASHVILLE">Nashville</option>
+              </select>
+             <label v-show="showChords" v-if="gotCapoMeta"><input type="checkbox" v-model="useCapo">Use Capo?</label>
+
             <span class="keyer" v-show="curDefKeyIndex >=0">Key:
               <select @change="onKeyDropdownChange($event)">
                 <option v-for="(li, i) in keyOptions" :key="i" :value="i" :selected="i === curKeyIndex ? true : undefined">{{li}}</option>
@@ -42,6 +48,15 @@ import axios from 'axios';
 import {HOST_PREFIX} from './constants';
 import {Chord} from './util/chord';
 
+const CHORD_MODE_LETTER = 0;
+const CHORD_MODE_ROMAN = 1;
+const CHORD_MODE_NASHVILLE = 2;
+
+function frozen(obj) {
+  Object.freeze(obj);
+  return obj;
+}
+
 export default {
   name: "App",
   components: {
@@ -49,6 +64,9 @@ export default {
   },
   data () {
     return {
+      Constants: frozen({
+        CHORD_MODE_LETTER, CHORD_MODE_ROMAN, CHORD_MODE_NASHVILLE
+      }),
       showOverview: true,
       showChords: false,
       sessionPin: '',
@@ -63,9 +81,13 @@ export default {
       formValueTreeId: 'g1zdt6',
 
       stepIndex: 0,
+      chordMode: CHORD_MODE_LETTER,
     }
   },
   computed: {
+    showChordLetters () {
+      return this.chordMode === CHORD_MODE_LETTER;
+    },
     gotCapoMeta () {
       let slides = this.slides;
        for (let i =0, l =slides.length; i<l; i++) {
@@ -193,7 +215,7 @@ export default {
     onSongFocusChange(songFocusIndex) {
       this.songFocusIndex = songFocusIndex;
     },
-    handleNoKeys() {
+    handleNoLetterKeys() {
       let slides = this.slides;
       for (let i =0, l=slides.length; i < l; i++) {
         document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q)=>{
@@ -203,7 +225,7 @@ export default {
         });
       }
     },
-    handleGotKeys() {
+    handleGotLetterKeys() {
       let slides = this.slides;
       for (let i =0, l=slides.length; i < l; i++) {
         document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q)=>{
@@ -288,6 +310,13 @@ export default {
   watch: {
     showChords () {
       window.dispatchEvent(new Event('resize'));
+    },
+    showChordLetters(newVal) {
+      if (newVal) {
+        this.handleGotLetterKeys();
+      } else {
+        this.handleNoLetterKeys();
+      }
     },
     transposeSongKeys(newArr, oldArr) {
       this.handleTranposeSongKeys(newArr, oldArr);
