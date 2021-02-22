@@ -67,9 +67,9 @@ function getSharpFlatDelta(sharpsOrFlats) {
 }
 
 /**
- * Converts to natural major key signature (piano-biased)
+ * Converts key to (piano-based) natural major key signature for CSS key signature declarations
  * @param {String} key
- * @return The piano-biased key signature
+ * @return The piano-biased natural major key signature
  */
 function normalizeKeyAsMajor(key) {
   key = key.trim();
@@ -131,7 +131,8 @@ function getSongOutput(song, headerSlide, noTranspose) {
   let songCapo = null;
   let headerSlideAddedIntros;
   let rootChord = null;
-
+  let songBitMetaData;
+  let songHeaderTitle;
   if (headerSlide) {
     if (typeof headerSlide === 'object') {
       songKey = headerSlide.songKey;
@@ -159,10 +160,12 @@ function getSongOutput(song, headerSlide, noTranspose) {
           songCapo = capoAmt;
         }
       }
-    } else {
+    } else { // process headerSlide html body
       if ($ === null) $ = cheerio.load('<body>'+headerSlide+"</body>");
+      songHeaderTitle = $('p:first-child').text();
       let lastSongKeyLabel = song.metadata.key;
       let extraSongBits = [];
+      songBitMetaData = {};
       $('pre > code').each((index, el) =>{
         let elContent = $(el).text().trim();
         let songBit = parseChordProBody(elContent);
@@ -196,6 +199,9 @@ function getSongOutput(song, headerSlide, noTranspose) {
           } else {
             extraSongBits.push(songParas);
           }
+
+          Object.assign(songBitMetaData, songBit.metadata);
+
         }
       });
 
@@ -207,6 +213,7 @@ function getSongOutput(song, headerSlide, noTranspose) {
         rootChord = Chord.parse(lastSongKeyLabel);
       }
 
+      /*
       if (songKey === null && song.metadata.key) {
         songKey = normalizeKeyAsMajor(song.metadata.key);
         if (songKey !== null) {
@@ -220,7 +227,23 @@ function getSongOutput(song, headerSlide, noTranspose) {
           songCapo = capoAmt;
         }
       }
+      */
 
+    }
+  }
+
+
+  if (songKey === null && song.metadata.key) {
+    songKey = normalizeKeyAsMajor(song.metadata.key);
+    if (songKey !== null) {
+      songKeyLabel = song.metadata.key;
+    }
+  }
+
+  if (songCapo === null && song.metadata.capo) {
+    let capoAmt = parseInt(song.metadata.capoAmt);
+    if (!isNaN(capoAmt) && capoAmt > 0) {
+      songCapo = capoAmt;
     }
   }
 
@@ -230,7 +253,9 @@ function getSongOutput(song, headerSlide, noTranspose) {
     songKey,
     songKeyLabel,
     headerSlideAddedIntros,
+    songBitMetaData,
     rootChord,
+    songHeaderTitle,
     paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord)
   }
 }
@@ -350,7 +375,13 @@ async function parseGingkoTree(tree) {
     let isSongMode = false;
     let parserParams;
     let parserTag;
+
     let songOutput;
+    let songKeyLabel;
+    let origSongKeyLabel;
+    let songCapo;
+    let songMeta;
+    let copyright;
 
     for (let ci = 0, cl = children.length; ci< cl; ci++) {
       let c = children[ci];
@@ -385,11 +416,38 @@ async function parseGingkoTree(tree) {
         if (parserTag === 'cp') {
           content = content.replace(/#/g, "h").replace(/\]\[/g, '] [');
         }
+        /**
+         * @type {import('chordsheetjs').Song}
+         */
         let song = p.parse(content);
         let alreadyGotSongOutput = !!songOutput;
         songOutput = getSongOutput(song, alreadyGotSongOutput ? songOutput : slides[0], parserParams.indexOf('notranspose') >= 0);
-        if (!alreadyGotSongOutput && songOutput.headerSlideAddedIntros) {
-          slides[0] += songOutput.headerSlideAddedIntros;
+        if (songOutput.songBitMetaData) {
+          Object.assign(songMeta = songOutput.songBitMetaData, song.metadata);
+        } else {
+          songMeta = song.metadata;
+        }
+        if (!alreadyGotSongOutput) { // fresh first songOutput to process
+          if (songOutput.songKeyLabel) {
+            slides[0] += `<div class="songinfo-label key-signature">${songOutput.songKeyLabel}</div>`;
+            songKeyLabel = songOutput.songKeyLabel;
+            songKey = songOutput.songKey;
+
+            origSongKeyLabel =  songMeta.key ? songMeta.key : null;
+          }
+          if (songOutput.songCapo) {
+            slides[0] += `<div class="songinfo-label capo">${songOutput.songCapo}</div>`;
+            songCapo = songOutput.songCapo;
+          }
+          if (songOutput.headerSlideAddedIntros) slides[0] += songOutput.headerSlideAddedIntros;
+        }
+
+        if (songOutput.songHeaderTitle || songMeta.title || songMeta.copyright || songMeta.artist || (origSongKeyLabel && origSongKeyLabel!==songKeyLabel)) {
+          copyright = (songMeta.title ? songMeta.title + (songOutput.songHeaderTitle && songOutput.songHeaderTitle !== songMeta.title ? '<br><i>['+songOutput.songHeaderTitle+']</i>' : '') +"<br>" :
+          songOutput.songHeaderTitle ? songOutput.songHeaderTitle + "<br>" : "")
+          + (songMeta.artist ? 'artist: '+songMeta.artist + "<br>" : "")
+          + (origSongKeyLabel && origSongKeyLabel!==songKeyLabel ? '<em>original key: '+origSongKeyLabel + `<br>(&gt;${songKeyLabel})<br></em>` : "")
+          + (songMeta.copyright ? "&copy; " + songMeta.copyright : "")
         }
 
         if (songOutput.paragraphs) {
@@ -399,27 +457,25 @@ async function parseGingkoTree(tree) {
             slides.push(songOutput.paragraphs.join(""));
           }
         }
-        isSongMode = true;
-        /*
-        if (ci === 0) {
-          if (songOutput.paragraphs) {
 
-          }
-        }
-        */
+        isSongMode = true;
       } else {
         content = await markDownParse(content);
-
         slides.push(content);
       }
 
     }
     let obj = {
-      slides
+      slides,
+      songKeyLabel,
+      origSongKeyLabel,
+      songKey,
+      songCapo,
+      songMeta,
+      copyright
     };
     shows.push(obj);
   }
-  // const $ = cheerio.load('<h2 class="title">Hello world</h2>');
 
   return shows;
 }

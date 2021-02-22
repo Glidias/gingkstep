@@ -231,7 +231,7 @@ body {
 
 
 #app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
@@ -355,6 +355,9 @@ body {
       text-transform:inherit;
       font-style:inherit;
     }
+    &.alt {
+      display:none !important;
+    }
   }
 }
 //*/
@@ -389,12 +392,19 @@ body {
     }
   }
 
- .song em {
-    display:none;
+ .song  {
+   > i {
+     display:none;
+   }
+   > div {
+     display:none;
+   }
+
+   em {
+     display:none;
+   }
   }
-    .song > i {
-    display:none;
-  }
+
 
 
 /*
@@ -403,6 +413,23 @@ body {
   text-decoration:none;
 }
 */
+
+div.songinfo-label {
+  display:none;
+
+  line-height:1.2;
+  font-size:0.8em;
+  &.key-signature {
+    &:before {
+      content: "Key: ";
+    }
+  }
+  &.capo {
+    &:before {
+      content: "Capo: ";
+    }
+  }
+}
 
 
 .show-chords {
@@ -418,7 +445,10 @@ body {
       display:block;
       line-height:1.3;
     }
+  }
 
+  div.songinfo-label {
+    display:block;
   }
 
   .song em {

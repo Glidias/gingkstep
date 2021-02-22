@@ -579,6 +579,14 @@ $bottom-bar-height:50px;
 
 
 .copyright-song { // mandatory copyright per song
+  ::v-deep em {
+    display:none;
+    .show-chords & {
+      display:inline;
+    }
+  }
+
+
   cursor:auto !important;
   ::v-deep .song {
     display:none;
