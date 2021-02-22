@@ -9,9 +9,8 @@ const {Chord} = require('./chord.js');
 const {normalizeKeyAsMajor} = require('./keys.js');
 const {parseChordProBody} = require("./chordpro.js");
 
-// TODO:  Check modulations,
-//  Display modulations
-// (runtime modulations key changes)
+//
+// TODO: (runtime modulations key changes)
 
 marked.setOptions({
   gfm: true,
@@ -82,32 +81,50 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
       songCapo = headerSlide.songCapo;
       songKeyLabel = headerSlide.songKeyLabel;
       rootChord = headerSlide.rootChord;
+      songKeyLabelPrefered = headerSlide.songKeyLabelPrefered;
 
       if (song.metadata.key) {
         // a new key signature always created per song slide
         let newKeyChord = Chord.parse(song.metadata.key);
+        let oldChordKey =  headerSlide.songKeyLabelPrefered instanceof Chord ? headerSlide.songKeyLabelPrefered : Chord.parse(headerSlide.songKeyLabelPrefered);
         if (newKeyChord && rootChord) {
           // modulation
           let a = newKeyChord.getKeyVal();
           let b = rootChord.getKeyVal();
+
           if (a !== b) {
             let delta = a - b;
 
             rootChord = newKeyChord;
-            let lastKey = songKey;
             songKey = normalizeKeyAsMajor(songKey, delta);
 
-            //songKey = songKey.replace(/h/g, "#");
-            //lastKey = lastKey.replace(/h/g, "#");
+          //  let oldChordKey = headerSlide.songKeyLabelPrefered instanceof Chord ? headerSlide.songKeyLabelPrefered : Chord.parse(headerSlide.songKeyLabelPrefered);
 
-            modulate = lastKey + " to " + songKey;
-            songKeyLabel = rootChord.toString();
+            // consider: factor this into actual transpose method?
+            let oldSignatureSharp = oldChordKey.getSignAsSharp();
+            let toSwitchRel = newKeyChord.isMinor !== oldChordKey.isMinor;
 
-            /*
-            if (songCapo) {
-              rootChord = rootChord.transpose(-songCapo);
+
+            newKeyChord = oldChordKey.transpose(delta);
+            if (toSwitchRel) {
+              newKeyChord = newKeyChord.getRelativeChord();
             }
-            */
+            let newSignatureSharp = newKeyChord.getSignAsSharp();
+            if (oldSignatureSharp != newSignatureSharp) newKeyChord =  newKeyChord.switchModifier();
+
+            songKeyLabelPrefered = newKeyChord.toString();
+            modulate = oldChordKey + ` to ` + newKeyChord;
+
+            songKeyLabel = rootChord.toString();
+          } else if (oldChordKey.isMinor !== newKeyChord.isMinor) {
+            rootChord = newKeyChord;
+
+            newKeyChord = oldChordKey.getRelativeChord();
+
+            //rootChord = Chord.parse(""+rootChord).getRelativeChord();
+
+            songKeyLabelPrefered = newKeyChord.toString();
+            modulate = oldChordKey + ` to ` + newKeyChord;
           }
         }
       }
@@ -245,6 +262,7 @@ function getSongParagraphs(song, songKey, rootChord, songIndex, modulate) {
     let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}${songIndex != null ? ` data-songid="${songIndex}"` : ''}${modulate ? ` modulate="${modulate}"` : ''}>`;
     let gotContent = false;
 
+
     p.lines.forEach((line, lineIndex, linesArr)=> {
       //if (line.type === 'none') return;
       let numLinesE = linesArr.length - 1;
@@ -297,7 +315,10 @@ function getSongParagraphs(song, songKey, rootChord, songIndex, modulate) {
       output += gotContent && lineIndex < numLinesE ? '<br>' : '';
     });
     output += '</p>';
-    if (gotContent) arr.push(output);
+    if (gotContent) {
+      arr.push(output);
+      modulate = null;
+    }
   })
 
   return arr.length ? arr : null;

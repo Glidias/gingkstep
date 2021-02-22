@@ -4,7 +4,7 @@
  *  @author Glenn Ko
  */
 
-const chordRegex = /(^[A-Ga-g])([h#b]*)?([^/\s]*)(\/([A-Ga-g])([h#b]*)?)?$/; ///([A-G])(h|#|b)?([^/\s]*)(\/([A-G])(h|#|b)?)?/i;
+const chordRegex = /(^[A-G])([h#b]*)?([^/\s]*)(\/([A-G])([h#b]*)?)?$/; ///([A-G])(h|#|b)?([^/\s]*)(\/([A-G])(h|#|b)?)?/i;
 const romanRegex = /(^([h#b]*)?([ivIV]+))([^/\s]*)(\/([h#b]*)?([ivIV]+))?$/;
 const nashVilleRegex = /(^([h#b]*)?([1-7]+))([^/\s]*)(\/([h#b]*)?([1-7]+))?$/;
 const {
@@ -192,8 +192,10 @@ const processChord = (sourceChord, processor, processorArg) => {
       if (offset < 0) offset = 12 + offset;
       else if (offset >= 12) offset = offset - 12;
       //console.log(offset);
-      if (offset < 0 || offset >= 12) {
-        throw new Error("Assertion failed:: Offset of half-steps still out of range between 0 to 11!")
+      if (offset < 0 || offset >= PIANO_ROMAN_KEYS.length) {
+        //if (offset < 0) offset = PIANO_ROMAN_KEYS.length + offset;
+        //else if (offset >= PIANO_ROMAN_KEYS.length) offset -= PIANO_ROMAN_KEYS.length;
+        throw new Error("Assertion failed:: Offset of half-steps still out of range between 0 to 11! " + offset)
       }
       let chord;
 
@@ -300,6 +302,13 @@ class Chord {
     this.bassBase = bassBase || null;
     this.bassModifier = bassModifier || null;
     this.mode = mode;
+  }
+
+  getRelativeChord() {
+    let result;
+    result = this.transpose(this.isMinor ? 3 : -3);
+    result.isMinor = !this.isMinor;
+    return result;
   }
 
   clone() {
