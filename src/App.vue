@@ -332,7 +332,12 @@ body {
 
 
 .song {
-
+  >br + br {
+    display:none;
+  }
+  >i + br {
+    display:none;
+  }
   line-height:1.4em;
  font-size:0.9em;
 }
@@ -387,6 +392,10 @@ body {
  .song em {
     display:none;
   }
+    .song > i {
+    display:none;
+  }
+
 
 /*
 .song > span del {
@@ -405,6 +414,10 @@ body {
         vertical-align:bottom;
     }
 
+    >i {
+      display:block;
+      line-height:1.3;
+    }
 
   }
 
@@ -431,6 +444,7 @@ body {
   .song em>i>sup:after {
     content: attr(e);
   }
+
 
   .song >span {
     display:inline-flex;

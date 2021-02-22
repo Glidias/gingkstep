@@ -7,6 +7,10 @@ const cheerio = require('cheerio');
 const e = require('express');
 const {Chord, A, G, PIANO_KEYS, PIANO_KEYS_SHARP, PIANO_KEYS_FLAT, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP} = require("./chord.js");
 
+// TODO:  Check modulations,
+//  Display key signature, Display modulations, Show Capo,  [[Show copyright, year, Show artist, (show everything else except Show artist,Copyright, Year, Capo and Key)]]
+// (runtime modulations key changes, runtime use capo, runtime show roman/nashville)
+
 marked.setOptions({
   gfm: true,
   /*
@@ -259,10 +263,18 @@ function getSongParagraphs(song, songKey, rootChord, keyChange) {
     p.lines.forEach((line, lineIndex, linesArr)=> {
       //if (line.type === 'none') return;
       let numLinesE = linesArr.length - 1;
-      if (line.items && line.items.length) {
+      if (line.items && line.items.length) { // line.isEmpty() ?  .hasRenderableItems() ?
         let lle = line.items.length - 1;
         for (let i =0, l=line.items.length; i<l; i++) {
           let li = line.items[i];
+          if (li instanceof CS.Tag) {
+            if(!li.isMetaTag()) {
+              if (li.name === "comment" && li.value.trim()) {
+                output += `<i>${li.value}</i>`;
+              }
+            }
+            continue;
+          }
           let lyric = li.lyrics || ""; //.trim();
           let chordStr = li.chords ? li.chords : null; //
           let trimLyric = lyric.trim();
@@ -374,7 +386,11 @@ async function parseGingkoTree(tree) {
           content = content.replace(/#/g, "h").replace(/\]\[/g, '] [');
         }
         let song = p.parse(content);
-        songOutput = getSongOutput(song, songOutput ? songOutput : slides[0], parserParams.indexOf('notranspose') >= 0);
+        let alreadyGotSongOutput = !!songOutput;
+        songOutput = getSongOutput(song, alreadyGotSongOutput ? songOutput : slides[0], parserParams.indexOf('notranspose') >= 0);
+        if (!alreadyGotSongOutput && songOutput.headerSlideAddedIntros) {
+          slides[0] += songOutput.headerSlideAddedIntros;
+        }
 
         if (songOutput.paragraphs) {
           if (parserParams.indexOf("join") < 0) {

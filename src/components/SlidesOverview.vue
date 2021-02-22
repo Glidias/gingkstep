@@ -508,12 +508,20 @@ $bottom-bar-height:50px;
       // background-color:#181818;
     }
     > * {
+
       &:first-child {
          pre {
           display:none;
         }
         p:first-child {
           text-decoration:underline;
+        }
+
+         p.song {
+          display:none;
+          .show-chords  & {
+            display:block;
+          }
         }
         p + br {
           display:none;
