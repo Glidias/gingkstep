@@ -511,6 +511,16 @@ $bottom-bar-height:50px;
     }
     > * {
 
+        p.song {
+
+          > i {
+          font-size:0.9em;
+          margin-bottom:0.4em;
+          text-decoration:underline;
+        }
+
+      }
+
       &:first-child {
          pre {
           display:none;
@@ -519,15 +529,7 @@ $bottom-bar-height:50px;
           text-decoration:underline;
         }
 
-         p.song {
-          display:none;
-           > i {
-            font-size:0.9em;
-          }
-          .show-chords  & {
-            display:block;
-          }
-        }
+
         p + br {
           display:none;
         }

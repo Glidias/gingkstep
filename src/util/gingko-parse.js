@@ -7,6 +7,7 @@ const cheerio = require('cheerio');
 const e = require('express');
 const {Chord} = require('./chord.js');
 const {normalizeKeyAsMajor} = require('./keys.js');
+const {parseChordProBody} = require("./chordpro.js");
 
 // TODO:  Check modulations,
 //  Display modulations
@@ -55,23 +56,6 @@ function findAttrIn(els, attr) {
 
 /**
  *
- * @param {string} body
- * @return {import('chordsheetjs').Song}
- */
-function parseChordProBody(body) {
-  body = body.replace(/#/g, "h").replace(/\]\[/g, '] [');
-  try {
-    let song = new CS.ChordProParser().parse(body);
-    return song;
-  }
-  catch(err) {
-    //console.log(err);
-    return null;
-  }
-}
-
-/**
- *
  * @param {import('chordsheetjs').Song} song
  * @param {String|Object} [headerSlide] Any first slide content to refer to for backup song key/capo sniffing or already parsed songInfo
  * @param {Boolean} [noTranspose]
@@ -88,6 +72,8 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
   let songBitMetaData;
   let songHeaderTitle;
 
+  let modulate;
+
   let songKeyLabelPrefered;
   let songCapoPrefered;
   if (headerSlide) {
@@ -97,34 +83,47 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
       songKeyLabel = headerSlide.songKeyLabel;
       rootChord = headerSlide.rootChord;
 
-      // possible overwrites from headerSlide
-      if ( song.metadata.capo) { // capo change in middle of song?? wow!
-        let capoAmt = parseInt(song.metadata.capo);
-        if (!isNaN(capoAmt) && capoAmt > 0) {
-          songCapo = capoAmt;
-          songCapo %= 12;
-          if (songKeyLabel) rootChord = Chord.parse(songKeyLabel).transpose(songCapo);
-        }
-      }
       if (song.metadata.key) {
         // a new key signature always created per song slide
-        rootChord = Chord.parse(song.metadata.key);
-        let newKey = normalizeKeyAsMajor(song.metadata.key);
-        if (songKey && newKey !== songKey ) {
+        let newKeyChord = Chord.parse(song.metadata.key);
+        if (newKeyChord && rootChord) {
           // modulation
-          let a =  Chord.parse(newKey).getTrebleVal() !== Chord.parse(newKey).getTrebleVal();
-          let b =  Chord.parse(songKey).getTrebleVal() !== Chord.parse(newKey).getTrebleVal();
+          let a = newKeyChord.getKeyVal();
+          let b = rootChord.getKeyVal();
           if (a !== b) {
-            songKey = normalizeKeyAsMajor(newKey); // TODO; measure newKey in relation to original headerFirst key!
+            let delta = a - b;
 
-            songKeyLabel = newKey;
-            rootChord = Chord.parse(songKeyLabel);
+            rootChord = newKeyChord;
+            let lastKey = songKey;
+            songKey = normalizeKeyAsMajor(songKey, delta);
+
+            //songKey = songKey.replace(/h/g, "#");
+            //lastKey = lastKey.replace(/h/g, "#");
+
+            modulate = lastKey + " to " + songKey;
+            songKeyLabel = rootChord.toString();
+
+            /*
             if (songCapo) {
               rootChord = rootChord.transpose(-songCapo);
             }
+            */
           }
         }
       }
+
+       // possible overwrites from headerSlide
+      if ( song.metadata.capo !== undefined) { // capo change in middle of song?? wow!
+        let capoAmt = parseInt(song.metadata.capo);
+        if (!isNaN(capoAmt)) { // && capoAmt > 0
+          capoAmt %= 12;
+          if (capoAmt !== songCapo) {
+            songCapo = capoAmt;
+            // capo change!
+          }
+        }
+      }
+
     } else { // process headerSlide html body
       if ($ === null) $ = cheerio.load('<body>'+headerSlide+"</body>");
       songHeaderTitle = $('p:first-child').text();
@@ -140,6 +139,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
             lastSongKeyLabel = songBit.metadata.key;
           }
            // also check if the song an empty song or not?
+
           let songParas = getSongParagraphs(songBit,
             songKey ? songKey : lastSongKeyLabel  ? normalizeKeyAsMajor(lastSongKeyLabel) : null,
             lastSongKeyLabel ? Chord.parse(lastSongKeyLabel) : null
@@ -184,6 +184,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
       if (!songKeyLabelPrefered && song.metadata.key) {
         songKeyLabelPrefered = song.metadata.key;
         songKey = normalizeKeyAsMajor( song.metadata.key);
+        songKeyLabel = song.metadata.key;
       }
       if (!songCapoPrefered && song.metadata.capo) {
         let capoAmt = parseInt(song.metadata.capo);
@@ -210,29 +211,6 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
     }
   }
 
-    /*
-  if (song.metadata.capo) {
-    let capoAmt = parseInt(song.metadata.capo);
-    if (!isNaN(capoAmt) && capoAmt > 0) {
-      songCapo = capoAmt;
-      songCapo %= 12;
-    }
-  }
-
-  if (song.metadata.key) {
-    if (!songKeyLabel) {
-      songKeyLabel = song.metadata.key;
-    }
-  }
-
-  if (songKeyLabel) {
-    rootChord = Chord.parse(songKeyLabel);
-    if (songCapo) {
-      rootChord = rootChord.transpose(-songCapo);
-    }
-  }
-  */
-
   return {
     songCapoPrefered,
     songKeyLabelPrefered,
@@ -243,49 +221,45 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
     songBitMetaData,
     rootChord,
     songHeaderTitle,
-    paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord, songIndex)
+    modulate,
+    paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord, songIndex, modulate)
   }
-}
-
-function repeatStr(str, i) {
-  i--;
-  let s = str;
-  while(--i > -1) {
-    s += str;
-  }
-  return s;
 }
 
 /**
  *
  * @param {import('chordsheetjs').Song} song
- * @param {String} songKey key attribute
- * @param {Chord} rootChord
- * @param {Number} songIndex
+ * @param {String} [songKey] key attribute
+ * @param {Chord} [rootChord]
+ * @param {Number} [songIndex]
+ * @param {Number} [modulate]
  * @return {[Array]}
  */
-function getSongParagraphs(song, songKey, rootChord, songIndex) {
+function getSongParagraphs(song, songKey, rootChord, songIndex, modulate) {
 
   let arr = [];
+  let tagInfo = "";
   song.paragraphs.forEach((p)=>{
 
     //if (p.type === 'none') return;
-    let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}${songIndex != null ? ` data-songid="${songIndex}"` : ''}>`;
-    let gotChordOrLyric = false;
+    let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}${songIndex != null ? ` data-songid="${songIndex}"` : ''}${modulate ? ` modulate="${modulate}"` : ''}>`;
+    let gotContent = false;
+
     p.lines.forEach((line, lineIndex, linesArr)=> {
       //if (line.type === 'none') return;
       let numLinesE = linesArr.length - 1;
       if (line.items && line.items.length) { // line.isEmpty() ?  .hasRenderableItems() ?
         let lle = line.items.length - 1;
+
         for (let i =0, l=line.items.length; i<l; i++) {
           let li = line.items[i];
+
           if (li instanceof CS.Tag) {
             if(!li.isMetaTag()) {
               if (li.name === "comment" && li.value.trim()) {
-                output += `<i>${li.value}</i>`;
+                (tagInfo = `<i>${li.value}</i>`);
               }
             }
-            continue;
           }
           let lyric = li.lyrics || ""; //.trim();
           let chordStr = li.chords ? li.chords : null; //
@@ -293,7 +267,8 @@ function getSongParagraphs(song, songKey, rootChord, songIndex) {
           if (!trimLyric && !chordStr) {
             continue;
           }
-
+          output += tagInfo;
+          tagInfo = "";
           let chord = chordStr ? Chord.parse(chordStr) : null;
           //let lastLength = lyric.length;
 
@@ -312,20 +287,17 @@ function getSongParagraphs(song, songKey, rootChord, songIndex) {
               suffixSpaces = whitespaceMatch[1];
             }
           }
-          let tailEndLyric = lyric.slice(trimLyric.length);
-          //if (tailEndLyric.charAt(0)!== ' ') console.log(tailEndLyric);
-          //+ '<span>' + (lyric ? lyric.replace(/  +/g, (str)=>{return ` <del>${repeatStr('&nbsp;', str.length-1)}</del>`}) : '&nbsp;</span>');
 
           output += prefixSpaces + '<span>'+(chord ? chord.toHTMLString(rootChord) : '') + (trimLyric || "&nbsp;") + '</span>'+ suffixSpaces;
-          gotChordOrLyric = true;
+          gotContent = true;
           //output += i < lle ? ' ' : '';
         }
 
       }
-      output += lineIndex < numLinesE ? '<br>' : '';
+      output += gotContent && lineIndex < numLinesE ? '<br>' : '';
     });
     output += '</p>';
-    if (gotChordOrLyric) arr.push(output);
+    if (gotContent) arr.push(output);
   })
 
   return arr.length ? arr : null;
@@ -371,9 +343,6 @@ async function parseGingkoTree(tree) {
     let songMeta;
     let copyright;
 
-
-
-
     for (let ci = 0, cl = children.length; ci< cl; ci++) {
       let c = children[ci];
       if (c.content === '') continue;
@@ -403,14 +372,11 @@ async function parseGingkoTree(tree) {
         }
         content = content.trim();
 
-        let p = parserTag === 'cp' ? new CS.ChordProParser() : parserTag === 'ug' ? new CS.UltimateGuitarParser() : new CS.ChordSheetParser();
-        if (parserTag === 'cp') {
-          content = content.replace(/#/g, "h").replace(/\]\[/g, '] [');
-        }
+        let p = parserTag === 'cp' ? null : parserTag === 'ug' ? new CS.UltimateGuitarParser() : new CS.ChordSheetParser();
         /**
          * @type {import('chordsheetjs').Song}
          */
-        let song = p.parse(content);
+        let song = parserTag === 'cp' ? parseChordProBody(content, true) : p.parse(content);
         let alreadyGotSongOutput = !!songOutput;
         songOutput = getSongOutput(song, alreadyGotSongOutput ? songOutput : slides[0], parserParams.indexOf('notranspose') >= 0, shows.length, songIndex);
         if (songOutput.songBitMetaData) {
@@ -431,14 +397,13 @@ async function parseGingkoTree(tree) {
             songCapo = songOutput.songCapoPrefered;
           }
           if (songOutput.headerSlideAddedIntros) slides[0] += songOutput.headerSlideAddedIntros;
-        }
-
-        if (songOutput.songHeaderTitle || songMeta.title || songMeta.copyright || songMeta.artist || (origSongKeyLabel && origSongKeyLabel!==songKeyLabel)) {
-          copyright = (songMeta.title ? songMeta.title + (songOutput.songHeaderTitle && songOutput.songHeaderTitle !== songMeta.title ? '<br><i>['+songOutput.songHeaderTitle+']</i>' : '') +"<br>" :
-          songOutput.songHeaderTitle ? songOutput.songHeaderTitle + "<br>" : "")
-          + (songMeta.artist ? 'artist: '+songMeta.artist + "<br>" : "")
-          + (origSongKeyLabel && origSongKeyLabel!==songKeyLabel ? '<em>original key: '+origSongKeyLabel + `<br>(&gt;<span class="songinfo-label key-signature" data-songid="${songIndex}">${songKeyLabel}</span>)<br></em>` : "")
-          + (songMeta.copyright ? "&copy; " + songMeta.copyright : "")
+          if (songOutput.songHeaderTitle || songMeta.title || songMeta.copyright || songMeta.artist || (origSongKeyLabel && origSongKeyLabel!==songKeyLabel)) {
+            copyright = (songMeta.title ? songMeta.title + (songOutput.songHeaderTitle && songOutput.songHeaderTitle !== songMeta.title ? '<br><i>['+songOutput.songHeaderTitle+']</i>' : '') +"<br>" :
+            songOutput.songHeaderTitle ? songOutput.songHeaderTitle + "<br>" : "")
+            + (songMeta.artist ? 'artist: '+songMeta.artist + "<br>" : "")
+            + (origSongKeyLabel && origSongKeyLabel!==songKeyLabel ? '<em>original key: '+origSongKeyLabel + `<br>(&gt;<span class="songinfo-label key-signature" data-songid="${songIndex}">${songKeyLabel}</span>)<br></em>` : "")
+            + (songMeta.copyright ? "&copy; " + songMeta.copyright : "")
+          }
         }
 
         if (songOutput.paragraphs) {

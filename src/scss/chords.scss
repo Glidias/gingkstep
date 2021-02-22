@@ -5,7 +5,7 @@ $keysFlat:  0, Db, 0, Eb, 0, 0, Gb, 0, Ab, 0, Bb, 0, 0, Db, 0, Eb, 0, 0, Gb, 0, 
 $keysSharpV: 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B';
 $keysFlatV: 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B','C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B','C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B';
 $keysRegular: C, 'C#', D, 'Eb', E, F, 'F#', G, 'Ab', A, 'Bb', B, C, 'C#', D, 'Eb', E, F, 'F#', G, 'Ab', A, 'Bb', B, C, 'C#', D, 'Eb', E, F, 'F#', G, 'Ab', A, 'Bb', B;
-$keySignAsSharp: 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1;  // piano keys signature preference (for sharps)
+$keySignAsSharp: 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1,   0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1,    0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1;  // piano keys signature preference (for sharps)
 
 $numerals: 'I', 0, 'II', 0, 'III', 'IV', 0, 'V', 0, 'VI', 0, 'VII';
 $numeralsLc: 'i', 0, 'ii', 0, 'iii', 'iv', 0, 'v', 0, 'vi', 0, 'vii';
@@ -17,17 +17,18 @@ $addSharpsV: '#', '##'; //, '###';
 $addFlats: 'b', 'bb'; //, 'bbb';
 
 // tranposable numeric keys
-@mixin generate-numeric-keys-trans($numerals, $keys, $daKeys, $isMinor:0) {
+@mixin generate-numeric-keys-trans($numerals, $keys, $daKeys:0, $isMinor:0) {
 	$m: if($isMinor==1, 'm', '');
 	@for $i from 1 through 12 {
 		$k: nth($keys, $i);
+		$theKeys: if($daKeys!=0, $daKeys, if(nth($keySignAsSharp,$i)==1, $keysSharpV, $keysFlatV));
 		@if ($k != 0) {
 			$offset: ($i - 1);
 			.song[key=#{$k}] {
 			@for $i from 1 through 12 {
 				$n: nth($numerals, $i);
 				@if ($n != 0) {
-					$c: nth($daKeys, 12 + $i + $offset);
+					$c: nth($theKeys, 12 + $i + $offset);
 					em[t=#{$n}]>* {
 						&:before {
 							content:'#{$c}#{$m}';
@@ -93,7 +94,7 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 					}
 				}
 				@if ($isMinor == 0) {
-					em>*[b=#{$k}] {
+					em[b=#{$k}]>* {
 						&:after {
 							content:'/#{$v}';
 						}
@@ -102,13 +103,13 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 				@for $a from 1 through length($addSharps) {
 					$d: nth($addSharps, $a);
 					$c: nth($addSharpsV, $a);
-					em[t=#{$d}#{$k}]>* {
+					em[t=#{$d}#{$k}] > * {
 						&:before {
 							content:'#{$c}#{$v}#{$m}';
 						}
 					}
 					@if ($isMinor == 0) {
-						em[b=#{$d}#{$k}]>* {
+						em[b=#{$d}#{$k}] > * {
 							&:after {
 								content:'/#{$c}#{$v}';
 							}
@@ -117,13 +118,13 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 				}
 				@for $a from 1 through length($addFlats) {
 					$d: nth($addFlats, $a);
-					em[t=#{$d}#{$k}]>* {
+					em[t=#{$d}#{$k}] > * {
 						&:before {
 							content:'#{$d}#{$v}#{$m}';
 						}
 					}
 					@if ($isMinor == 0) {
-						em[b=#{$d}#{$k}]>* {
+						em[b=#{$d}#{$k}] > * {
 							&:after {
 								content:'/#{$d}#{$v}';
 							}
@@ -183,7 +184,7 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 
 // major numeral keys transposable
 ///*
-@include generate-numeric-keys-trans($numerals, $keys, $keysSharpV);
+@include generate-numeric-keys-trans($numerals, $keys);
 @include generate-numeric-keys-trans($numerals, $keysSharp, $keysSharpV);
 @include generate-numeric-keys-trans($numerals, $keysFlat, $keysFlatV);
 //*/

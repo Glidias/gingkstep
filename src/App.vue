@@ -243,7 +243,6 @@ export default {
           let songPrepKey = slides[i].key;
           let songPrepKeyLabel = slides[i].keyLabel;
 
-
           // precompute songPrepKey tranposition
 
           // typical key tranpsition
@@ -593,6 +592,15 @@ div.songinfo-label {
     >i {
       display:block;
       line-height:1.3;
+
+    }
+
+    &:before {
+      content: attr(modulate);
+      font-style:italic;
+      display:block;
+      color:#777777;
+      font-size:0.8em;
     }
   }
 
