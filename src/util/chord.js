@@ -188,7 +188,7 @@ const processChord = (sourceChord, processor, processorArg) => {
    * @return {String} The chord representation in roman symbol format
    */
   const getSimpleRoman = (theVal, modifier, rootChord) => {
-     let rootKeyVal = rootChord.getKeyVal();
+     let rootKeyVal = rootChord.getTrebleVal(); // rootChord.getKeyVal(); // relative minor mode
       let offset = theVal - rootKeyVal;
       offset %=12;
       if (offset < 0) offset = 12 + offset;
@@ -306,19 +306,40 @@ class Chord {
     this.mode = mode;
   }
 
+  getTrebleComponent() {
+    return !this.mode ? this.base + (this.modifier || "") : (this.modifier || "") + this.base;
+  }
+
   getRelativeChord() {
     let result;
     result = this.transpose(this.isMinor ? 3 : -3);
     result.isMinor = !this.isMinor;
     if (result.isMinor) { // add "m" to suffix again
       let rLen = result.suffix ? isMinorFromSuffixLen(result.suffix) : false;
-      if (!rLen) result.suffix = "m" + result.suffix;
+      if (!rLen) result.suffix = "m" + (result.suffix || "");
     } else { // strip out m
       let rLen = result.suffix ? isMinorFromSuffixLen(result.suffix) : false;
-      if (rLen >=1) {
+      if (rLen && rLen >=1) {
         result.suffix = result.suffix.slice(rLen);
       }
     }
+    return result;
+  }
+
+
+  getParallelChord() {
+    let result = this.clone();
+    result.isMinor = !this.isMinor;
+    if (result.isMinor) { // add "m" to suffix again
+      let rLen = result.suffix ? isMinorFromSuffixLen(result.suffix) : false;
+      if (!rLen) result.suffix = "m" + (result.suffix || "");
+    } else { // strip out m
+      let rLen = result.suffix ? isMinorFromSuffixLen(result.suffix) : false;
+      if (rLen && rLen >=1) {
+        result.suffix = result.suffix.slice(rLen);
+      }
+    }
+    console.log(result.toString());
     return result;
   }
 
@@ -356,7 +377,6 @@ class Chord {
     let minorSuffix = this.isMinor ? 'm' : '';
     if (!this.mode) {
       chordString = this.base + (this.modifier || '') + minorSuffix + (this.extension || '');
-
       if (this.bassBase) {
         chordString += `/${this.bassBase}${this.bassModifier || ''}`;
       }

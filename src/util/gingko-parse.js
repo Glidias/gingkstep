@@ -93,51 +93,35 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
         let newKeyChord = Chord.parse(song.metadata.key);
         let oldChordKey =  headerSlide.songKeyLabelPrefered instanceof Chord ? headerSlide.songKeyLabelPrefered : Chord.parse(headerSlide.songKeyLabelPrefered);
         if (newKeyChord && rootChord) {
-          // modulation
-          let a = newKeyChord.getKeyVal();
-          let b = rootChord.getKeyVal();
+          // modulation (by key scale offset delta)
+          let a = newKeyChord.getTrebleVal(); //newKeyChord.getKeyVal();
+          let b = rootChord.getTrebleVal(); //rootChord.getKeyVal();
 
-          if (a !== b) {
-            let delta = a - b;
+          let delta = a - b;
 
-            rootChord = newKeyChord;
-            songKey = normalizeKeyAsMajor(songKey, delta);
+          rootChord = newKeyChord;
 
-            // consider: factor this into actual transpose method?
-            let oldSignatureSharp = oldChordKey.getSignAsSharp();
-            let toSwitchRel = newKeyChord.isMinor !== oldChordKey.isMinor;
+          // consider: factor this into actual transpose method?
+          let oldSignatureSharp = oldChordKey.getSignAsSharp();
+          let toSwitchRel = newKeyChord.isMinor !== oldChordKey.isMinor;
 
-            newKeyChord = oldChordKey.transpose(delta);
-            if (toSwitchRel) {
-              newKeyChord = newKeyChord.getRelativeChord();
-            }
-            let newSignatureSharp = newKeyChord.getSignAsSharp();
-            if (newSignatureSharp!== 0 && oldSignatureSharp != newSignatureSharp) newKeyChord =  newKeyChord.switchModifier();
+          newKeyChord = oldChordKey.transpose(delta);
+          if (toSwitchRel) {
+            newKeyChord = newKeyChord.getParallelChord();
 
-            songKeyLabelPrefered = newKeyChord.toString();
-            modulate = oldChordKey + ` to ` + newKeyChord;
-            //console.log(modulate);
-            let songKeyChord = Chord.parse(songKey);
-            if (!newKeyChord.getSignAsSharp() !== !songKeyChord.getSignAsSharp()) {
-              songKey = songKeyChord.switchModifier().toString();
-            }
-
-          } else if (oldChordKey.isMinor !== newKeyChord.isMinor) {
-            rootChord = newKeyChord;
-            songKey = normalizeKeyAsMajor(songKey);
-
-            newKeyChord = oldChordKey.getRelativeChord();
-            //console.log('>r>'+newKeyChord.isMinor);
-            //rootChord = Chord.parse(""+rootChord).getRelativeChord();
-
-            songKeyLabelPrefered = newKeyChord.toString();
-            modulate = oldChordKey + ` to ` + newKeyChord;
-
-            let songKeyChord = Chord.parse(songKey);
-            if (newKeyChord.modifier && !newKeyChord.getSignAsSharp() !== !songKeyChord.getSignAsSharp()) {
-              songKey = songKeyChord.switchModifier().toString();
-            }
           }
+          let newSignatureSharp = newKeyChord.getSignAsSharp();
+          if (newSignatureSharp!== 0 && oldSignatureSharp != newSignatureSharp) newKeyChord =  newKeyChord.switchModifier();
+
+          songKeyLabelPrefered = newKeyChord.toString();
+          modulate = oldChordKey + ` to ` + newKeyChord;
+          songKey = newKeyChord.getTrebleComponent().replace('#', 'h'); //normalizeKeyAsMajor(songKey, delta);
+          //console.log(modulate);
+          let songKeyChord = Chord.parse(songKey);
+          if (!newKeyChord.getSignAsSharp() !== !songKeyChord.getSignAsSharp()) {
+            songKey = songKeyChord.switchModifier().getTrebleComponent().replace("#", "h");
+          }
+
         }
       }
 
@@ -170,7 +154,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
            // also check if the song an empty song or not?
 
           let songParas = getSongParagraphs(songBit,
-            songKey ? songKey : lastSongKeyLabel  ? normalizeKeyAsMajor(lastSongKeyLabel) : null,
+            songKey ? songKey : lastSongKeyLabel  ? Chord.parse(lastSongKeyLabel).getTrebleComponent().replace('#', 'h') /*normalizeKeyAsMajor(lastSongKeyLabel)*/ : null,
             lastSongKeyLabel ? Chord.parse(lastSongKeyLabel) : null
           );
 
@@ -179,7 +163,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
             if (songBit.metadata.key) {
               songKeyLabel = songBit.metadata.key;
               if (!songKeyLabelPrefered) {
-                songKey = normalizeKeyAsMajor(songKeyLabel);
+                songKey = Chord.parse(songKeyLabel).getTrebleComponent().replace('#', 'h'); /*normalizeKeyAsMajor(songKeyLabel)*/;
                 songKeyLabelPrefered = songKeyLabel;
               }
             }
@@ -212,7 +196,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
       // pick from last metadata if not available on root slide
       if (!songKeyLabelPrefered && song.metadata.key) {
         songKeyLabelPrefered = song.metadata.key;
-        songKey = normalizeKeyAsMajor( song.metadata.key);
+        songKey = Chord.parse(song.metadata.key).getTrebleComponent().replace('#', 'h'); //normalizeKeyAsMajor( song.metadata.key);
         songKeyLabel = song.metadata.key;
       }
       if (!songCapoPrefered && song.metadata.capo) {
