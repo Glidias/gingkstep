@@ -12,12 +12,13 @@ $numeralsLc: 'i', 0, 'ii', 0, 'iii', 'iv', 0, 'v', 0, 'vi', 0, 'vii';
 $numeralsModern: '1', 0, '2', 0, '3', '4', 0, '5', 0, '6', 0, '7';
 $minorScaleFlats: 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1;
 
-// this will tend to bloat CSS with >=2 variations!
-$addSharps: 'h', 'hh'; //, 'hhh';
-$addSharpsV: '#', '##'; //, '###';
-$addFlats: 'b', 'bb'; //, 'bbb';
+// Support double/triple/x amount of flats/sharps for roman/numeral chord notation via EXTENSIONS_ONLY = 1 or 2
+// multi list will tend to bloat CSS with >=2 variations! Use EXTENSIONS_ONLY =1 (for sharps) and EXTENSIONS_ONLY=2 (for flats) to build additional css extension modules
+$addSharps: 'h';//, 'hh'; //, 'hhh';
+$addSharpsV: '#';//, '##'; //, '###';
+$addFlats: 'b';//, 'bb'; //, 'bbb';
 
-
+$EXTENSIONS_ONLY: 0;
 
 // tranposable numeric keys
 @mixin generate-numeric-keys-trans($numerals, $keys, $daKeys:0, $isMinor:0, $isMinorScale:0) {
@@ -33,47 +34,53 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 			@for $i from 1 through 12 {
 				$n: nth($numerals, $i);
 				@if ($n != 0) {
-					$c: nth($theKeys, 12 + $i + $offset);
-					em[t=#{$n}]>* {
-						&:before {
-							content:'#{$c}#{$m}';
-						}
+				    @if ($EXTENSIONS_ONLY == 0) {
+    					$c: nth($theKeys, 12 + $i + $offset);
+    					em[t=#{$n}]>* {
+    						&:before {
+    							content:'#{$c}#{$m}';
+    						}
+    					}
+    					@if ($isMinor == 0) {
+    						em[b=#{$n}]>* {
+    							&:after {
+    								content:'/#{$c}';
+    							}
+    						}
+    					}
 					}
-					@if ($isMinor == 0) {
-						em[b=#{$n}]>* {
-							&:after {
-								content:'/#{$c}';
+					@if ($EXTENSIONS_ONLY == 0 or $EXTENSIONS_ONLY == 1) {
+						@for $a from 1 through length($addSharps) {
+							$c: nth($keysSharpV,  $i + $offset + $a);
+							$d: nth($addSharps, $a);
+							em[t=#{$d}#{$n}]>* {
+								&:before {
+									content:'#{$c}#{$m}';
+								}
 							}
-						}
-					}
-					@for $a from 1 through length($addSharps) {
-						$c: nth($keysSharpV,  $i + $offset + $a);
-						$d: nth($addSharps, $a);
-						em[t=#{$d}#{$n}]>* {
-							&:before {
-								content:'#{$c}#{$m}';
-							}
-						}
-						@if ($isMinor == 0) {
-							em[b=#{$d}#{$n}]>* {
-								&:after {
-									content:'/#{$c}';
+							@if ($isMinor == 0) {
+								em[b=#{$d}#{$n}]>* {
+									&:after {
+										content:'/#{$c}';
+									}
 								}
 							}
 						}
 					}
-					@for $a from 1 through length($addFlats) {
-						$c: nth($keysFlatV, 12 + $i + $offset - $a);
-						$d: nth($addFlats, $a);
-						em[t=#{$d}#{$n}]>* {
-							&:before {
-								content:'#{$c}#{$m}';
+					@if ($EXTENSIONS_ONLY == 0 or $EXTENSIONS_ONLY == 2) {
+						@for $a from 1 through length($addFlats) {
+							$c: nth($keysFlatV, 12 + $i + $offset - $a);
+							$d: nth($addFlats, $a);
+							em[t=#{$d}#{$n}]>* {
+								&:before {
+									content:'#{$c}#{$m}';
+								}
 							}
-						}
-						@if ($isMinor == 0) {
-							em[b=#{$d}#{$n}]>* {
-								&:after {
-									content:'/#{$c}';
+							@if ($isMinor == 0) {
+								em[b=#{$d}#{$n}]>* {
+									&:after {
+										content:'/#{$c}';
+									}
 								}
 							}
 						}
@@ -167,44 +174,50 @@ $addFlats: 'b', 'bb'; //, 'bbb';
 	}
 }
 
-// general letter keys
-///*
-@include generate-letter-keys($keys, $keysSharpV);
-@include generate-letter-keys($keysSharp, $keysSharpV);
-@include generate-letter-keys($keysFlat, $keysFlatV);
-//*/
+@if ($EXTENSIONS_ONLY == 0) {
+    // general letter keys
+    ///*
+    @include generate-letter-keys($keys, $keysSharpV);
+    @include generate-letter-keys($keysSharp, $keysSharpV);
+    @include generate-letter-keys($keysFlat, $keysFlatV);
+    //*/
 
-// general letter keys with minor suffix
-@include generate-letter-keys($keys, $keysSharpV, 1);
-@include generate-letter-keys($keysSharp, $keysSharpV, 1);
-@include generate-letter-keys($keysFlat, $keysFlatV, 1);
+    // general letter keys with minor suffix
+    @include generate-letter-keys($keys, $keysSharpV, 1);
+    @include generate-letter-keys($keysSharp, $keysSharpV, 1);
+    @include generate-letter-keys($keysFlat, $keysFlatV, 1);
 
-// numeral keys
-@include generate-numeric-keys($numerals, $numerals, 0);	// major roman
-@include generate-numeric-keys($numeralsLc, $numeralsLc, 1); // minor roman
-.nashville {
-	@include generate-numeric-keys($numerals, $numeralsModern, 0);	// major nashville
-	@include generate-numeric-keys($numeralsLc, $numeralsModern, 1, 'm'); // minor nashville
+
+
+    // numeral keys
+    @include generate-numeric-keys($numerals, $numerals, 0);	// major roman
+    @include generate-numeric-keys($numeralsLc, $numeralsLc, 1); // minor roman
+    .nashville {
+    	@include generate-numeric-keys($numerals, $numeralsModern, 0);	// major nashville
+    	@include generate-numeric-keys($numeralsLc, $numeralsModern, 1, 'm'); // minor nashville
+    }
 }
+
+
 
 // major numeral keys transposable
 ///*
-@include generate-numeric-keys-trans($numerals, $keys);
+@if ($EXTENSIONS_ONLY == 0) { @include generate-numeric-keys-trans($numerals, $keys); }
 @include generate-numeric-keys-trans($numerals, $keysSharp, $keysSharpV);
 @include generate-numeric-keys-trans($numerals, $keysFlat, $keysFlatV);
 
-@include generate-numeric-keys-trans($numerals, $keys, 0, 1);
+@if ($EXTENSIONS_ONLY == 0) { @include generate-numeric-keys-trans($numerals, $keys, 0, 0, 1); }
 @include generate-numeric-keys-trans($numerals, $keysSharp, $keysSharpV, 0, 1);
 @include generate-numeric-keys-trans($numerals, $keysFlat, $keysFlatV, 0, 1);
 //*/
 
 // minor numeral keys transpoable
 ///*
-@include generate-numeric-keys-trans($numeralsLc, $keys, $keysSharpV, 1);
-@include generate-numeric-keys-trans($numeralsLc, $keysSharp, $keysSharpV, 1);
-@include generate-numeric-keys-trans($numeralsLc, $keysFlat, $keysFlatV, 1);
+@if ($EXTENSIONS_ONLY == 0) { @include generate-numeric-keys-trans($numeralsLc, $keys, $keysSharpV, 0, 1); }
+@include generate-numeric-keys-trans($numeralsLc, $keysSharp, $keysSharpV, 0, 1);
+@include generate-numeric-keys-trans($numeralsLc, $keysFlat, $keysFlatV, 0, 1);
 
-@include generate-numeric-keys-trans($numeralsLc, $keys, $keysSharpV, 1, 1);
+@if ($EXTENSIONS_ONLY == 0) { @include generate-numeric-keys-trans($numeralsLc, $keys, $keysSharpV, 1, 1); }
 @include generate-numeric-keys-trans($numeralsLc, $keysSharp, $keysSharpV, 1, 1);
 @include generate-numeric-keys-trans($numeralsLc, $keysFlat, $keysFlatV, 1, 1);
 //*/
