@@ -10,6 +10,8 @@ const PIANO_KEYS_SHARP = [0, 'Ch', 0, 'Dh', 0, 0, 'Fh', 0, 'Gh', 0, 'Ah', 0, 0, 
 const PIANO_KEYS_FLAT = [0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0, 0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0, 0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0];
 // piano keys signature preference (for sharps)
 const SIGN_AS_SHARP = [false, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,  false, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,  false, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1];
+const SIGN_AS_SHARP_MINOR = [0, 1, 0, 0, 1, 0, 1, 0, 0, false, 0, 0,  0, 1, 0, 0, 1, 0, 1, 0, 0, false, 0, 0,  0, 1, 0, 0, 1, 0, 1, 0, 0, false, 0, 0];
+const MINOR_SCALE_FLATS = [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1,   0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1,  0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1]; // of natural minor
 
 const MIDDLE_C_INDEX = WHITE_KEY_INDICES_FROM_A[2];
 
@@ -68,5 +70,5 @@ function getSharpFlatDelta(sharpsOrFlats) {
   normalizeKeyAsMajor,
   getSharpFlatDelta,
   MIDDLE_C_INDEX,
-  A, G, PIANO_KEYS, PIANO_KEYS_FLAT, PIANO_KEYS_SHARP, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP
+  A, G, PIANO_KEYS, PIANO_KEYS_FLAT, PIANO_KEYS_SHARP, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP, SIGN_AS_SHARP_MINOR, MINOR_SCALE_FLATS
   }

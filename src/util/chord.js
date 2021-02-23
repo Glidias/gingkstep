@@ -9,8 +9,9 @@ const romanRegex = /(^([h#b]*)?([ivIV]+))([^/\s]*)(\/([h#b]*)?([ivIV]+))?$/;
 const nashVilleRegex = /(^([h#b]*)?([1-7]+))([^/\s]*)(\/([h#b]*)?([1-7]+))?$/;
 const {
 	getSharpFlatDelta,
-	A, G, PIANO_KEYS, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP
+	A, G, PIANO_KEYS, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP, MINOR_SCALE_FLATS
   } = require("./keys");
+//, SIGN_AS_SHARP_MINOR
 
 /*
 const ROMAN_TO_DECIMAL_MAP = {
@@ -182,13 +183,14 @@ const processChord = (sourceChord, processor, processorArg) => {
   /**
    * Get roman numeral symbol of a given val against key root chord via naive method (only maximum 1 flat or 1 sharp used for non-diatonics).
    * Prefers use of symbol or flat against key signature of rootchord to minimise amount of sharp/flat accidentals via prefered natural.
-   * @param {Number} theVal
+   * @param {Number} theVal getTrebleVal() or getBassVal() result
    * @param {String} modifier
    * @param {Chord} rootChord Either a natural major or minor chord representation for the key
    * @return {String} The chord representation in roman symbol format
    */
   const getSimpleRoman = (theVal, modifier, rootChord) => {
      let rootKeyVal = rootChord.getTrebleVal(); // rootChord.getKeyVal(); // relative minor mode
+     theVal -= rootChord.isMinor ? MINOR_SCALE_FLATS[theVal] : 0;
       let offset = theVal - rootKeyVal;
       offset %=12;
       if (offset < 0) offset = 12 + offset;
