@@ -6,11 +6,16 @@ const CS = require('chordsheetjs').default;
 const cheerio = require('cheerio');
 const e = require('express');
 const {Chord} = require('./chord.js');
-const {normalizeKeyAsMajor} = require('./keys.js');
+const {normalizeKeyAsMajor} = require('./keys.js'); // temp for now
 const {parseChordProBody} = require("./chordpro.js");
 
 //
 // TODO: (runtime modulations key changes)
+// test: runtime modulations
+// support minor songKeys to avoid need for normalizeKeyAsMajor() , roman numeral interepretion in relation to key chord with support for minor
+// kiv, modulations in intro song parts
+// kiv (cleanup modulation enharmonic presentation resolutions to bias against starting key as well)
+
 
 marked.setOptions({
   gfm: true,
@@ -98,40 +103,38 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
             rootChord = newKeyChord;
             songKey = normalizeKeyAsMajor(songKey, delta);
 
-
-          //  let oldChordKey = headerSlide.songKeyLabelPrefered instanceof Chord ? headerSlide.songKeyLabelPrefered : Chord.parse(headerSlide.songKeyLabelPrefered);
-
             // consider: factor this into actual transpose method?
             let oldSignatureSharp = oldChordKey.getSignAsSharp();
             let toSwitchRel = newKeyChord.isMinor !== oldChordKey.isMinor;
-
 
             newKeyChord = oldChordKey.transpose(delta);
             if (toSwitchRel) {
               newKeyChord = newKeyChord.getRelativeChord();
             }
             let newSignatureSharp = newKeyChord.getSignAsSharp();
-            if (oldSignatureSharp != newSignatureSharp) newKeyChord =  newKeyChord.switchModifier();
+            if (newSignatureSharp!== 0 && oldSignatureSharp != newSignatureSharp) newKeyChord =  newKeyChord.switchModifier();
 
             songKeyLabelPrefered = newKeyChord.toString();
             modulate = oldChordKey + ` to ` + newKeyChord;
-            // songKeyLabel =  newKeyChord.modifier && newKeyChord.getSignAsSharp() !== rootChord.getSignAsSharp() ?  rootChord.switchModifier.toString() :  rootChord.toString();
+            //console.log(modulate);
             let songKeyChord = Chord.parse(songKey);
-            if (newKeyChord.modifier && newKeyChord.getSignAsSharp() !== songKeyChord.getSignAsSharp()) {
+            if (!newKeyChord.getSignAsSharp() !== !songKeyChord.getSignAsSharp()) {
               songKey = songKeyChord.switchModifier().toString();
             }
 
           } else if (oldChordKey.isMinor !== newKeyChord.isMinor) {
             rootChord = newKeyChord;
+            songKey = normalizeKeyAsMajor(songKey);
 
             newKeyChord = oldChordKey.getRelativeChord();
+            //console.log('>r>'+newKeyChord.isMinor);
             //rootChord = Chord.parse(""+rootChord).getRelativeChord();
 
             songKeyLabelPrefered = newKeyChord.toString();
             modulate = oldChordKey + ` to ` + newKeyChord;
 
             let songKeyChord = Chord.parse(songKey);
-            if (newKeyChord.modifier && newKeyChord.getSignAsSharp() !== songKeyChord.getSignAsSharp()) {
+            if (newKeyChord.modifier && !newKeyChord.getSignAsSharp() !== !songKeyChord.getSignAsSharp()) {
               songKey = songKeyChord.switchModifier().toString();
             }
           }

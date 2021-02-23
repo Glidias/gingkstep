@@ -169,6 +169,7 @@ const transpose = (base, modifier, delta) => {
 
 const processChord = (sourceChord, processor, processorArg) => {
   const chord = sourceChord.clone();
+
   [chord.base, chord.modifier] = processor(sourceChord.base, sourceChord.modifier, processorArg);
 
   if (sourceChord.bassBase) {
@@ -309,12 +310,21 @@ class Chord {
     let result;
     result = this.transpose(this.isMinor ? 3 : -3);
     result.isMinor = !this.isMinor;
+    if (result.isMinor) { // add "m" to suffix again
+      let rLen = result.suffix ? isMinorFromSuffixLen(result.suffix) : false;
+      if (!rLen) result.suffix = "m" + result.suffix;
+    } else { // strip out m
+      let rLen = result.suffix ? isMinorFromSuffixLen(result.suffix) : false;
+      if (rLen >=1) {
+        result.suffix = result.suffix.slice(rLen);
+      }
+    }
     return result;
   }
 
   clone() {
-    const { base, modifier, suffix, bassBase, bassModifier } = this;
-    return new Chord({ base, modifier, suffix, bassBase, bassModifier });
+    const { base, modifier, suffix, bassBase, bassModifier, mode} = this;
+    return new Chord({ base, modifier, suffix, bassBase, bassModifier, mode });
   }
 
   normalize() {
