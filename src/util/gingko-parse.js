@@ -6,16 +6,13 @@ const CS = require('chordsheetjs').default;
 const cheerio = require('cheerio');
 const e = require('express');
 const {Chord} = require('./chord.js');
-const {normalizeKeyAsMajor} = require('./keys.js'); // temp for now
+//const {normalizeKeyAsMajor} = require('./keys.js'); // depcreate
 const {parseChordProBody} = require("./chordpro.js");
 
 //
 // TODO: (runtime modulations key changes)
-// test: runtime modulations
-// support minor songKeys to avoid need for normalizeKeyAsMajor() , roman numeral interepretion in relation to key chord with support for minor
-// kiv, modulations in intro song parts
 // kiv (cleanup modulation enharmonic presentation resolutions to bias against starting key as well)
-
+// kiv, modulations in intro song parts
 
 marked.setOptions({
   gfm: true,
@@ -94,8 +91,8 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
         let oldChordKey =  headerSlide.songKeyLabelPrefered instanceof Chord ? headerSlide.songKeyLabelPrefered : Chord.parse(headerSlide.songKeyLabelPrefered);
         if (newKeyChord && rootChord) {
           // modulation (by key scale offset delta)
-          let a = newKeyChord.getTrebleVal(); //newKeyChord.getKeyVal();
-          let b = rootChord.getTrebleVal(); //rootChord.getKeyVal();
+          let a = newKeyChord.getTrebleVal(); //newKeyChord.getMajorScaleVal();
+          let b = rootChord.getTrebleVal(); //rootChord.getMajorScaleVal();
 
           let delta = a - b;
 
@@ -115,11 +112,11 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
 
           songKeyLabelPrefered = newKeyChord.toString();
           modulate = oldChordKey + ` to ` + newKeyChord;
-          songKey = newKeyChord.getTrebleComponent().replace('#', 'h'); //normalizeKeyAsMajor(songKey, delta);
+          songKey = newKeyChord.toString().replace('#', 'h'); //normalizeKeyAsMajor(songKey, delta);
           //console.log(modulate);
           let songKeyChord = Chord.parse(songKey);
           if (!newKeyChord.getSignAsSharp() !== !songKeyChord.getSignAsSharp()) {
-            songKey = songKeyChord.switchModifier().getTrebleComponent().replace("#", "h");
+            songKey = songKeyChord.switchModifier().toString().replace("#", "h");
           }
 
         }
@@ -154,7 +151,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
            // also check if the song an empty song or not?
 
           let songParas = getSongParagraphs(songBit,
-            songKey ? songKey : lastSongKeyLabel  ? Chord.parse(lastSongKeyLabel).getTrebleComponent().replace('#', 'h') /*normalizeKeyAsMajor(lastSongKeyLabel)*/ : null,
+            songKey ? songKey : lastSongKeyLabel  ? Chord.parse(lastSongKeyLabel).toString().replace('#', 'h') /*normalizeKeyAsMajor(lastSongKeyLabel)*/ : null,
             lastSongKeyLabel ? Chord.parse(lastSongKeyLabel) : null
           );
 
@@ -163,7 +160,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
             if (songBit.metadata.key) {
               songKeyLabel = songBit.metadata.key;
               if (!songKeyLabelPrefered) {
-                songKey = Chord.parse(songKeyLabel).getTrebleComponent().replace('#', 'h'); /*normalizeKeyAsMajor(songKeyLabel)*/;
+                songKey = Chord.parse(songKeyLabel).toString().replace('#', 'h'); /*normalizeKeyAsMajor(songKeyLabel)*/;
                 songKeyLabelPrefered = songKeyLabel;
               }
             }

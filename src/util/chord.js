@@ -188,7 +188,7 @@ const processChord = (sourceChord, processor, processorArg) => {
    * @return {String} The chord representation in roman symbol format
    */
   const getSimpleRoman = (theVal, modifier, rootChord) => {
-     let rootKeyVal = rootChord.getTrebleVal(); // rootChord.getKeyVal(); // relative minor mode
+     let rootKeyVal = rootChord.getTrebleVal(); // rootChord.getMajorScaleVal(); // relative minor mode
       let offset = theVal - rootKeyVal;
       offset %=12;
       if (offset < 0) offset = 12 + offset;
@@ -405,7 +405,8 @@ class Chord {
   }
   */
 
-  getKeyVal() {
+  // deprecrte
+  getMajorScaleVal() {
     let index = this.base.charCodeAt(0) - A;
     index = WHITE_KEY_INDICES_FROM_A[index] + (this.modifier ? getSharpFlatDelta(this.modifier) : 0);
     index += this.isMinor ? 3 : 0;
