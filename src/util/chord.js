@@ -181,6 +181,33 @@ const processChord = (sourceChord, processor, processorArg) => {
   return chord;
 };
 
+/**
+ * Get positive offset in halfsteps from rootChord
+ * @param {Number} theVal getTrebleVal() or getBassVal() result
+ * @param {Chord} rootChord Either a natural major or minor chord representation for the key
+ */
+const getOffsetFromRoot = (theVal, rootChord)=> {
+  let rootKeyVal = rootChord.getTrebleVal(); // rootChord.getKeyVal(); // relative minor mode
+
+  let offset = theVal - rootKeyVal;
+
+  offset %=12;
+  if (offset < 0) offset = 12 + offset;
+  else if (offset >= 12) offset = offset - 12;
+  //console.log(offset);
+
+  if (offset < 0 || offset >= PIANO_ROMAN_KEYS.length) {
+    //if (offset < 0) offset = PIANO_ROMAN_KEYS.length + offset;
+    //else if (offset >= PIANO_ROMAN_KEYS.length) offset -= PIANO_ROMAN_KEYS.length;
+    throw new Error("Assertion failed:: Offset of half-steps still out of range between 0 to 11! " + offset)
+  }
+
+  if (rootChord.isMinor) { // natural minor offset on minor 3rd, 6th and 7th considerations
+    if (offset === 3 || offset === 8 || offset === 10) offset += 1;
+  }
+  return offset;
+}
+
   /**
    * Get roman numeral symbol of a given val against key root chord via naive method (only maximum 1 flat or 1 sharp used for non-diatonics).
    * Prefers use of symbol or flat against key signature of rootchord to minimise amount of sharp/flat accidentals via prefered natural.
@@ -398,6 +425,14 @@ class Chord {
     if (!result.getSignAsSharp() !== !this.getSignAsSharp()) {
       result = result.switchModifier();
     }
+    /*
+    let isDiatonic = !!PIANO_ROMAN_KEYS[getOffsetFromRoot(result.getTrebleVal(), this)];
+    if (!!result.getSignAsSharp() !== (isDiatonic ? !!this.getSignAsSharp() : !this.getSignAsSharp())) {
+      //console.log(isDiatonic + " :" + this + ", tp "+result);
+      result = result.switchModifier();
+      //console.log("RESULT:"+result);
+    }
+    */
     return result;
   }
 

@@ -108,8 +108,6 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
               modulateMode = newKeyChord.isMinor ? 1 : 2;
             }
             if (delta !== 0) modulateDelta = delta;
-            let newSignatureSharp = newKeyChord.getSignAsSharp();
-            if (newSignatureSharp!== 0 && oldSignatureSharp != newSignatureSharp) newKeyChord =  newKeyChord.switchModifier();
 
             let backToOriginalChord = origPreferedKeyChord && (origPreferedKeyChord.getTrebleVal()===newKeyChord.getTrebleVal());
             if (backToOriginalChord) {
