@@ -267,7 +267,7 @@ function getSongParagraphs(song, songKey, rootChord, songCapo, songIndex, {modul
   let tagInfo = "";
 
   if (songCapo) rootChord = rootChord.transpose(-songCapo);
-
+  let signatureChord = songKey ? Chord.parse(songKey) : null;
   song.paragraphs.forEach((p)=>{
 
     //if (p.type === 'none') return;
@@ -317,7 +317,7 @@ function getSongParagraphs(song, songKey, rootChord, songCapo, songIndex, {modul
             }
           }
 
-          output += prefixSpaces + '<span>'+(chord ? chord.toHTMLString(rootChord) : '') + (trimLyric || "&nbsp;") + '</span>'+ suffixSpaces;
+          output += prefixSpaces + '<span>'+(chord ? chord.toHTMLString(rootChord, signatureChord) : '') + (trimLyric || "&nbsp;") + '</span>'+ suffixSpaces;
           gotContent = true;
           //output += i < lle ? ' ' : '';
         }

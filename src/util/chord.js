@@ -189,7 +189,7 @@ const processChord = (sourceChord, processor, processorArg) => {
    * @param {Chord} rootChord Either a natural major or minor chord representation for the key
    * @return {String} The chord representation in roman symbol format
    */
-  const getSimpleRoman = (theVal, modifier, rootChord) => {
+  const getSimpleRoman = (theVal, modifier, rootChord, signatureChord) => {
      let rootKeyVal = rootChord.getTrebleVal(); // rootChord.getKeyVal(); // relative minor mode
 
       let offset = theVal - rootKeyVal;
@@ -209,14 +209,23 @@ const processChord = (sourceChord, processor, processorArg) => {
         if (offset === 3 || offset === 8 || offset === 10) offset += 1;
       }
 
+      let sVal;
+      if (!signatureChord) {
+        signatureChord = rootChord;
+        sVal = signatureChord.getTrebleVal() + offset;
+      } else {
+        sVal = rootKeyVal + offset;
+      }
+
+
       let chord;
 
 
       if (PIANO_ROMAN_KEYS[offset]) { // diatonic natural major match keynote
         chord = PIANO_ROMAN_KEYS[offset];
       } else { // display  either sharp or flat for non-diatonic keynote?
-        let signatureSharps = rootChord.getSignAsSharp();
-        let delta = modifier ? getSharpFlatDelta(modifier) : 0;
+        let signatureSharps = signatureChord.getSignAsSharp();
+        //let delta = modifier ? getSharpFlatDelta(modifier) : 0;
 
         if (signatureSharps !== 0) {
           if (PIANO_KEYS[theVal]) {
@@ -225,12 +234,17 @@ const processChord = (sourceChord, processor, processorArg) => {
             let theEnharmonicOffset = thePrefix === 'b' ? 1 : -1;
             chord = thePrefix + PIANO_ROMAN_KEYS[offset+theEnharmonicOffset];
           } else { // follow current chord delta
+            let thePrefix = (signatureSharps ? 'h' : 'b');
+            let theEnharmonicOffset = thePrefix === 'b' ? 1 : -1;
+            chord = thePrefix + PIANO_ROMAN_KEYS[offset+theEnharmonicOffset];
+            /*
             let thePrefix = (delta > 0 ? 'h' : 'b');
             let theEnharmonicOffset = thePrefix === 'b' ? 1 : -1;
             chord = thePrefix + PIANO_ROMAN_KEYS[offset+theEnharmonicOffset];
+            */
           }
-        }  else { // follow current chord delta
-          let thePrefix = (delta > 0 ? 'h' : 'b');
+        }  else { // follow convention C major ~follow current chord delta~
+          let thePrefix = SIGN_AS_SHARP[offset] ? 'h' : 'b'; //(delta > 0 ? 'h' : 'b');
           let theEnharmonicOffset = thePrefix === 'b' ? 1 : -1;
           chord = thePrefix + PIANO_ROMAN_KEYS[offset+theEnharmonicOffset];
         }
@@ -495,7 +509,7 @@ class Chord {
    *
    * @param {Chord} [rootChord] Either a natural major or minor chord representation
    */
-  toHTMLString(rootChord) {
+  toHTMLString(rootChord, signatureChord) {
     let bassChord;
     let trebleChord;
     if (this.mode === 1) {
@@ -510,10 +524,10 @@ class Chord {
       }
     } else { // letters in roman
       if (rootChord != null) { // convert to roman in relation to rootKeyVal
-        trebleChord = getSimpleRoman(this.getTrebleVal(), this.modifier, rootChord);
+        trebleChord = getSimpleRoman(this.getTrebleVal(), this.modifier, rootChord, signatureChord);
         if (this.dimed || this.isMinor) trebleChord = trebleChord.toLowerCase();
         if (this.bassBase) {
-          bassChord = getSimpleRoman(this.getBassVal(), this.bassModifier, rootChord);
+          bassChord = getSimpleRoman(this.getBassVal(), this.bassModifier, rootChord, signatureChord);
         }
         //trebleChord = (this.modifier ? this.modifier.replace(/#/g, 'h') : '') + this.base;
         //bassChord = this.bassBase ? `${this.bassModifier ?  this.bassModifier.replace(/#/g, 'h') : ''}${this.bassBase}` : '';
