@@ -13,24 +13,6 @@ const {
   } = require("./keys");
 //, SIGN_AS_SHARP_MINOR
 
-/*
-const ROMAN_TO_DECIMAL_MAP = {
-  'i': '1',
-  'I': '1',
-  'ii': '2',
-  'II': '2',
-  'iii': '3',
-  'III': '3',
-  'iv': '4',
-  'IV': '4',
-  'V': '5',
-  'V': '5',
-  'vi': '6',
-  'VI': '6',
-  'vii': '7',
-  'VII': '7',
-};
-*/
 const PIANO_ROMAN_KEYS = ['I', 0, 'II', 0, 'III', 'IV', 0, 'V', 0, 'VI', 0, 'VII',  'I', 0, 'II', 0, 'III', 'IV', 0, 'V', 0, 'VI', 0, 'VII'];
 const DECIMAL_TO_ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 
