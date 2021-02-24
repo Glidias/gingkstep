@@ -7,12 +7,13 @@
 const chordRegex = /(^[A-G])([h#b]*)?([^/\s]*)(\/([A-G])([h#b]*)?)?$/; ///([A-G])(h|#|b)?([^/\s]*)(\/([A-G])(h|#|b)?)?/i;
 const romanRegex = /(^([h#b]*)?([ivIV]+))([^/\s]*)(\/([h#b]*)?([ivIV]+))?$/;
 const nashVilleRegex = /(^([h#b]*)?([1-7]+))([^/\s]*)(\/([h#b]*)?([1-7]+))?$/;
+var TOLERANCE_KEY_ACCIDENTALS = 1;
 const { root } = require("cheerio");
 const {
 	getSharpFlatDelta,
-	A, G, PIANO_KEYS, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP, MINOR_SCALE_FLATS
+	A, G, PIANO_KEYS, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP, DIFF_ACCIDENTALS_KEYS
   } = require("./keys");
-//, SIGN_AS_SHARP_MINOR
+//, SIGN_AS_SHARP_MINOR, MINOR_SCALE_FLATS
 
 /*
 const ROMAN_TO_DECIMAL_MAP = {
@@ -422,9 +423,18 @@ class Chord {
 
   transpose(delta) {
     let result = processChord(this, transpose, delta);
-    if (!result.getSignAsSharp() !== !this.getSignAsSharp()) {
-      result = result.switchModifier();
-    }
+    let signAsSharp = result.getSignAsSharp();
+    //if (signAsSharp !== this.getSignAsSharp()) {
+      if (signAsSharp !== 0) {
+        let diffAcc = DIFF_ACCIDENTALS_KEYS[result.getKeyVal()];
+        if ( (diffAcc > TOLERANCE_KEY_ACCIDENTALS && !signAsSharp) || (-diffAcc > TOLERANCE_KEY_ACCIDENTALS && signAsSharp) ) {
+          result = result.switchModifier();
+        } else if (!signAsSharp !== !this.getSignAsSharp()) {
+          result = result.switchModifier();
+        }
+
+     }
+    //}
     /*
     let isDiatonic = !!PIANO_ROMAN_KEYS[getOffsetFromRoot(result.getTrebleVal(), this)];
     if (!!result.getSignAsSharp() !== (isDiatonic ? !!this.getSignAsSharp() : !this.getSignAsSharp())) {
@@ -530,6 +540,13 @@ class Chord {
     let index = this.base.charCodeAt(0) - A;
     index = WHITE_KEY_INDICES_FROM_A[index] + (this.modifier ? getSharpFlatDelta(this.modifier) : 0);
     // index += this.isMinor ? 3 : 0;
+    return index;
+  }
+
+  getKeyVal() {
+    let index = this.base.charCodeAt(0) - A;
+    index = WHITE_KEY_INDICES_FROM_A[index] + (this.modifier ? getSharpFlatDelta(this.modifier) : 0);
+    index += this.isMinor ? 3 : 0;
     return index;
   }
 
