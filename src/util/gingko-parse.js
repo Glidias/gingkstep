@@ -12,7 +12,6 @@ const {parseChordProBody} = require("./chordpro.js");
 //
 // TODO: (runtime modulations key changes)
 // kiv, modulations in intro song parts
-// kiv, capo changes in middle of song...
 
 marked.setOptions({
   gfm: true,
@@ -140,7 +139,6 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
           capoAmt %= 12;
           if (capoAmt !== songCapo) {
             songCapo = capoAmt;
-            // capo change!
           }
         }
       }
@@ -159,11 +157,19 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
           if (songBit.metadata.key) {
             lastSongKeyLabel = songBit.metadata.key;
           }
-           // also check if the song an empty song or not?
 
+          if (songBit.metadata.capo) {
+            let capoAmt = parseInt(songBit.metadata.capo);
+            if (!isNaN(capoAmt) && capoAmt > 0) {
+              songCapo = capoAmt;
+              songCapo %= 12;
+            }
+          }
+
+           // also check if the song an empty song or not?
           let songParas = getSongParagraphs(songBit,
             songKey ? songKey : lastSongKeyLabel  ? Chord.parse(lastSongKeyLabel).toString().replace('#', 'h') /*normalizeKeyAsMajor(lastSongKeyLabel)*/ : null,
-            lastSongKeyLabel ? Chord.parse(lastSongKeyLabel) : null
+            lastSongKeyLabel ? Chord.parse(lastSongKeyLabel) : null, songCapo, songIndex
           );
 
           if (!songParas) {
@@ -224,9 +230,6 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
 
       if (songKeyLabel) {
         rootChord = Chord.parse(songKeyLabel);
-        if (songCapo) {
-          rootChord = rootChord.transpose(-songCapo);
-        }
       }
 
     }
@@ -244,7 +247,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
     songHeaderTitle,
     modulate,
     origPreferedKeyChord,
-    paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord, songIndex, {modulate, modulateDelta, modulateMode})
+    paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord, songCapo, songIndex, {modulate, modulateDelta, modulateMode})
   }
 }
 
@@ -253,20 +256,23 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
  * @param {import('chordsheetjs').Song} song
  * @param {String} [songKey] key attribute
  * @param {Chord} [rootChord]
+ * @param {Number} [songCapo]
  * @param {Number} [songIndex]
  * @param {Object} [modulationInfo]
  * @return {[Array]}
  */
-function getSongParagraphs(song, songKey, rootChord, songIndex, {modulate, modulateDelta, modulateMode}={}) {
+function getSongParagraphs(song, songKey, rootChord, songCapo, songIndex, {modulate, modulateDelta, modulateMode}={}) {
 
   let arr = [];
   let tagInfo = "";
+
+  if (songCapo) rootChord = rootChord.transpose(-songCapo);
+
   song.paragraphs.forEach((p)=>{
 
     //if (p.type === 'none') return;
     let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}${songIndex != null ? ` data-songid="${songIndex}"` : ''}${modulate ? ` modulate="${modulate}"` : ''}${modulateDelta ? ` m="${modulateDelta}"` : ''}${modulateMode ? ` mm="${modulateMode}"` : ''}>`;
     let gotContent = false;
-
 
     p.lines.forEach((line, lineIndex, linesArr)=> {
       //if (line.type === 'none') return;

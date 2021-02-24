@@ -77,6 +77,7 @@ export default {
       useCapo: false, // ux: currently, this is simply a global setting for convention
 
       slides: null,
+      slideKeyIndices: null,
 
       formValueTreeId: 'g1zdt6',
 
@@ -99,7 +100,7 @@ export default {
     },
     transposeSongKeys () {
       let slides = this.slides;
-      if (!this.slides) return [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+      if (!this.slides) return [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
       let usingCapo = this.useCapo;
       let keys = [];
@@ -120,8 +121,15 @@ export default {
     keyOptions () {
       return ['C', 'C#', 'D', 'E', 'Eb', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
     },
+    keyOptionsFlat () {
+      return ['C', 'Db', 'D', 'E', 'Eb', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+    },
+    keyOptionsSharp () {
+      return ['C', 'C#', 'D', 'E', 'D#', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    },
     curKeyIndex () {
       // based off this.songFocusIndex
+      // get chosen song key index
       return -1;
     },
     curDefKeyIndex () {
@@ -203,7 +211,7 @@ export default {
           console.log(response.data.error + ":: error code found.");
           alert(`Error code: ${response.data.error}, found.`);
         } else {
-          this.slides = response.data.result;
+          this.setSlides(response.data.result);
         }
       }
       catch(err) {
@@ -211,6 +219,11 @@ export default {
         alert("Failed to load tree id: " + treeD);
       }
       this.attemptingConnect = false;
+    },
+    setSlides(slides) {
+      this.slides = slides;
+      // todo: set slide key indices
+      //this.slideKeyIndices =;
     },
     onSongFocusChange(songFocusIndex) {
       this.songFocusIndex = songFocusIndex;
@@ -277,6 +290,7 @@ export default {
                 }
                 */
                 chordStr = chord.toString();
+
                 q.setAttribute(keyAttr, chordStr);
                 q.setAttribute('modulate', lastKey + ' to '+chordStr);
               }
