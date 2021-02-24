@@ -7,7 +7,6 @@
 const chordRegex = /(^[A-G])([h#b]*)?([^/\s]*)(\/([A-G])([h#b]*)?)?$/; ///([A-G])(h|#|b)?([^/\s]*)(\/([A-G])(h|#|b)?)?/i;
 const romanRegex = /(^([h#b]*)?([ivIV]+))([^/\s]*)(\/([h#b]*)?([ivIV]+))?$/;
 const nashVilleRegex = /(^([h#b]*)?([1-7]+))([^/\s]*)(\/([h#b]*)?([1-7]+))?$/;
-const { root } = require("cheerio");
 const {
 	getSharpFlatDelta,
 	A, G, PIANO_KEYS, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP, MINOR_SCALE_FLATS
