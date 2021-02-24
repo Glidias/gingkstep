@@ -106,7 +106,7 @@ export default {
       for (let i =0, l =slides.length; i<l; i++) {
         let song = slides[i];
         let transposeAmt = 0;
-        let keyLabel = song.keyLabel ?song.keyLabel : null;
+        let keyLabel = song.key ? song.key : null;
         if (usingCapo && keyLabel && song.capo) {
           transposeAmt = -song.capo;
         }
@@ -238,32 +238,63 @@ export default {
     handleTranposeSongKeys(newArr, oldArr) {
       let slides = this.slides;
       for (let i =0, l=newArr.length; i < l; i++) {
-
         if (newArr[i] !== oldArr[i]) {
           let songPrepKey = slides[i].key;
-          let songPrepKeyLabel = slides[i].keyLabel;
-
           // precompute songPrepKey tranposition
+          //let mainKeyChordVal = Chord.parse(songPrepKey).getTrebleVal();
+
+         // TODO: capo representation for modulate key attribute
+         //songPrepKey = ;
+          let lastKey = songPrepKey;
 
           // typical key tranpsition
           document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q)=>{
             let keyAttr = q.hasAttribute('key') ? 'key' : 'keyx';
             if (!q.hasAttribute(keyAttr)) return;
-
-            if (!q.getAttribute('origkey')) {
-              q.setAttribute('origkey', q.getAttribute(keyAttr));
-            }
-            // transpose from local origkey
-            if (q.getAttribute('origkey') != songPrepKey) {
+            if (q.hasAttribute('modulate')) {
               // todo: calculate local tranposed section key
+              let m = q.hasAttribute('m') ? q.getAttribute('m') : null;
+              let mm = q.getAttribute('mm') ? q.getAttribute('mm') : null;
+              if (m === null && mm == null) { // assumed modulate back to orignal key
+                q.setAttribute(keyAttr, songPrepKey);
+                q.setAttribute('modulate', lastKey+' to '+songPrepKey); // consider capo usage
+              } else {
+                let chord = Chord.parse(lastKey);
+                if (m !== null) {
+                  chord = chord.transpose(parseInt(m));
+                }
+                if (mm !== null) {
+                  chord = chord.getParallelChord();
+                }
+                 let chordStr;
+                 // match modulation prefered enharmonic  ? OR from original main key chord?
+                 /*
 
+                if (!chord.getSignAsSharp() !== !songPrepChord.getSignAsSharp()) {
+                  chordStr = chord.switchModifier().toString();
+                } else {
+                  chordStr = chord.toString();
+                }
+                */
+                chordStr = chord.toString();
+                q.setAttribute(keyAttr, chordStr);
+                q.setAttribute('modulate', lastKey + ' to '+chordStr);
+              }
             } else { // use songPrepKey transposition precomputed
               q.setAttribute(keyAttr, songPrepKey);
             }
+            lastKey = q.getAttribute(keyAttr);
+          });
+
+          // todo
+          document.querySelectorAll(`.songinfo-label.key-signature[data-songid="${i}"]`).forEach((q)=>{
 
           });
-          document.querySelectorAll(`.songinfo-label.key-signature[data-songid="${i}"]`).forEach((q)=>{});
-          document.querySelectorAll(`.songinfo-label.capo[data-songid="${i}"] > span`).forEach((q)=>{});
+
+          // todo
+          document.querySelectorAll(`.songinfo-label.capo[data-songid="${i}"] > span`).forEach((q)=>{
+
+          });
         }
       }
     },

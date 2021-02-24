@@ -2,7 +2,7 @@ const A = 'A'.charCodeAt(0);
 const G = 'G'.charCodeAt(0);
 // white keys
 const PIANO_KEYS = ['C', 0, 'D', 0, 'E', 'F', 0, 'G', 0, 'A', 0, 'B', 'C', 0, 'D', 0, 'E', 'F', 0, 'G', 0, 'A', 0, 'B', 'C', 0, 'D', 0, 'E', 'F', 0, 'G', 0, 'A', 0, 'B'];
-const WHITE_KEY_INDICES_FROM_A = [21, 23, 24, 26, 28, 29, 31];
+const WHITE_KEY_INDICES_FROM_A = [9, 11, 0, 2, 4, 5, 7]; //[21, 23, 24, 26, 28, 29, 31];
 
 // console.log(WHITE_KEY_INDICES_FROM_A.map((i)=>PIANO_KEYS[i]))
 // black keys

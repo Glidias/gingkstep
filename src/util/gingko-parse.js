@@ -11,8 +11,8 @@ const {parseChordProBody} = require("./chordpro.js");
 
 //
 // TODO: (runtime modulations key changes)
-// kiv (cleanup modulation enharmonic presentation resolutions to bias against starting key as well)
 // kiv, modulations in intro song parts
+// kiv, capo changes in middle of song...
 
 marked.setOptions({
   gfm: true,
@@ -72,8 +72,11 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
   let rootChord = null;
   let songBitMetaData;
   let songHeaderTitle;
+  let origPreferedKeyChord;
 
   let modulate;
+  let modulateDelta;
+  let modulateMode;
 
   let songKeyLabelPrefered;
   let songCapoPrefered;
@@ -84,6 +87,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
       songKeyLabel = headerSlide.songKeyLabel;
       rootChord = headerSlide.rootChord;
       songKeyLabelPrefered = headerSlide.songKeyLabelPrefered;
+      origPreferedKeyChord = headerSlide.origPreferedKeyChord;
 
       if (song.metadata.key) {
         // a new key signature always created per song slide
@@ -93,38 +97,44 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
           // modulation (by key scale offset delta)
           let a = newKeyChord.getTrebleVal(); //newKeyChord.getMajorScaleVal();
           let b = rootChord.getTrebleVal(); //rootChord.getMajorScaleVal();
-
           let delta = a - b;
-
-            let toSwitchRel = newKeyChord.isMinor !== oldChordKey.isMinor;
-            if (delta !== 0 ||  toSwitchRel) {
-              // consider: factor this into actual transpose method?
-              let oldSignatureSharp = oldChordKey.getSignAsSharp();
-
-             rootChord = newKeyChord;
-
+          let toSwitchMode = newKeyChord.isMinor !== oldChordKey.isMinor;
+          if (delta !== 0 ||  toSwitchMode) {
+            // consider: factor this into actual transpose method?
+            let oldSignatureSharp = oldChordKey.getSignAsSharp();
+            rootChord = newKeyChord;
             newKeyChord = oldChordKey.transpose(delta);
-            if (toSwitchRel) {
+            if (toSwitchMode) {
               newKeyChord = newKeyChord.getParallelChord();
-
+              modulateMode = newKeyChord.isMinor ? 1 : 2;
             }
+            if (delta !== 0) modulateDelta = delta;
             let newSignatureSharp = newKeyChord.getSignAsSharp();
             if (newSignatureSharp!== 0 && oldSignatureSharp != newSignatureSharp) newKeyChord =  newKeyChord.switchModifier();
 
+            let backToOriginalChord = origPreferedKeyChord && (origPreferedKeyChord.getTrebleVal()===newKeyChord.getTrebleVal());
+            if (backToOriginalChord) {
+              newKeyChord = origPreferedKeyChord;
+              modulateMode = null;
+              modulateDelta = null;
+            }
             songKeyLabelPrefered = newKeyChord.toString();
             modulate = oldChordKey + ` to ` + newKeyChord;
             songKey = newKeyChord.toString().replace('#', 'h'); //normalizeKeyAsMajor(songKey, delta);
-            //console.log(modulate);
-            let songKeyChord = Chord.parse(songKey);
-            if (!newKeyChord.getSignAsSharp() !== !songKeyChord.getSignAsSharp()) {
-              songKey = songKeyChord.switchModifier().toString().replace("#", "h");
+            /* // deprecrated
+            if (!backToOriginalChord) { // already done in tranpose method!
+              let songKeyChord = Chord.parse(songKey);
+              if (!newKeyChord.getSignAsSharp() !== !songKeyChord.getSignAsSharp()) {
+                songKey = songKeyChord.switchModifier().toString().replace("#", "h");
+              }
             }
+            */
           }
         }
       }
 
        // possible overwrites from headerSlide
-      if ( song.metadata.capo !== undefined) { // capo change in middle of song?? wow!
+      if ( song.metadata.capo !== undefined) { // KIV>> capo change in middle of song?? wow!
         let capoAmt = parseInt(song.metadata.capo);
         if (!isNaN(capoAmt)) { // && capoAmt > 0
           capoAmt %= 12;
@@ -233,7 +243,8 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
     rootChord,
     songHeaderTitle,
     modulate,
-    paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord, songIndex, modulate)
+    origPreferedKeyChord,
+    paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord, songIndex, {modulate, modulateDelta, modulateMode})
   }
 }
 
@@ -243,17 +254,17 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
  * @param {String} [songKey] key attribute
  * @param {Chord} [rootChord]
  * @param {Number} [songIndex]
- * @param {Number} [modulate]
+ * @param {Object} [modulationInfo]
  * @return {[Array]}
  */
-function getSongParagraphs(song, songKey, rootChord, songIndex, modulate) {
+function getSongParagraphs(song, songKey, rootChord, songIndex, {modulate, modulateDelta, modulateMode}={}) {
 
   let arr = [];
   let tagInfo = "";
   song.paragraphs.forEach((p)=>{
 
     //if (p.type === 'none') return;
-    let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}${songIndex != null ? ` data-songid="${songIndex}"` : ''}${modulate ? ` modulate="${modulate}"` : ''}>`;
+    let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}${songIndex != null ? ` data-songid="${songIndex}"` : ''}${modulate ? ` modulate="${modulate}"` : ''}${modulateDelta ? ` m="${modulateDelta}"` : ''}${modulateMode ? ` mm="${modulateMode}"` : ''}>`;
     let gotContent = false;
 
 
@@ -363,7 +374,6 @@ async function parseGingkoTree(tree) {
       if (c.content === '') continue;
       let content = c.content.trim();
       let toContinue = false;
-
       if (content.slice(0, 3) === '```' || (toContinue = isSongMode)) {
         if (!toContinue) {
           let firstLineSpl = content.indexOf('\n');
@@ -380,18 +390,18 @@ async function parseGingkoTree(tree) {
         }
         // console.log(content);
 
+        let enclosed = false;
         if (content.slice(content.length - 3) === '```') {
           content = content.slice(0, content.length - 3);
-        } if (!parserTag) {
-          parserTag = 'cp';
+          enclosed = true;
         }
         content = content.trim();
 
-        let p = parserTag === 'cp' ? null : parserTag === 'ug' ? new CS.UltimateGuitarParser() : new CS.ChordSheetParser();
+        let p = parserTag === 'cp' ? null : parserTag === 'ug' ? new CS.UltimateGuitarParser() : (enclosed ? new CS.ChordSheetParser() : null);
         /**
          * @type {import('chordsheetjs').Song}
          */
-        let song = parserTag === 'cp' ? parseChordProBody(content, true) : p.parse(content);
+        let song = p === null ? parseChordProBody(content, true) : p.parse(content);
         let alreadyGotSongOutput = !!songOutput;
         songOutput = getSongOutput(song, alreadyGotSongOutput ? songOutput : slides[0], parserParams.indexOf('notranspose') >= 0, shows.length, songIndex);
         if (songOutput.songBitMetaData) {
@@ -403,11 +413,12 @@ async function parseGingkoTree(tree) {
           if (songOutput.songKeyLabelPrefered) {
             slides[0] += `<div class="songinfo-label key-signature" data-songid="${songIndex}">${songOutput.songKeyLabelPrefered}</div>`;
             songKeyLabel = songOutput.songKeyLabelPrefered;
+            if (songKeyLabel) songOutput.origPreferedKeyChord = Chord.parse(songKeyLabel);
             songKey = songOutput.songKey;
             origSongKeyLabel =  songMeta.key ? songMeta.key : null;
           }
           if (songOutput.songCapoPrefered) {
-            let resolvedKeySpan = songOutput.songKeyLabelPrefered ?  ` <span>${Chord.parse(songOutput.songKeyLabelPrefered).transpose(-capoResult).toString()}</span>` : '';
+            let resolvedKeySpan = songOutput.songKeyLabelPrefered ?  ` <span>${Chord.parse(songOutput.songKeyLabelPrefered).transpose(-songOutput.songCapoPrefered).toString()}</span>` : '';
             slides[0] += `<div class="songinfo-label capo" data-songid="${songIndex}">${songOutput.songCapoPrefered}${resolvedKeySpan}</div>`;
             songCapo = songOutput.songCapoPrefered;
           }
@@ -438,7 +449,6 @@ async function parseGingkoTree(tree) {
     }
     let obj = {
       slides,
-      keyLabel: songKeyLabel,
       origKey: origSongKeyLabel,
       key: songKey,
       capo: songCapo,

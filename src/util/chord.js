@@ -380,7 +380,11 @@ class Chord {
   }
 
   transpose(delta) {
-    return processChord(this, transpose, delta);
+    let result = processChord(this, transpose, delta);
+    if (!result.getSignAsSharp() !== !this.getSignAsSharp()) {
+      result = result.switchModifier();
+    }
+    return result;
   }
 
   toString() {
