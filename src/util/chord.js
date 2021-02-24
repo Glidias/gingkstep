@@ -7,10 +7,12 @@
 const chordRegex = /(^[A-G])([h#b]*)?([^/\s]*)(\/([A-G])([h#b]*)?)?$/; ///([A-G])(h|#|b)?([^/\s]*)(\/([A-G])(h|#|b)?)?/i;
 const romanRegex = /(^([h#b]*)?([ivIV]+))([^/\s]*)(\/([h#b]*)?([ivIV]+))?$/;
 const nashVilleRegex = /(^([h#b]*)?([1-7]+))([^/\s]*)(\/([h#b]*)?([1-7]+))?$/;
+const { root } = require("cheerio");
 const {
 	getSharpFlatDelta,
-	A, G, PIANO_KEYS, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP
+	A, G, PIANO_KEYS, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP, MINOR_SCALE_FLATS
   } = require("./keys");
+//, SIGN_AS_SHARP_MINOR
 
 /*
 const ROMAN_TO_DECIMAL_MAP = {
@@ -182,30 +184,40 @@ const processChord = (sourceChord, processor, processorArg) => {
   /**
    * Get roman numeral symbol of a given val against key root chord via naive method (only maximum 1 flat or 1 sharp used for non-diatonics).
    * Prefers use of symbol or flat against key signature of rootchord to minimise amount of sharp/flat accidentals via prefered natural.
-   * @param {Number} theVal
+   * @param {Number} theVal getTrebleVal() or getBassVal() result
    * @param {String} modifier
    * @param {Chord} rootChord Either a natural major or minor chord representation for the key
    * @return {String} The chord representation in roman symbol format
    */
   const getSimpleRoman = (theVal, modifier, rootChord) => {
-     let rootKeyVal = rootChord.getTrebleVal(); // rootChord.getMajorScaleVal(); // relative minor mode
+     let rootKeyVal = rootChord.getTrebleVal(); // rootChord.getKeyVal(); // relative minor mode
+
       let offset = theVal - rootKeyVal;
+
       offset %=12;
       if (offset < 0) offset = 12 + offset;
       else if (offset >= 12) offset = offset - 12;
       //console.log(offset);
+
       if (offset < 0 || offset >= PIANO_ROMAN_KEYS.length) {
         //if (offset < 0) offset = PIANO_ROMAN_KEYS.length + offset;
         //else if (offset >= PIANO_ROMAN_KEYS.length) offset -= PIANO_ROMAN_KEYS.length;
         throw new Error("Assertion failed:: Offset of half-steps still out of range between 0 to 11! " + offset)
       }
+
+      if (rootChord.isMinor) { // natural minor offset on minor 3rd, 6th and 7th considerations
+        if (offset === 3 || offset === 8 || offset === 10) offset += 1;
+      }
+
       let chord;
+
 
       if (PIANO_ROMAN_KEYS[offset]) { // diatonic natural major match keynote
         chord = PIANO_ROMAN_KEYS[offset];
       } else { // display  either sharp or flat for non-diatonic keynote?
         let signatureSharps = rootChord.getSignAsSharp();
         let delta = modifier ? getSharpFlatDelta(modifier) : 0;
+
         if (signatureSharps !== 0) {
           if (PIANO_KEYS[theVal]) {
             // prefer against signature for natural possibilities
