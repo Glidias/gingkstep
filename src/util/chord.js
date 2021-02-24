@@ -339,7 +339,6 @@ class Chord {
         result.suffix = result.suffix.slice(rLen);
       }
     }
-    console.log(result.toString());
     return result;
   }
 

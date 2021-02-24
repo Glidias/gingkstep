@@ -96,29 +96,30 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
 
           let delta = a - b;
 
-          rootChord = newKeyChord;
+            let toSwitchRel = newKeyChord.isMinor !== oldChordKey.isMinor;
+            if (delta !== 0 ||  toSwitchRel) {
+              // consider: factor this into actual transpose method?
+              let oldSignatureSharp = oldChordKey.getSignAsSharp();
 
-          // consider: factor this into actual transpose method?
-          let oldSignatureSharp = oldChordKey.getSignAsSharp();
-          let toSwitchRel = newKeyChord.isMinor !== oldChordKey.isMinor;
+             rootChord = newKeyChord;
 
-          newKeyChord = oldChordKey.transpose(delta);
-          if (toSwitchRel) {
-            newKeyChord = newKeyChord.getParallelChord();
+            newKeyChord = oldChordKey.transpose(delta);
+            if (toSwitchRel) {
+              newKeyChord = newKeyChord.getParallelChord();
 
+            }
+            let newSignatureSharp = newKeyChord.getSignAsSharp();
+            if (newSignatureSharp!== 0 && oldSignatureSharp != newSignatureSharp) newKeyChord =  newKeyChord.switchModifier();
+
+            songKeyLabelPrefered = newKeyChord.toString();
+            modulate = oldChordKey + ` to ` + newKeyChord;
+            songKey = newKeyChord.toString().replace('#', 'h'); //normalizeKeyAsMajor(songKey, delta);
+            //console.log(modulate);
+            let songKeyChord = Chord.parse(songKey);
+            if (!newKeyChord.getSignAsSharp() !== !songKeyChord.getSignAsSharp()) {
+              songKey = songKeyChord.switchModifier().toString().replace("#", "h");
+            }
           }
-          let newSignatureSharp = newKeyChord.getSignAsSharp();
-          if (newSignatureSharp!== 0 && oldSignatureSharp != newSignatureSharp) newKeyChord =  newKeyChord.switchModifier();
-
-          songKeyLabelPrefered = newKeyChord.toString();
-          modulate = oldChordKey + ` to ` + newKeyChord;
-          songKey = newKeyChord.toString().replace('#', 'h'); //normalizeKeyAsMajor(songKey, delta);
-          //console.log(modulate);
-          let songKeyChord = Chord.parse(songKey);
-          if (!newKeyChord.getSignAsSharp() !== !songKeyChord.getSignAsSharp()) {
-            songKey = songKeyChord.switchModifier().toString().replace("#", "h");
-          }
-
         }
       }
 

@@ -29,7 +29,7 @@ $EXTENSIONS_ONLY: 0;
 		$theKeys: if($daKeys!=0, $daKeys, if(nth($keySignAsSharp,$i)==1, $keysSharpV, $keysFlatV));
 		@if ($k != 0) {
 			$ks: if($isMinorScale==1, nth($minorScaleFlats, $i), 0);
-			$offset: ($i - 1) - $ks;
+			$offset: ($i - 1 - $ks);
 			.song[key=#{$k}#{$s}] {
 			@for $i from 1 through 12 {
 				$n: nth($numerals, $i);
