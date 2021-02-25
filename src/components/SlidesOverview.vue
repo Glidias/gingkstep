@@ -640,7 +640,7 @@ $bottom-bar-height:50px;
       // outline:rgb(16, 16, 16) 1px solid;
       margin: 0;
       &.selected {
-        outline:rgba(121, 78, 0) 1px solid;
+        outline:rgba(121, 78, 0, 1) 1px solid;
         cursor:auto !important;
         background-color:#181818 !important;
       }
@@ -653,9 +653,9 @@ $bottom-bar-height:50px;
 
     .faint-select .content {
        &.selected {
-        outline:rgba(121, 78, 0, 0.2) 1px solid;
+        outline:rgba(121, 78, 0, 0.3) 1px solid;
         cursor:auto !important;
-        background-color:#101010 !important;//##181818 !important;
+        background-color:#171717 !important;//##181818 !important;
 
       }
        .no-touch & {
