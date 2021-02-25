@@ -26,7 +26,7 @@ $EXTENSIONS_ONLY: 0;
 @mixin generate-numeric-keys-trans($numerals, $keys, $daKeys:0, $isMinor:0, $isMinorScale:0) {
 	$m: if($isMinor==1, 'm', '');
 	$s: if($isMinorScale==1, 'm', '');
-	$keySigner: if($isMinorScale==1, $keyMinorSignAsSharp, $keyMinorSignAsSharp);
+	$keySigner: if($isMinorScale==1, $keyMinorSignAsSharp, $keySignAsSharp);
 	@for $i from 1 through 12 {
 
 		$k: nth($keys, 12 + $i);

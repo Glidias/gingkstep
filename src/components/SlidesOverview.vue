@@ -15,9 +15,9 @@
             }"
           >
             <div :ref="'splideh_'+s+'_'+i" v-for="(htm, i) in ul.slides" :key="i" :id="i === ul.slides.length - 1 ? `omega_slide_${s}` : undefined">
-              <div :class="{selected:lastScrolledSlideIndex === s && innerIndex === i}"  class="content" v-html="htm" v-touch:tap="tapHandlerContentSlide"  :data-inner-index="i" :data-slide-index="s"></div>
+              <div :id="'splideh_'+s+'_'+i"  :class="{selected:lastScrolledSlideIndex === s && innerIndex === i}"  class="content" v-html="htm" v-touch:tap="tapHandlerContentSlide"  :data-inner-index="i" :data-slide-index="s"></div>
               <div v-if="i === ul.slides.length - 1" class="copyright-song" :class="{'-has-copyright': !!ul.copyright}" style="pointer-events:none; ">
-                <div v-html="ul.copyright || ul.slides[0]"></div>
+                <div :id="'splideh_'+s+'-copyright'" v-html="ul.copyright || ul.slides[0]"></div>
                 <div class="arial rewind-button" style="pointer-events:auto" :data-slide-index="s" v-touch:tap="tapRewindHandler">{{lastScrolledSlideIndex === s ? '⏮' : '▶'}}</div>
               </div>
             </div>
@@ -244,7 +244,7 @@ export default {
       setTimeout(()=> {
       for (let i=0, len = slideList.length; i< len; i++) {
         let elem = document.getElementById("omega_slide_"+i);
-
+        if (!elem) return;
         let parentRect =  elem.parentNode.getBoundingClientRect();
         let rectTest =  elem.getBoundingClientRect();
         let totalWidthCols =  ((Math.floor((rectTest.x-parentRect.x)/rectTest.width+0.01))+1);
@@ -640,7 +640,7 @@ $bottom-bar-height:50px;
       // outline:rgb(16, 16, 16) 1px solid;
       margin: 0;
       &.selected {
-        outline:rgba(121, 78, 0) 1px solid;
+        outline:rgba(121, 78, 0, 1) 1px solid;
         cursor:auto !important;
         background-color:#181818 !important;
       }
@@ -653,9 +653,9 @@ $bottom-bar-height:50px;
 
     .faint-select .content {
        &.selected {
-        outline:rgba(121, 78, 0, 0.2) 1px solid;
+        outline:rgba(121, 78, 0, 0.3) 1px solid;
         cursor:auto !important;
-        background-color:#101010 !important;//##181818 !important;
+        background-color:#171717 !important;//##181818 !important;
 
       }
        .no-touch & {

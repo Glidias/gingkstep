@@ -19,11 +19,6 @@ const { parseGingkoTree } = require('./src/util/gingko-parse.js');
 
 const port = process.env.PORT || 3000;
 
-/*
-const I_TREE_ID = 0;
-const I_SESSION_PASSWORD = 1;
-const I_HOST_PASSWORD = 2;
-*/
 const sessions = {};
 /*
 Open Session (Gingko Tree ID): []
@@ -40,7 +35,7 @@ async function startSession(socket, treeId, transpose) { // sessionPassword // h
   sessions[sessionPin] = {
     treeId,
     hostId: socket.id,
-    transpose: transpose ? transpose : [],
+    //transpose: transpose ? transpose : [],
   };
   socket.hostingPin = sessionPin;
   await socket.join(sessionPin);
@@ -96,8 +91,8 @@ io.on('connection', (socket) => {
     }
     await socket.join(sessionPin);
     var data = sessions[sessionPin];
-    console.log(data);
-    io.to(socket.id).emit("joinedRoom", [sessionPin, data.treeId, data.transpose]);
+    //, data.transpose
+    io.to(socket.id).emit("joinedRoom", [sessionPin, data.treeId]);
   });
 
 });

@@ -9,8 +9,6 @@ const {Chord} = require('./chord.js');
 //const {normalizeKeyAsMajor} = require('./keys.js'); // depcreate
 const {parseChordProBody} = require("./chordpro.js");
 
-//
-// TODO: (runtime modulations key changes)
 // kiv, modulations in intro song parts
 
 marked.setOptions({
@@ -108,8 +106,6 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
               modulateMode = newKeyChord.isMinor ? 1 : 2;
             }
             if (delta !== 0) modulateDelta = delta;
-            let newSignatureSharp = newKeyChord.getSignAsSharp();
-            if (newSignatureSharp!== 0 && oldSignatureSharp != newSignatureSharp) newKeyChord =  newKeyChord.switchModifier();
 
             let backToOriginalChord = origPreferedKeyChord && (origPreferedKeyChord.getTrebleVal()===newKeyChord.getTrebleVal());
             if (backToOriginalChord) {
@@ -213,11 +209,16 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
         songKey = Chord.parse(song.metadata.key).getTrebleComponent().replace('#', 'h'); //normalizeKeyAsMajor( song.metadata.key);
         songKeyLabel = song.metadata.key;
       }
-      if (!songCapoPrefered && song.metadata.capo) {
+
+
+      if (song.metadata.capo) {
         let capoAmt = parseInt(song.metadata.capo);
         if (!isNaN(capoAmt) && capoAmt > 0) {
-          songCapoPrefered = capoAmt;
-          songCapoPrefered %= 12;
+          capoAmt %= 12;
+          songCapo = capoAmt;
+          if (!songCapoPrefered) {
+            songCapoPrefered = songCapo;
+          }
         }
       }
 
@@ -267,7 +268,7 @@ function getSongParagraphs(song, songKey, rootChord, songCapo, songIndex, {modul
   let tagInfo = "";
 
   if (songCapo) rootChord = rootChord.transpose(-songCapo);
-
+  let signatureChord = songKey ? Chord.parse(songKey) : null;
   song.paragraphs.forEach((p)=>{
 
     //if (p.type === 'none') return;
@@ -317,7 +318,7 @@ function getSongParagraphs(song, songKey, rootChord, songCapo, songIndex, {modul
             }
           }
 
-          output += prefixSpaces + '<span>'+(chord ? chord.toHTMLString(rootChord) : '') + (trimLyric || "&nbsp;") + '</span>'+ suffixSpaces;
+          output += prefixSpaces + '<span>'+(chord ? chord.toHTMLString(rootChord, signatureChord) : '') + (trimLyric || "&nbsp;") + '</span>'+ suffixSpaces;
           gotContent = true;
           //output += i < lle ? ' ' : '';
         }
