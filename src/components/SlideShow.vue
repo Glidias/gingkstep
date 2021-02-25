@@ -38,6 +38,9 @@ export default {
        this.$emit('goto', newIndex);
      });
   },
+  beforeDestroy () {
+    this.$refs.splider.splide.off('move');
+  },
   watch: {
     stepIndex (newVal) {
       if (newVal !== undefined) {

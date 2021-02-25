@@ -64,10 +64,39 @@ const PIANO_KEYS_12_FLAT_MINOR = PIANO_KEYS_12_FLAT.map(v => v+'m');
 const CHORD_MODE_LETTER = 0;
 const CHORD_MODE_ROMAN = 1;
 const CHORD_MODE_NASHVILLE = 2;
+const Constants = frozen({
+    CHORD_MODE_LETTER, CHORD_MODE_ROMAN, CHORD_MODE_NASHVILLE
+});
 
 function frozen(obj) {
   Object.freeze(obj);
   return obj;
+}
+
+function getDataModel() {
+  return {
+    Constants,
+    showOverview: true,
+    showChords: false,
+    sessionPin: '',
+    attemptingConnect: false,
+    isHost: false,
+    strongHighlight: false,
+    songFocusIndex: 0,
+    useCapo: false, // ux: currently, this is simply a global setting for convention
+
+    slides: null,
+
+    // consider: is there a need for a 3-property data set to syncronise?
+    slideActiveKeys: [], // [string] // Immutable: currently activated main key signatures for songs
+    slideKeyIndices: [], // [int] // Mutable: selected halfstep index per song
+    preferSharp: false, // whether to prefer enharmonically use sharp instead of flats
+
+    formValueTreeId: 'g1zdt6',
+
+    stepIndex: 0,
+    chordMode: CHORD_MODE_LETTER,
+  }
 }
 
 export default {
@@ -76,38 +105,14 @@ export default {
     SlidesOverview, SlideShow
   },
   data () {
-    return {
-      Constants: frozen({
-        CHORD_MODE_LETTER, CHORD_MODE_ROMAN, CHORD_MODE_NASHVILLE
-      }),
-      showOverview: true,
-      showChords: false,
-      sessionPin: '',
-      attemptingConnect: false,
-      isHost: false,
-      strongHighlight: false,
-      songFocusIndex: 0,
-      useCapo: false, // ux: currently, this is simply a global setting for convention
-
-      slides: null,
-
-      // consider: is there a need for a 3-property data set to syncronise?
-      slideActiveKeys: [], // [string] // Immutable: currently activated main key signatures for songs
-      slideKeyIndices: [], // [int] // Mutable: selected halfstep index per song
-      preferSharp: false, // whether to prefer enharmonically use sharp instead of flats
-
-      formValueTreeId: 'g1zdt6',
-
-      stepIndex: 0,
-      chordMode: CHORD_MODE_LETTER,
-    }
+    return getDataModel();
   },
   computed: {
     showChordLetters () {
       return this.chordMode === CHORD_MODE_LETTER;
     },
     gotCapoMeta () {
-      let slides = this.slides;
+      let slides = this.slides || [];
        for (let i =0, l =slides.length; i<l; i++) {
         if (slides[i].capo) {
           return true;
@@ -172,15 +177,19 @@ export default {
     },
     slidesFlattened() {
       let arr = [];
-      let slides = this.slides;
+      let slides = this.slides || [];
       for (let i =0; i<slides.length; i++) {
-        arr.push(...slides[i].slides);
+        let cSlide = slides[i];
+        let pLen = cSlide.slides.length;
+        for (let p = 0; p< pLen; p++) {
+          arr.push(cSlide.slides[p]);
+        }
       }
       return arr;
     },
     slideHeaderIndices () {
       let obj = {};
-      let slides = this.slides;
+      let slides = this.slides || [];
       let count = 0;
       for (let i =0; i<slides.length; i++) {
         obj[count] = true;
@@ -219,7 +228,7 @@ export default {
         this.stepIndex = parseInt(slideId);
       }
     },
-    joinedRoom: async function(dataArr) { //sessionPin, treeD, keys
+    joinedRoom: async function(dataArr) { //sessionPin, treeD //, keys
       let sessionPin = dataArr[0];
       let treeD = dataArr[1];
       let keys = dataArr[2];
@@ -228,7 +237,7 @@ export default {
       this.sessionPin = sessionPin;
       this.isHost = false;
 
-      // check for modulations from keys and apply them
+
     },
   },
   methods: {
@@ -254,6 +263,20 @@ export default {
       }
       this.attemptingConnect = false;
     },
+    onPopState (event) {
+      if (event.state === null) {
+        this.resetDataModel();
+      } else {
+        if (event.state.s) {
+          if (this._lastHistoryState && this._lastHistoryState.s === event.state.s && this._lastState && this._lastState.formValueTreeId === event.state.s) {
+            Object.assign(this.$data, this._lastState);
+            this.setSlides(this._lastState.slides);
+          } else {
+            this.state.formValueTreeId = event.state.s;
+          }
+        }
+      }
+    },
     getDefaultKeyIndices() {
       let arr = [];
       let keyChords = this.defaultKeyChords;
@@ -278,23 +301,33 @@ export default {
       this.refreshPreferSharp();
     },
     handleNoLetterKeys() {
-      let slides = this.slides;
+      let slides = this.slides || [];
       for (let i =0, l=slides.length; i < l; i++) {
         document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q)=>{
           if (!q.getAttribute('key')) return;
           q.setAttribute('keyx', q.getAttribute('key'));
           q.removeAttribute('key');
         });
+        let curSlide = slides[i];
+        let len = curSlide.slides.length;
+        for (let s = 0; s<len; s++) {
+          curSlide.slides[s] = document.getElementById(`splideh_${i}_${s}`).innerHTML;
+        }
       }
     },
     handleGotLetterKeys() {
-      let slides = this.slides;
+      let slides = this.slides || [];
       for (let i =0, l=slides.length; i < l; i++) {
         document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q)=>{
           if (!q.hasAttribute('keyx')) return;
           q.setAttribute('key', q.getAttribute('keyx'));
           q.removeAttribute('keyx');
        });
+        let curSlide = slides[i];
+        let len = curSlide.slides.length;
+        for (let s = 0; s<len; s++) {
+          curSlide.slides[s] = document.getElementById(`splideh_${i}_${s}`).innerHTML;
+        }
       }
     },
     onKeyDropdownChange(event) {
@@ -302,13 +335,15 @@ export default {
       this.$set(this.slideKeyIndices, this.songFocusIndex, event.currentTarget.selectedIndex);
     },
     handleTranposeSongKeys(newArr, oldArr) {
-      let slides = this.slides;
-      for (let i =0, l=newArr.length; i < l; i++) {
+      // rather hackish block here
+      //if (!document.getElementById('splideh_0_0')) return;
 
-        if (newArr[i] !== oldArr[i]) {
+      let slides = this.slides;
+      let l = newArr.length;
+      for (let i =0; i < l; i++) {
+
+        if (oldArr[i] && newArr[i] && newArr[i] !== oldArr[i]) {
           let songPrepKey = newArr[i];
-          // precompute songPrepKey tranposition
-          //let mainKeyChordVal = Chord.parse(songPrepKey).getTrebleVal();
 
          // TODO: capo representation for modulate key attribute
          //songPrepKey = ;
@@ -319,7 +354,7 @@ export default {
           }
 
           // typical key tranpsition
-          document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q)=>{
+          document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q, key)=>{
             let chordStr;
             let keyAttr = q.hasAttribute('key') ? 'key' : 'keyx';
             if (!q.hasAttribute(keyAttr)) return;
@@ -360,6 +395,17 @@ export default {
 
             });
           }
+
+          let curSlide = slides[i];
+          let len = curSlide.slides.length;
+          for (let s = 0; s<len; s++) {
+           curSlide.slides[s] = document.getElementById(`splideh_${i}_${s}`).innerHTML;
+          }
+          curSlide.copyright = document.getElementById(`splideh_${i}-copyright`).innerHTML;
+
+          //splideh_s_i-copyright
+
+
         }
       }
     },
@@ -396,15 +442,35 @@ export default {
       }
       this.$socket.emit(event, data, data2);
     },
+    resetDataModel() {
+      let slides = this.slides;
+      //Object.assign( );
+      this._lastState=getDataModel();
+      this._lastState.formValueTreeId = this.formValueTreeId;
+      this._lastState.slides = slides;
+      Object.assign(this.$data, getDataModel());
+    },
     onSubmitJoin (e) {
       if (!e.currentTarget.roomid.value) return;
       this.lazyEmit('join-room', e.currentTarget.roomid.value);
     },
-     onSubmitLoad (e) {
+     async onSubmitLoad (e) {
       if (!e.currentTarget.treeid.value) {
         return;
       }
-      this.loadTree(e.currentTarget.treeid.value);
+      let toLoad = e.currentTarget.treeid.value;
+      await this.loadTree(toLoad);
+
+      if (this.slides) {
+        if (!history.state) {
+          history.pushState(this._lastHistoryState = {s:toLoad}, "", "?s="+toLoad);
+        } else {
+          history.replaceState(this._lastHistoryState = {s:toLoad}, "", "?s="+toLoad);
+        }
+        window.addEventListener('popstate', this.onPopState.bind(this));
+       // history.replaceState(toLoad, "", "?s="+toLoad);
+      }
+
     },
     hostSession () {
       this.lazyEmit('host-room', this.formValueTreeId);
