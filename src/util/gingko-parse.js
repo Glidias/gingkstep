@@ -70,6 +70,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
   let songBitMetaData;
   let songHeaderTitle;
   let origPreferedKeyChord;
+  let capoChange;
 
   let modulate;
   let modulateDelta;
@@ -129,12 +130,13 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
       }
 
        // possible overwrites from headerSlide
-      if ( song.metadata.capo !== undefined) { // KIV>> capo change in middle of song?? wow!
+      if ( song.metadata.capo !== undefined) {
         let capoAmt = parseInt(song.metadata.capo);
         if (!isNaN(capoAmt)) { // && capoAmt > 0
           capoAmt %= 12;
           if (capoAmt !== songCapo) {
             songCapo = capoAmt;
+            capoChange = true;
           }
         }
       }
@@ -165,7 +167,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
            // also check if the song an empty song or not?
           let songParas = getSongParagraphs(songBit,
             songKey ? songKey : lastSongKeyLabel  ? Chord.parse(lastSongKeyLabel).toString().replace('#', 'h') /*normalizeKeyAsMajor(lastSongKeyLabel)*/ : null,
-            lastSongKeyLabel ? Chord.parse(lastSongKeyLabel) : null, songCapo, songIndex
+            lastSongKeyLabel ? Chord.parse(lastSongKeyLabel) : null, {songCapo, capoChange}, songIndex
           );
 
           if (!songParas) {
@@ -248,7 +250,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
     songHeaderTitle,
     modulate,
     origPreferedKeyChord,
-    paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord, songCapo, songIndex, {modulate, modulateDelta, modulateMode})
+    paragraphs: getSongParagraphs(song, noTranspose ? null : songKey, noTranspose ? null : rootChord, {capoChange, songCapo}, songIndex, {modulate, modulateDelta, modulateMode})
   }
 }
 
@@ -262,7 +264,7 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
  * @param {Object} [modulationInfo]
  * @return {[Array]}
  */
-function getSongParagraphs(song, songKey, rootChord, songCapo, songIndex, {modulate, modulateDelta, modulateMode}={}) {
+function getSongParagraphs(song, songKey, rootChord, {songCapo, capoChange}={}, songIndex=0, {modulate, modulateDelta, modulateMode}={}) {
 
   let arr = [];
   let tagInfo = "";
@@ -272,7 +274,10 @@ function getSongParagraphs(song, songKey, rootChord, songCapo, songIndex, {modul
   song.paragraphs.forEach((p)=>{
 
     //if (p.type === 'none') return;
-    let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}${songIndex != null ? ` data-songid="${songIndex}"` : ''}${modulate ? ` modulate="${modulate}"` : ''}${modulateDelta ? ` m="${modulateDelta}"` : ''}${modulateMode ? ` mm="${modulateMode}"` : ''}>`;
+    let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}${songIndex != null ? ` data-songid="${songIndex}"` : ''}${modulate ? ` modulate="${modulate}"` : ''}${modulateDelta ? ` m="${modulateDelta}"` : ''}${modulateMode ? ` mm="${modulateMode}"` : ''}${capoChange ? ` capo=${songCapo ? songCapo : 0}` : ''}>`;
+    if (capoChange) {
+      output += `<em class="capo-change">(${songCapo ? 'Capo: '+songCapo : 'Remove capo'})<br></em>`;
+    }
     let gotContent = false;
 
     p.lines.forEach((line, lineIndex, linesArr)=> {
@@ -375,6 +380,7 @@ async function parseGingkoTree(tree) {
     let songCapo;
     let songMeta;
     let copyright;
+    let gotCapo;
 
     for (let ci = 0, cl = children.length; ci< cl; ci++) {
       let c = children[ci];
@@ -428,6 +434,7 @@ async function parseGingkoTree(tree) {
             let resolvedKeySpan = songOutput.songKeyLabelPrefered ?  ` <span>${Chord.parse(songOutput.songKeyLabelPrefered).transpose(-songOutput.songCapoPrefered).toString()}</span>` : '';
             slides[0] += `<div class="songinfo-label capo" data-songid="${songIndex}">${songOutput.songCapoPrefered}${resolvedKeySpan}</div>`;
             songCapo = songOutput.songCapoPrefered;
+            gotCapo = true;
           }
           if (songOutput.headerSlideAddedIntros) slides[0] += songOutput.headerSlideAddedIntros;
           if (songOutput.songHeaderTitle || songMeta.title || songMeta.copyright || songMeta.artist || (origSongKeyLabel && origSongKeyLabel!==songKeyLabel)) {
@@ -436,6 +443,10 @@ async function parseGingkoTree(tree) {
             + (songMeta.artist ? 'artist: '+songMeta.artist + "<br>" : "")
             + (origSongKeyLabel && origSongKeyLabel!==songKeyLabel ? '<em>original key: '+origSongKeyLabel + `<br>(&gt;<span class="songinfo-label key-signature" data-songid="${songIndex}">${songKeyLabel}</span>)<br></em>` : "")
             + (songMeta.copyright ? "&copy; " + songMeta.copyright : "")
+          }
+        } else {
+          if (songOutput.songCapo) {
+            gotCapo = true;
           }
         }
 
@@ -460,7 +471,8 @@ async function parseGingkoTree(tree) {
       key: songKey,
       capo: songCapo,
       meta: songMeta,
-      copyright
+      copyright,
+      gotCapo
     };
     shows.push(obj);
     songIndex++;

@@ -112,7 +112,7 @@ export default {
     gotCapoMeta () {
       let slides = this.slides || [];
        for (let i =0, l =slides.length; i<l; i++) {
-        if (slides[i].capo) {
+        if (slides[i].gotCapo) {
           return true;
         }
       }
@@ -337,20 +337,21 @@ export default {
       if (!document.getElementById('splideh_0_0')) return;
 
       let slides = this.slides;
+
       if (!slides || newArr.length !== oldArr.length) return;
       let l = newArr.length;
-
+      let useCapo = this.useCapo;
       for (let i =0; i < l; i++) {
 
 
-        if ( (oldArr[i] && newArr[i] && newArr[i] !== oldArr[i]) || (capoInvalidated && slides[i].capo) ) {
+        if ( (oldArr[i] && newArr[i] && newArr[i] !== oldArr[i]) || (capoInvalidated && slides[i].gotCapo) ) {
           let songPrepKey = newArr[i];
 
           let lastKey = songPrepKey;
           let songCapo = 0;
           let capoKey = null;
 
-          if (this.useCapo && slides[i].capo) {
+          if (useCapo && slides[i].capo) {
             songCapo = slides[i].capo;
             capoKey = Chord.parse(songPrepKey).transpose(-songCapo).toString();
 
@@ -364,19 +365,19 @@ export default {
             q.innerHTML = songPrepKey;
           });
 
-
-
           // typical key tranpsition
           document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q, key)=>{
             let chordStr;
             let keyAttr = q.hasAttribute('key') ? 'key' : 'keyx';
             if (!q.hasAttribute(keyAttr)) return;
-            if (q.hasAttribute('modulate')) {
+
+            if (q.hasAttribute('modulate')) { // Modulation
               let m = q.hasAttribute('m') ? q.getAttribute('m') : null;
               let mm = q.getAttribute('mm') ? q.getAttribute('mm') : null;
               if (m === null && mm == null) { // assumed modulate back to orignal key
-                q.setAttribute(keyAttr, (capoKey || songPrepKey).replace("#", 'h'));
-                q.setAttribute('modulate', lastKey+' to '+songPrepKey + (capoKey ? ` (${capoKey}:` : '')); // consider capo usage
+                let capoKeyToUse = useCapo && q.hasAttribute('capo') ? Chord.parse(lastKey).transpose(-parseInt(q.getAttribute('capo'))).toString() :  capoKey;
+                q.setAttribute(keyAttr, (capoKeyToUse || songPrepKey).replace("#", 'h'));
+                q.setAttribute('modulate', lastKey+' to '+songPrepKey + (capoKeyToUse ? ` (${capoKeyToUse}:` : '')); // consider capo usage
                 chordStr = songPrepKey;
               } else {
                 let chord = Chord.parse(lastKey);
@@ -387,12 +388,14 @@ export default {
                   chord = chord.getParallelChord();
                 }
                 chordStr = chord.toString();
-                let capoChordStr = songCapo ? chord.transpose(-songCapo).toString() : null;
-                q.setAttribute(keyAttr, chordStr.replace("#", 'h'));
+
+                let capoChordStr = useCapo && q.hasAttribute('capo') ? chord.transpose(-parseInt(q.getAttribute('capo'))).toString() : songCapo ? chord.transpose(-songCapo).toString() : null;
+                q.setAttribute(keyAttr, (capoChordStr || chordStr).replace("#", 'h'));
                 q.setAttribute('modulate', lastKey + ' to '+chordStr + (capoChordStr ? ` (${capoChordStr}:`: ''));
               }
-            } else { // use songPrepKey transposition precomputed
-              q.setAttribute(keyAttr, (capoKey || songPrepKey).replace("#", 'h'));
+            } else { // use lastKey no modulation
+              let capoKeyToUse = useCapo && q.hasAttribute('capo') ? Chord.parse(lastKey).transpose(-parseInt(q.getAttribute('capo'))).toString() :  capoKey;
+              q.setAttribute(keyAttr, (capoKeyToUse || lastKey).replace("#", 'h'));
               chordStr = songPrepKey;
             }
             lastKey = chordStr;
@@ -773,7 +776,16 @@ div.songinfo-label {
 }
 
 
+
 .show-chords {
+
+  &.using-capo {
+    .song > .capo-change {
+      display:inline;
+    }
+  }
+
+
   .song {
 
     line-height:2.3em !important;
@@ -786,6 +798,13 @@ div.songinfo-label {
       display:block;
       line-height:1.3;
 
+    }
+
+    >.capo-change {
+      display:none;
+
+      font-size:0.8em;
+      //text-decoration:italic;
     }
 
     &:before {
