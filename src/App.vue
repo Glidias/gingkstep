@@ -73,31 +73,6 @@ function frozen(obj) {
   return obj;
 }
 
-function getDataModel() {
-  return {
-    Constants,
-    showOverview: true,
-    showChords: false,
-    sessionPin: '',
-    attemptingConnect: false,
-    isHost: false,
-    strongHighlight: false,
-    songFocusIndex: 0,
-    useCapo: false, // ux: currently, this is simply a global setting for convention
-
-    slides: null,
-
-    // consider: is there a need for a 3-property data set to syncronise?
-    slideActiveKeys: [], // [string] // Immutable: currently activated main key signatures for songs
-    slideKeyIndices: [], // [int] // Mutable: selected halfstep index per song
-    preferSharp: false, // whether to prefer enharmonically use sharp instead of flats
-
-    formValueTreeId: 'g1zdt6',
-
-    stepIndex: 0,
-    chordMode: CHORD_MODE_LETTER,
-  }
-}
 
 export default {
   name: "App",
@@ -105,7 +80,30 @@ export default {
     SlidesOverview, SlideShow
   },
   data () {
-    return getDataModel();
+    let urlParams = new URLSearchParams(window.location.search);
+    return {
+      Constants,
+      showOverview: true,
+      showChords: false,
+      sessionPin: '',
+      attemptingConnect: false,
+      isHost: false,
+      strongHighlight: false,
+      songFocusIndex: 0,
+      useCapo: false, // ux: currently, this is simply a global setting for convention
+
+      slides: null,
+
+      // consider: is there a need for a 3-property data set to syncronise?
+      slideActiveKeys: [], // [string] // Immutable: currently activated main key signatures for songs
+      slideKeyIndices: [], // [int] // Mutable: selected halfstep index per song
+      preferSharp: false, // whether to prefer enharmonically use sharp instead of flats
+
+      formValueTreeId: urlParams.has('s') ? urlParams.get('s') : 'g1zdt6',
+
+      stepIndex: 0,
+      chordMode: CHORD_MODE_LETTER,
+    }
   },
   computed: {
     showChordLetters () {
@@ -270,9 +268,9 @@ export default {
         if (event.state.s) {
           if (this._lastHistoryState && this._lastHistoryState.s === event.state.s && this._lastState && this._lastState.formValueTreeId === event.state.s) {
             Object.assign(this.$data, this._lastState);
-            this.setSlides(this._lastState.slides);
+            //this.setSlides(this._lastState.slides);
           } else {
-            this.state.formValueTreeId = event.state.s;
+            this.formValueTreeId = event.state.s;
           }
         }
       }
@@ -336,9 +334,10 @@ export default {
     },
     handleTranposeSongKeys(newArr, oldArr) {
       // rather hackish block here
-      //if (!document.getElementById('splideh_0_0')) return;
+      if (!document.getElementById('splideh_0_0')) return;
 
       let slides = this.slides;
+      if (!slides || newArr.length !== oldArr.length) return;
       let l = newArr.length;
       for (let i =0; i < l; i++) {
 
@@ -444,31 +443,43 @@ export default {
     },
     resetDataModel() {
       let slides = this.slides;
-      //Object.assign( );
+     // Object.assign(this._lastState={}, this.$data);
+     this._lastState={
+       slides:this.slides,
+       formValueTreeId: this.formValueTreeId,
+     }
+     this.slides = null;
+      /*
       this._lastState=getDataModel();
+
       this._lastState.formValueTreeId = this.formValueTreeId;
       this._lastState.slides = slides;
-      Object.assign(this.$data, getDataModel());
+      */
+     // Object.assign(this.$data, getDataModel());
     },
     onSubmitJoin (e) {
       if (!e.currentTarget.roomid.value) return;
       this.lazyEmit('join-room', e.currentTarget.roomid.value);
     },
-     async onSubmitLoad (e) {
-      if (!e.currentTarget.treeid.value) {
+     async onSubmitLoad () { //e
+
+      let toLoad = this.formValueTreeId; //e.currentTarget.treeid.value;
+      if (!toLoad) {
         return;
       }
-      let toLoad = e.currentTarget.treeid.value;
       await this.loadTree(toLoad);
 
+
       if (this.slides) {
+        /*
         if (!history.state) {
           history.pushState(this._lastHistoryState = {s:toLoad}, "", "?s="+toLoad);
         } else {
           history.replaceState(this._lastHistoryState = {s:toLoad}, "", "?s="+toLoad);
         }
-        window.addEventListener('popstate', this.onPopState.bind(this));
-       // history.replaceState(toLoad, "", "?s="+toLoad);
+        */
+        //window.addEventListener('popstate', this.onPopState.bind(this));
+        history.replaceState(toLoad, "", "?s="+toLoad);
       }
 
     },
@@ -480,7 +491,7 @@ export default {
     showChords () {
       window.dispatchEvent(new Event('resize'));
     },
-    showChordLetters(newVal) {
+    showChordLetters(newVal, oldVal) {
       if (newVal) {
         this.handleGotLetterKeys();
       } else {
@@ -495,7 +506,10 @@ export default {
     }
   },
   mounted () {
-
+     let urlParams = new URLSearchParams(window.location.search);
+     if (urlParams.has('autoload') && urlParams.has('s') && urlParams.get('s')) {
+       if (this.formValueTreeId) this.onSubmitLoad();
+     }
   },
 };
 </script>
