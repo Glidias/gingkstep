@@ -332,25 +332,39 @@ export default {
       // consider: attempt modulation chosen key to server and wait for response back?
       this.$set(this.slideKeyIndices, this.songFocusIndex, event.currentTarget.selectedIndex);
     },
-    handleTranposeSongKeys(newArr, oldArr) {
+    handleTranposeSongKeys(newArr, oldArr, capoInvalidated) {
       // rather hackish block here
       if (!document.getElementById('splideh_0_0')) return;
 
       let slides = this.slides;
       if (!slides || newArr.length !== oldArr.length) return;
       let l = newArr.length;
+
       for (let i =0; i < l; i++) {
 
-        if (oldArr[i] && newArr[i] && newArr[i] !== oldArr[i]) {
+
+        if ( (oldArr[i] && newArr[i] && newArr[i] !== oldArr[i]) || (capoInvalidated && slides[i].capo) ) {
           let songPrepKey = newArr[i];
 
-         // TODO: capo representation for modulate key attribute
-         //songPrepKey = ;
           let lastKey = songPrepKey;
           let songCapo = 0;
-          if (slides[i].capo) {
+          let capoKey = null;
+
+          if (this.useCapo && slides[i].capo) {
             songCapo = slides[i].capo;
+            capoKey = Chord.parse(songPrepKey).transpose(-songCapo).toString();
+
           }
+          if (slides[i].capo) {
+            document.querySelectorAll(`.songinfo-label.capo[data-songid="${i}"] > span`).forEach((q)=>{
+              q.innerHTML = capoKey || Chord.parse(songPrepKey).transpose(-slides[i].capo).toString();
+            });
+          }
+          document.querySelectorAll(`.songinfo-label.key-signature[data-songid="${i}"]`).forEach((q)=>{
+            q.innerHTML = songPrepKey;
+          });
+
+
 
           // typical key tranpsition
           document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q, key)=>{
@@ -361,8 +375,8 @@ export default {
               let m = q.hasAttribute('m') ? q.getAttribute('m') : null;
               let mm = q.getAttribute('mm') ? q.getAttribute('mm') : null;
               if (m === null && mm == null) { // assumed modulate back to orignal key
-                q.setAttribute(keyAttr, songPrepKey.replace("#", 'h'));
-                q.setAttribute('modulate', lastKey+' to '+songPrepKey); // consider capo usage
+                q.setAttribute(keyAttr, (capoKey || songPrepKey).replace("#", 'h'));
+                q.setAttribute('modulate', lastKey+' to '+songPrepKey + (capoKey ? ` (${capoKey}:` : '')); // consider capo usage
                 chordStr = songPrepKey;
               } else {
                 let chord = Chord.parse(lastKey);
@@ -373,27 +387,16 @@ export default {
                   chord = chord.getParallelChord();
                 }
                 chordStr = chord.toString();
+                let capoChordStr = songCapo ? chord.transpose(-songCapo).toString() : null;
                 q.setAttribute(keyAttr, chordStr.replace("#", 'h'));
-                q.setAttribute('modulate', lastKey + ' to '+chordStr);
+                q.setAttribute('modulate', lastKey + ' to '+chordStr + (capoChordStr ? ` (${capoChordStr}:`: ''));
               }
             } else { // use songPrepKey transposition precomputed
-              q.setAttribute(keyAttr, songPrepKey.replace("#", 'h'));
+              q.setAttribute(keyAttr, (capoKey || songPrepKey).replace("#", 'h'));
               chordStr = songPrepKey;
             }
             lastKey = chordStr;
           });
-
-
-          document.querySelectorAll(`.songinfo-label.key-signature[data-songid="${i}"]`).forEach((q)=>{
-            q.innerHTML = songPrepKey;
-          });
-
-          // todo
-          if (songCapo) {
-            document.querySelectorAll(`.songinfo-label.capo[data-songid="${i}"] > span`).forEach((q)=>{
-
-            });
-          }
 
           let curSlide = slides[i];
           let len = curSlide.slides.length;
@@ -409,8 +412,8 @@ export default {
       }
     },
     refreshKeys() {
-      // attempt modulation chosen key to server and wait for response back
-      //console.log('TODO:'+);
+      // consider: attempt modulation chosen key to server and wait for response back
+
       let c;
       this.slideActiveKeys = c = this.slideActiveKeys.concat();
       c[this.songFocusIndex] = this.keyOptions[this.curKeyIndex];
@@ -503,6 +506,9 @@ export default {
     },
     curKeyLabelPrefered(newVal) {
       this.refreshKeys();
+    },
+    useCapo () {
+      this.handleTranposeSongKeys(this.slideActiveKeys, this.slideActiveKeys, true);
     }
   },
   mounted () {

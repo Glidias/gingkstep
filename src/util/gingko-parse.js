@@ -209,11 +209,16 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
         songKey = Chord.parse(song.metadata.key).getTrebleComponent().replace('#', 'h'); //normalizeKeyAsMajor( song.metadata.key);
         songKeyLabel = song.metadata.key;
       }
-      if (!songCapoPrefered && song.metadata.capo) {
+
+
+      if (song.metadata.capo) {
         let capoAmt = parseInt(song.metadata.capo);
         if (!isNaN(capoAmt) && capoAmt > 0) {
-          songCapoPrefered = capoAmt;
-          songCapoPrefered %= 12;
+          capoAmt %= 12;
+          songCapo = capoAmt;
+          if (!songCapoPrefered) {
+            songCapoPrefered = songCapo;
+          }
         }
       }
 
