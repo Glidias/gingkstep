@@ -371,6 +371,7 @@ export default {
             let keyAttr = q.hasAttribute('key') ? 'key' : 'keyx';
             if (!q.hasAttribute(keyAttr)) return;
 
+            let isIntro = false;
             if (q.hasAttribute('modulate')) { // Modulation
               let m = q.hasAttribute('m') ? q.getAttribute('m') : null;
               let mm = q.getAttribute('mm') ? q.getAttribute('mm') : null;
@@ -380,7 +381,8 @@ export default {
                 q.setAttribute('modulate', lastKey+' to '+songPrepKey + (capoKeyToUse ? ` (${capoKeyToUse}:` : '')); // consider capo usage
                 chordStr = songPrepKey;
               } else {
-                let chord = Chord.parse(lastKey);
+                isIntro = q.hasAttribute('intro');
+                let chord = Chord.parse(!isIntro ? lastKey : songPrepKey);
                 if (m !== null) {
                   chord = chord.transpose(parseInt(m));
                 }
@@ -391,14 +393,15 @@ export default {
 
                 let capoChordStr = useCapo && q.hasAttribute('capo') ? chord.transpose(-parseInt(q.getAttribute('capo'))).toString() : songCapo ? chord.transpose(-songCapo).toString() : null;
                 q.setAttribute(keyAttr, (capoChordStr || chordStr).replace("#", 'h'));
-                q.setAttribute('modulate', lastKey + ' to '+chordStr + (capoChordStr ? ` (${capoChordStr}:`: ''));
+                if (!isIntro) q.setAttribute('modulate', lastKey + ' to '+chordStr + (capoChordStr ? ` (${capoChordStr}:`: ''));
+                else q.setAttribute('modulate', 'alt key: '+chordStr + (capoChordStr ? ` (${capoChordStr}:`: ''));
               }
             } else { // use lastKey no modulation
               let capoKeyToUse = useCapo && q.hasAttribute('capo') ? Chord.parse(lastKey).transpose(-parseInt(q.getAttribute('capo'))).toString() :  capoKey;
               q.setAttribute(keyAttr, (capoKeyToUse || lastKey).replace("#", 'h'));
               chordStr = songPrepKey;
             }
-            lastKey = chordStr;
+            if (!isIntro) lastKey = chordStr;
           });
 
           let curSlide = slides[i];

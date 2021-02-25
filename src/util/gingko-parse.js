@@ -6,10 +6,7 @@ const CS = require('chordsheetjs').default;
 const cheerio = require('cheerio');
 const e = require('express');
 const {Chord} = require('./chord.js');
-//const {normalizeKeyAsMajor} = require('./keys.js'); // depcreate
 const {parseChordProBody} = require("./chordpro.js");
-
-// kiv, modulations in intro song parts
 
 marked.setOptions({
   gfm: true,
@@ -42,14 +39,39 @@ function markDownParse(content) {
   return promise;
 }
 
-function findAttrIn(els, attr) {
-  let len = els.length;
-  for (let i =0; i<len; i++) {
-    if (els[i].attribs[attr]) {
-      return els[i].attribs[attr];
+function getModulationInfo(newKeyChord, oldChordKey, rootChord, songKeyLabelPrefered, songKey, origPreferedKeyChord, modulateIntro ) {
+    let modulate, modulateDelta, modulateMode;
+
+    // a new key signature always created per song slide
+    if (newKeyChord && rootChord) {
+      // modulation (by key scale offset delta)
+      let a = newKeyChord.getTrebleVal(); //newKeyChord.getMajorScaleVal();
+      let b = rootChord.getTrebleVal(); //rootChord.getMajorScaleVal();
+      let delta = a - b;
+      let toSwitchMode = newKeyChord.isMinor !== oldChordKey.isMinor;
+      if (delta !== 0 ||  toSwitchMode) {
+        rootChord = newKeyChord;
+        newKeyChord = oldChordKey.transpose(delta);
+        if (toSwitchMode) {
+          newKeyChord = newKeyChord.getParallelChord();
+          modulateMode = newKeyChord.isMinor ? 1 : 2;
+        }
+        if (delta !== 0) modulateDelta = delta;
+
+        let backToOriginalChord = origPreferedKeyChord && (origPreferedKeyChord.getTrebleVal()===newKeyChord.getTrebleVal());
+        if (backToOriginalChord) {
+          newKeyChord = origPreferedKeyChord;
+          modulateMode = null;
+          modulateDelta = null;
+        }
+        songKeyLabelPrefered = newKeyChord.toString();
+        modulate = modulateIntro ? `alt key: ${newKeyChord}`: oldChordKey + ` to ` + newKeyChord;
+        songKey = newKeyChord.toString().replace('#', 'h'); //normalizeKeyAsMajor(songKey, delta);
+      }
     }
-  }
-  return null;
+    return {
+      modulate, modulateDelta, modulateMode, rootChord, songKeyLabelPrefered, songKey, modulateIntro
+    }
 }
 
 /**
@@ -89,43 +111,10 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
 
       if (song.metadata.key) {
         // a new key signature always created per song slide
-        let newKeyChord = Chord.parse(song.metadata.key);
-        let oldChordKey =  headerSlide.songKeyLabelPrefered instanceof Chord ? headerSlide.songKeyLabelPrefered : Chord.parse(headerSlide.songKeyLabelPrefered);
-        if (newKeyChord && rootChord) {
-          // modulation (by key scale offset delta)
-          let a = newKeyChord.getTrebleVal(); //newKeyChord.getMajorScaleVal();
-          let b = rootChord.getTrebleVal(); //rootChord.getMajorScaleVal();
-          let delta = a - b;
-          let toSwitchMode = newKeyChord.isMinor !== oldChordKey.isMinor;
-          if (delta !== 0 ||  toSwitchMode) {
-            // consider: factor this into actual transpose method?
-            let oldSignatureSharp = oldChordKey.getSignAsSharp();
-            rootChord = newKeyChord;
-            newKeyChord = oldChordKey.transpose(delta);
-            if (toSwitchMode) {
-              newKeyChord = newKeyChord.getParallelChord();
-              modulateMode = newKeyChord.isMinor ? 1 : 2;
-            }
-            if (delta !== 0) modulateDelta = delta;
-
-            let backToOriginalChord = origPreferedKeyChord && (origPreferedKeyChord.getTrebleVal()===newKeyChord.getTrebleVal());
-            if (backToOriginalChord) {
-              newKeyChord = origPreferedKeyChord;
-              modulateMode = null;
-              modulateDelta = null;
-            }
-            songKeyLabelPrefered = newKeyChord.toString();
-            modulate = oldChordKey + ` to ` + newKeyChord;
-            songKey = newKeyChord.toString().replace('#', 'h'); //normalizeKeyAsMajor(songKey, delta);
-            /* // deprecrated
-            if (!backToOriginalChord) { // already done in tranpose method!
-              let songKeyChord = Chord.parse(songKey);
-              if (!newKeyChord.getSignAsSharp() !== !songKeyChord.getSignAsSharp()) {
-                songKey = songKeyChord.switchModifier().toString().replace("#", "h");
-              }
-            }
-            */
-          }
+        if (rootChord) {
+          let newKeyChord = Chord.parse(song.metadata.key);
+          let oldChordKey =  headerSlide.songKeyLabelPrefered instanceof Chord ? headerSlide.songKeyLabelPrefered : Chord.parse(headerSlide.songKeyLabelPrefered);
+          ({modulate, modulateDelta, modulateMode, rootChord, songKeyLabelPrefered, songKey} = getModulationInfo(newKeyChord, oldChordKey, rootChord, songKeyLabelPrefered, songKey, origPreferedKeyChord));
         }
       }
 
@@ -151,10 +140,13 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
         let elContent = $(el).text().trim();
         let songBit = parseChordProBody(elContent);
         if (songBit) {
+           /*
           if (song.metadata.key)  lastSongKeyLabel = song.metadata.key;
+
           if (songBit.metadata.key) {
             lastSongKeyLabel = songBit.metadata.key;
           }
+          */
 
           if (songBit.metadata.capo) {
             let capoAmt = parseInt(songBit.metadata.capo);
@@ -165,18 +157,22 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
           }
 
            // also check if the song an empty song or not?
-          let songParas = getSongParagraphs(songBit,
-            songKey ? songKey : lastSongKeyLabel  ? Chord.parse(lastSongKeyLabel).toString().replace('#', 'h') /*normalizeKeyAsMajor(lastSongKeyLabel)*/ : null,
-            lastSongKeyLabel ? Chord.parse(lastSongKeyLabel) : null, {songCapo, capoChange}, songIndex
-          );
+          let songParas = getSongParagraphs(songBit);
 
-          if (!songParas) {
+
+          if (!songParas) {  // process header information
             //console.log("Processing empty directive:" + elContent);
+
+
             if (songBit.metadata.key) {
-              songKeyLabel = songBit.metadata.key;
+              lastSongKeyLabel = songBit.metadata.key;
+            }
+
+            if (songBit.metadata.key) {
+              //songKeyLabel = songBit.metadata.key;
               if (!songKeyLabelPrefered) {
-                songKey = Chord.parse(songKeyLabel).toString().replace('#', 'h'); /*normalizeKeyAsMajor(songKeyLabel)*/;
-                songKeyLabelPrefered = songKeyLabel;
+                songKey = Chord.parse(songBit.metadata.key).toString().replace('#', 'h');
+                songKeyLabelPrefered = songBit.metadata.key;
               }
             }
             if (songBit.metadata.capo) {
@@ -189,7 +185,40 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
                 }
               }
             }
-          } else {
+          } else { // assumed song has started from this point onwards
+            /*
+            if (!songKeyLabelPrefered && song.metadata.key) {
+              songKeyLabelPrefered = song.metadata.key;
+              songKey = Chord.parse(song.metadata.key).getTrebleComponent().replace('#', 'h'); //normalizeKeyAsMajor( song.metadata.key);
+              songKeyLabel = song.metadata.key;
+            }
+            */
+
+
+            ////*
+            if (!origPreferedKeyChord) {
+              let det =  songKey ? songKey : lastSongKeyLabel  ? lastSongKeyLabel.toString().replace('#', 'h') : song.metadata.key ? song.metadata.key : null;
+              origPreferedKeyChord = det ? Chord.parse(det) : null;
+              songKeyLabelPrefered = det;
+            }
+            rootChord = song.metadata.key ? Chord.parse(song.metadata.key) : lastSongKeyLabel ? Chord.parse(lastSongKeyLabel) : null;
+            if ( origPreferedKeyChord && songBit.metadata.key && songKeyLabelPrefered && rootChord && songBit.metadata.key !== rootChord.toString()) {
+
+              let modInfo =  getModulationInfo(Chord.parse(songBit.metadata.key), origPreferedKeyChord, rootChord, songKeyLabelPrefered, songKey, origPreferedKeyChord, true);
+
+              songParas = getSongParagraphs(songBit,
+                modInfo.songKey ? modInfo.songKey : lastSongKeyLabel  ? lastSongKeyLabel.toString().replace('#', 'h') : null,
+                 modInfo.rootChord,
+                  {songCapo}, songIndex, modInfo );
+            } else {
+                songParas = getSongParagraphs(songBit,
+                  songKey ? songKey : lastSongKeyLabel  ? lastSongKeyLabel.toString().replace('#', 'h') : null,
+                  songBit.metadata.key || song.metadata.key ? Chord.parse(songBit.metadata.key || song.metadata.key) : lastSongKeyLabel ? Chord.parse(lastSongKeyLabel) : null,
+                  {songCapo, capoChange}, songIndex
+                );
+            }
+            //*/
+
             extraSongBits.push(songParas);
           }
           Object.assign(songBitMetaData, songBit.metadata);
@@ -198,7 +227,6 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
 
       if (extraSongBits.length) {
         headerSlideAddedIntros = extraSongBits.join("");
-        //console.log(headerSlideAddedIntros);
       }
 
       if (lastSongKeyLabel) {
@@ -226,9 +254,9 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
 
       // finalise starting rootchord
       if (song.metadata.key) {
-        if (!songKeyLabel) {
-          songKeyLabel = song.metadata.key;
-        }
+        //if (!songKeyLabel) {
+        songKeyLabel = song.metadata.key;
+        //}
       }
 
       if (songKeyLabel) {
@@ -259,12 +287,12 @@ function getSongOutput(song, headerSlide, noTranspose, songIndex) {
  * @param {import('chordsheetjs').Song} song
  * @param {String} [songKey] key attribute
  * @param {Chord} [rootChord]
- * @param {Number} [songCapo]
+ * @param {Object} [songCapoInfo]
  * @param {Number} [songIndex]
  * @param {Object} [modulationInfo]
  * @return {[Array]}
  */
-function getSongParagraphs(song, songKey, rootChord, {songCapo, capoChange}={}, songIndex=0, {modulate, modulateDelta, modulateMode}={}) {
+function getSongParagraphs(song, songKey, rootChord, {songCapo, capoChange}={}, songIndex=0, {modulate, modulateDelta, modulateMode, modulateIntro}={}) {
 
   let arr = [];
   let tagInfo = "";
@@ -274,9 +302,9 @@ function getSongParagraphs(song, songKey, rootChord, {songCapo, capoChange}={}, 
   song.paragraphs.forEach((p)=>{
 
     //if (p.type === 'none') return;
-    let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}${songIndex != null ? ` data-songid="${songIndex}"` : ''}${modulate ? ` modulate="${modulate}"` : ''}${modulateDelta ? ` m="${modulateDelta}"` : ''}${modulateMode ? ` mm="${modulateMode}"` : ''}${capoChange ? ` capo=${songCapo ? songCapo : 0}` : ''}>`;
+    let output = `<p class="song"${songKey ? ` key="${songKey}"` : ''}${songIndex != null ? ` data-songid="${songIndex}"` : ''}${modulateIntro ? ` intro` : ''}${modulate ? ` modulate="${modulate}"` : ''}${modulateDelta ? ` m="${modulateDelta}"` : ''}${modulateMode ? ` mm="${modulateMode}"` : ''}${capoChange ? ` capo=${songCapo ? songCapo : 0}` : ''}>`;
     if (capoChange) {
-      output += `<em class="capo-change">(${songCapo ? 'Capo: '+songCapo : 'Remove capo'})<br></em>`;
+      output += `<em class="capo-change">(${songCapo ? 'Capo: '+songCapo : 'Capo: '+songCapo})<br></em>`;
     }
     let gotContent = false;
 
