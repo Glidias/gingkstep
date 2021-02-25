@@ -9,8 +9,6 @@ const {Chord} = require('./chord.js');
 //const {normalizeKeyAsMajor} = require('./keys.js'); // depcreate
 const {parseChordProBody} = require("./chordpro.js");
 
-//
-// TODO: (runtime modulations key changes)
 // kiv, modulations in intro song parts
 
 marked.setOptions({

@@ -17,6 +17,10 @@ const DIFF_ACCIDENTALS_KEYS = [0, -1, 0, -7, 0, 0, 0, 0, -4, 0, -8, 0, 0, -1, 0,
 
 const MIDDLE_C_INDEX = WHITE_KEY_INDICES_FROM_A[2];
 
+const PIANO_KEYS_12_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const PIANO_KEYS_12_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+//const PIANO_KEYS_12_C = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']; // based on diff key signature accidental tolerance of 1
+
 
 /**
  * Converts key to natural major key signature for CSS key signature declarations
@@ -73,5 +77,7 @@ function getSharpFlatDelta(sharpsOrFlats) {
   normalizeKeyAsMajor,
   getSharpFlatDelta,
   MIDDLE_C_INDEX,
-  A, G, PIANO_KEYS, PIANO_KEYS_FLAT, PIANO_KEYS_SHARP, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP, SIGN_AS_SHARP_MINOR, DIFF_ACCIDENTALS_KEYS
+  A, G, PIANO_KEYS, PIANO_KEYS_FLAT, PIANO_KEYS_SHARP, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP, SIGN_AS_SHARP_MINOR, DIFF_ACCIDENTALS_KEYS,
+  PIANO_KEYS_12_SHARP, PIANO_KEYS_12_FLAT,
+  // PIANO_KEYS_12_C
   }

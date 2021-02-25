@@ -360,6 +360,10 @@ class Chord {
     this.mode = mode;
   }
 
+  getSharpFlatDelta() {
+    return this.modifier ? getSharpFlatDelta(this.modifier) : 0;
+  }
+
   getTrebleComponent() {
     return !this.mode ? this.base + (this.modifier || "") : (this.modifier || "") + this.base;
   }

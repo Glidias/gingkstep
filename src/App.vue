@@ -4,18 +4,28 @@
       <slides-overview @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
         <div class="traycontents">
           <div>
-            <p><label><input type="checkbox" v-model="showChords">Show Chords?</label>
+             <label><input type="checkbox" v-model="showChords">Show Chords?</label>
             <select v-show="showChords" v-model="chordMode" @keydown.stop="">
                 <option :value="Constants.CHORD_MODE_LETTER">Letters</option>
                 <option :value="Constants.CHORD_MODE_ROMAN">Roman</option>
                 <option :value="Constants.CHORD_MODE_NASHVILLE">Nashville</option>
               </select>
+
              <label v-show="showChords" v-if="gotCapoMeta"><input type="checkbox" v-model="useCapo">Use Capo?</label>
 
-            <span class="keyer" v-show="curDefKeyIndex >=0">Key:
-              <select @change="onKeyDropdownChange($event)">
-                <option v-for="(li, i) in keyOptions" :key="i" :value="i" :selected="i === curKeyIndex ? true : undefined">{{li}}</option>
-              </select></span> <span v-show="curDefKeyIndex !== curKeyIndex && curDefKeyIndex>=0">{{keyOptions[curDefKeyIndex]}}</span></p>
+              <div v-show="curDefKeyIndex >=0 && showChords" style="margin-top:10px;">
+                <span class="keyer">Key:
+                  <select @change="onKeyDropdownChange($event)">
+                    <option v-for="(li, i) in keyOptions" :key="i" :value="li" :selected="li === curKeyLabel ? true : undefined">{{li}}</option>
+                  </select>
+                </span>
+                <span v-if="curDefKey" v-show="curKeyLabelPrefered !== curDefKey">{{curDefKey}}</span>
+                 <input type="radio" id="radioflat" :value="false" v-model="preferSharp">
+                  <label for="radioflat">b</label>
+                  <input type="radio" id="radiosharp" :value="true" v-model="preferSharp">
+                  <label for="radiosharp">#</label>
+              </div>
+
             <p v-if="!isHost"><label><input type="checkbox" v-model="strongHighlight">Select Highlight</label></p>
           </div>
           <form @submit.prevent="hostSession">
@@ -47,6 +57,9 @@ import SlideShow from "./components/SlideShow";
 import axios from 'axios';
 import {HOST_PREFIX} from './constants';
 import {Chord} from './util/chord';
+import {PIANO_KEYS_12_FLAT, PIANO_KEYS_12_SHARP} from './util/keys';
+const PIANO_KEYS_12_SHARP_MINOR = PIANO_KEYS_12_SHARP.map(v => v+'m');
+const PIANO_KEYS_12_FLAT_MINOR = PIANO_KEYS_12_FLAT.map(v => v+'m');
 
 const CHORD_MODE_LETTER = 0;
 const CHORD_MODE_ROMAN = 1;
@@ -77,7 +90,11 @@ export default {
       useCapo: false, // ux: currently, this is simply a global setting for convention
 
       slides: null,
-      slideKeyIndices: null,
+
+      // consider: is there a need for a 3-property data set to syncronise?
+      slideActiveKeys: [], // [string] // Immutable: currently activated main key signatures for songs
+      slideKeyIndices: [], // [int] // Mutable: selected halfstep index per song
+      preferSharp: false, // whether to prefer enharmonically use sharp instead of flats
 
       formValueTreeId: 'g1zdt6',
 
@@ -98,43 +115,60 @@ export default {
       }
       return false;
     },
-    transposeSongKeys () {
-      let slides = this.slides;
-      if (!this.slides) return [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-
-      let usingCapo = this.useCapo;
-      let keys = [];
-      for (let i =0, l =slides.length; i<l; i++) {
-        let song = slides[i];
-        let transposeAmt = 0;
-        let keyLabel = song.key ? song.key : null;
-        if (usingCapo && keyLabel && song.capo) {
-          transposeAmt = -song.capo;
-        }
-        keys[i] = transposeAmt;
-      }
-      return keys;
-    },
     isGuest () {
       return !this.isHost && this.sessionPin;
     },
     keyOptions () {
-      return ['C', 'C#', 'D', 'E', 'Eb', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+      const fi = this.songFocusIndex;
+      let isMinor = this.defKeyMinors[fi];
+      let preferSharp = this.preferSharp;
+      return !preferSharp ? isMinor ? PIANO_KEYS_12_FLAT_MINOR : PIANO_KEYS_12_FLAT
+                          : isMinor ? PIANO_KEYS_12_SHARP_MINOR : PIANO_KEYS_12_SHARP;
     },
-    keyOptionsFlat () {
-      return ['C', 'Db', 'D', 'E', 'Eb', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+    defaultKeyChords () {
+      let arr = [];
+      let slides = this.slides;
+      if (!slides) return [];
+      for (let i =0; i<slides.length; i++) {
+        let k = slides[i].key;
+        let ch = k ? Chord.parse(k) : null;
+        arr.push(ch);
+      }
+      return arr;
     },
-    keyOptionsSharp () {
-      return ['C', 'C#', 'D', 'E', 'D#', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    curKeyLabel() {
+      return this.slideActiveKeys[this.songFocusIndex];
+    },
+    curKeyLabelPrefered() {
+      return this.keyOptions[this.curKeyIndex];
     },
     curKeyIndex () {
-      // based off this.songFocusIndex
-      // get chosen song key index
-      return -1;
+      const fi = this.songFocusIndex;
+      const indices = this.slideKeyIndices;
+      return indices[fi] != null ? indices[fi] : -1;
+    },
+    defKeyIndices() {
+      return this.getDefaultKeyIndices();
+    },
+    defKeyMinors() {
+     return this.defaultKeyChords.map((c)=> {
+        return c ? c.isMinor : false;
+      });
+    },
+    defKeyAccidentals() {
+      return this.defaultKeyChords.map((c)=> {
+        return c ? c.getSharpFlatDelta() : 0;
+      });
     },
     curDefKeyIndex () {
-      // based off this.songFocusIndex
-      return -1;
+      const fi = this.songFocusIndex;
+      const indices = this.defKeyIndices;
+      return indices[fi] != null ? indices[fi] : -1;
+    },
+    curDefKey() {
+      const fi = this.songFocusIndex;
+      const chords = this.defaultKeyChords;
+      return chords[fi] != null ? chords[fi].toString() : null;
     },
     slidesFlattened() {
       let arr = [];
@@ -220,13 +254,28 @@ export default {
       }
       this.attemptingConnect = false;
     },
+    getDefaultKeyIndices() {
+      let arr = [];
+      let keyChords = this.defaultKeyChords;
+      for (let i =0; i<keyChords.length; i++) {
+        let ch = keyChords[i];
+        arr.push(ch ? (ch.getTrebleVal()%12) : -1);
+      }
+      return arr;
+    },
+    getKeyIndexForSongIndex(fi) {
+      const indices = this.slideKeyIndices;
+      return indices[fi] != null ? indices[fi] : -1;
+    },
     setSlides(slides) {
       this.slides = slides;
-      // todo: set slide key indices
-      //this.slideKeyIndices =;
+      this.slideKeyIndices = this.getDefaultKeyIndices();
+      this.slideActiveKeys = this.defaultKeyChords.map((c)=>{return c ? c.toString() : null})
+      this.refreshPreferSharp();
     },
     onSongFocusChange(songFocusIndex) {
       this.songFocusIndex = songFocusIndex;
+      this.refreshPreferSharp();
     },
     handleNoLetterKeys() {
       let slides = this.slides;
@@ -248,29 +297,39 @@ export default {
        });
       }
     },
+    onKeyDropdownChange(event) {
+      // consider: attempt modulation chosen key to server and wait for response back?
+      this.$set(this.slideKeyIndices, this.songFocusIndex, event.currentTarget.selectedIndex);
+    },
     handleTranposeSongKeys(newArr, oldArr) {
       let slides = this.slides;
       for (let i =0, l=newArr.length; i < l; i++) {
+
         if (newArr[i] !== oldArr[i]) {
-          let songPrepKey = slides[i].key;
+          let songPrepKey = newArr[i];
           // precompute songPrepKey tranposition
           //let mainKeyChordVal = Chord.parse(songPrepKey).getTrebleVal();
 
          // TODO: capo representation for modulate key attribute
          //songPrepKey = ;
           let lastKey = songPrepKey;
+          let songCapo = 0;
+          if (slides[i].capo) {
+            songCapo = slides[i].capo;
+          }
 
           // typical key tranpsition
           document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q)=>{
+            let chordStr;
             let keyAttr = q.hasAttribute('key') ? 'key' : 'keyx';
             if (!q.hasAttribute(keyAttr)) return;
             if (q.hasAttribute('modulate')) {
-              // todo: calculate local tranposed section key
               let m = q.hasAttribute('m') ? q.getAttribute('m') : null;
               let mm = q.getAttribute('mm') ? q.getAttribute('mm') : null;
               if (m === null && mm == null) { // assumed modulate back to orignal key
-                q.setAttribute(keyAttr, songPrepKey);
+                q.setAttribute(keyAttr, songPrepKey.replace("#", 'h'));
                 q.setAttribute('modulate', lastKey+' to '+songPrepKey); // consider capo usage
+                chordStr = songPrepKey;
               } else {
                 let chord = Chord.parse(lastKey);
                 if (m !== null) {
@@ -279,49 +338,49 @@ export default {
                 if (mm !== null) {
                   chord = chord.getParallelChord();
                 }
-                 let chordStr;
-                 // match modulation prefered enharmonic  ? OR from original main key chord?
-                 /*
-
-                if (!chord.getSignAsSharp() !== !songPrepChord.getSignAsSharp()) {
-                  chordStr = chord.switchModifier().toString();
-                } else {
-                  chordStr = chord.toString();
-                }
-                */
                 chordStr = chord.toString();
-
-                q.setAttribute(keyAttr, chordStr);
+                q.setAttribute(keyAttr, chordStr.replace("#", 'h'));
                 q.setAttribute('modulate', lastKey + ' to '+chordStr);
               }
             } else { // use songPrepKey transposition precomputed
-              q.setAttribute(keyAttr, songPrepKey);
+              q.setAttribute(keyAttr, songPrepKey.replace("#", 'h'));
+              chordStr = songPrepKey;
             }
-            lastKey = q.getAttribute(keyAttr);
+            lastKey = chordStr;
           });
 
-          // todo
+
           document.querySelectorAll(`.songinfo-label.key-signature[data-songid="${i}"]`).forEach((q)=>{
-
+            q.innerHTML = songPrepKey;
           });
 
           // todo
-          document.querySelectorAll(`.songinfo-label.capo[data-songid="${i}"] > span`).forEach((q)=>{
+          if (songCapo) {
+            document.querySelectorAll(`.songinfo-label.capo[data-songid="${i}"] > span`).forEach((q)=>{
 
-          });
+            });
+          }
         }
       }
     },
-    onKeyDropdownChange(event) {
+    refreshKeys() {
       // attempt modulation chosen key to server and wait for response back
-      console.log(event.currentTarget.selectedIndex);
-
+      //console.log('TODO:'+);
+      let c;
+      this.slideActiveKeys = c = this.slideActiveKeys.concat();
+      c[this.songFocusIndex] = this.keyOptions[this.curKeyIndex];
     },
     onGoto(index) {
       this.stepIndex = index;
       if (this.isHost && this.sessionPin) {
         this.$socket.emit('slide-change', index+'');
       }
+    },
+    refreshPreferSharp() {
+      let curKeyLabel = this.curKeyLabel;
+      if (!curKeyLabel) return;
+      let c = Chord.parse(curKeyLabel).getSharpFlatDelta();
+      if (c!==0) this.preferSharp = c > 0;
     },
     async lazyEmit(event, data, data2) {
       this.attemptingConnect = true;
@@ -362,8 +421,11 @@ export default {
         this.handleNoLetterKeys();
       }
     },
-    transposeSongKeys(newArr, oldArr) {
+    slideActiveKeys(newArr, oldArr) {
       this.handleTranposeSongKeys(newArr, oldArr);
+    },
+    curKeyLabelPrefered(newVal) {
+      this.refreshKeys();
     }
   },
   mounted () {
