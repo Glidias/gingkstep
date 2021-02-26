@@ -533,8 +533,12 @@ export default {
 
 <style lang="scss">
 @import "~@splidejs/splide/dist/css/themes/splide-default.min.css";
-
+//@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
+//@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400&family=Open+Sans:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap');
 body {
+
+
   padding: 0;
   margin: 0;
   overflow:hidden;
@@ -544,13 +548,17 @@ body {
   width:100%;
   height:100%;
 
-  background-color: black;
-  color:white;
+  font-family: 'Open Sans', 'Work Sans', sans-serif;
+ // font-weight:bold;
+
+  background-color:  #1c1c20;
+
+  color:#aaccff;
 }
 
 
   a {
-    color:orange;
+    color:rgb(206, 194, 206);
   }
 
 #impress {
@@ -563,10 +571,11 @@ body {
 
 
 #app {
-  font-family: Helvetica, Arial, sans-serif;
+
+///*
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
+//*/
   .hidden-vis {
     opacity:0;
     pointer-events:none;
@@ -810,7 +819,9 @@ div.songinfo-label {
     >i {
       display:block;
       line-height:1.3;
-
+      color:#a3a3a3;
+      font-weight:400;
+      font-size:0.95em;
     }
 
     >.capo-change {
@@ -837,14 +848,15 @@ div.songinfo-label {
     display:inline;
     position:relative;
     > i {
-      color:yellow;
+      color:#d8b236;
+      //color:yellow;
     }
   }
 
   .song em>* {
     font-size:0.75em;
      letter-spacing:1px;
-    font-weight:bold;
+    font-weight:500;
   }
   .song>em>*{
     position:absolute;

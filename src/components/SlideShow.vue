@@ -95,16 +95,18 @@ export default {
 
 <style lang="scss" >
   #impress {
-    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+
     line-height: .8;
     font-size: 45px;
 
     .song {
+
       >i {
         text-decoration:underline;
         margin-bottom:0.4em;
         font-size:0.8em;
       }
+
     }
 
     // todo: this will remove all pres! not good for non-song presentations!
@@ -158,8 +160,9 @@ transform-style: preserve-3d;
    */
 
 
-    background-color:black;
-    color:white;
+
+ //   background-color:black;
+ //   color:white;
       strong {
         font-weight: 800;
         font-weight: bold
@@ -235,14 +238,18 @@ transform-style: preserve-3d;
       }
 
       a:hover {
-        color: #333;
+     //   color: #333;
         text-shadow: -1px -1px 2px rgba(100,100,100,0.5);
       }
 
       p {
-        font-weight: 400;
+        font-weight: 500;
         line-height: 60px;
+
         margin-bottom: 20px;
+        i {
+          font-weight:400;
+        }
       }
 
       ol {

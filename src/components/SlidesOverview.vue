@@ -365,9 +365,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style  lang="scss" scoped>
 
-.arial {
-  font-family:Arial, sans-serif;
-}
+
 
 $bottom-bar-height:50px;
 
@@ -454,8 +452,7 @@ $bottom-bar-height:50px;
 .slide-overview {
 
     text-align: center;
-  color: white;
-  background-color: black;
+background-color:#1b1a1a;
   overflow: hidden;
   position: relative;
   height: 100%;
@@ -503,16 +500,19 @@ $bottom-bar-height:50px;
     box-sizing: border-box;
     padding-bottom: 15px;
     column-gap: 0;
-
-    color:#666666;
+    //opacity:.3;
+   // color:#666666;
     &.selected {
-      color:#ffffff;
-      // background-color:#181818;
+     // opacity:1;
+      //color:#ffffff;
+     //  background-color:#141414;
+
+
     }
     > * {
 
         p.song {
-
+          font-weight:300;
           > i {
           font-size:0.9em;
           margin-bottom:0.4em;
@@ -604,7 +604,7 @@ $bottom-bar-height:50px;
     background-color:inherit !important;
   }
     font-size:0.8em;
-    color:#aaaaaa;
+   // color:#aaaaaa;
     position:relative;
 
     &:before {
@@ -629,7 +629,7 @@ $bottom-bar-height:50px;
     color:white;
     margin-top:5px;
     display:inline-block;
-    background-color:#888888;
+   // background-color:#888888;
   }
 
     .content {
@@ -642,25 +642,27 @@ $bottom-bar-height:50px;
       &.selected {
         outline:rgba(121, 78, 0, 1) 1px solid;
         cursor:auto !important;
-        background-color:#181818 !important;
+        background-color:#1c1c20 !important;
       }
+      /*
        .no-touch & {
         &:hover {
-            background-color: #090909;
+            background-color:#151520;
           }
       }
+      */
     }
 
     .faint-select .content {
        &.selected {
         outline:rgba(121, 78, 0, 0.3) 1px solid;
         cursor:auto !important;
-        background-color:#171717 !important;//##181818 !important;
+      //  background-color:#171717 !important;//##181818 !important;
 
       }
        .no-touch & {
         &:hover {
-            background-color: #080808 !important;
+        //    background-color: #080808 !important;
         }
       }
     }
@@ -672,7 +674,7 @@ $bottom-bar-height:50px;
     font-size:16px;
     backdrop-filter: blur(10px);
     color:white;
-    background-color:gray; padding:10px;
+    background-color:rgb(104, 98, 98); padding:10px;
     display:flex;
     z-index:1;
   }
