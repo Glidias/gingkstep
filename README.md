@@ -1,6 +1,8 @@
 # GingkStep
 
-A song lyrics/chords/transposer/page-turner/slideshow/presentation viewer utility for offline and online sessions (similar to Kahoot)
+A song lyrics/chords/transposer/page-turner/slideshow/presentation viewer utility for offline and online sessions (similar to Kahoot).
+
+Check the Wiki https://github.com/Glidias/gingkstep/wiki for user documentation.
 
 ### For development:
 
