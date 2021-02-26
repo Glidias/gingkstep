@@ -60,6 +60,7 @@
 import SlidesOverview from "./components/SlidesOverview";
 import SlideShow from "./components/SlideShow";
 import axios from 'axios';
+import {BUS} from './components/mixins/hotkeys';
 import {HOST_PREFIX} from './constants';
 import {Chord} from './util/chord';
 import {PIANO_KEYS_12_FLAT, PIANO_KEYS_12_SHARP} from './util/keys';
@@ -278,6 +279,27 @@ export default {
             this.formValueTreeId = event.state.s;
           }
         }
+      }
+    },
+    onHotkeyTriggered(ev) {
+      var si;
+      switch(ev) {
+        case "prevStep":
+        case "nextStep":
+          si = this.stepIndex;
+           if (ev === "prevStep") {
+             if (si -1 >= 0) {
+               si--;
+               this.stepIndex = si;
+
+             }
+           } else {
+             if (si + 1 < this.slidesFlattened.length) {
+               si++;
+               this.stepIndex = si;
+             }
+           }
+        break;
       }
     },
     getDefaultKeyIndices() {
@@ -527,6 +549,7 @@ export default {
      if (urlParams.has('autoload') && urlParams.has('s') && urlParams.get('s')) {
        if (this.formValueTreeId) this.onSubmitLoad();
      }
+     BUS.$on('hotkeyTriggered', this.onHotkeyTriggered.bind(this));
   },
 };
 </script>

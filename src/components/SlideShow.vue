@@ -5,11 +5,12 @@
           <splide-slide class="step" v-for="(li, i) in stepList" :key="i" v-html="li" :class="{intro:slidesHeaderIndices && slidesHeaderIndices[i]}"></splide-slide>
         </splide>
     </div>
-    <input type="checkbox" style="position:absolute;left:10px;margin-top:13px" @click.prevent.stop="" class="dummy-cb" @mousedown.stop v-touch:tap="onTapDummy"  @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)">
+    <input type="checkbox" style="position:absolute;left:10px;margin-top:13px" @click.stop="" class="dummy-cb" @mousedown.stop v-touch:tap="onTapDummy"  @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)">
   </div>
 </template>
 
 <script>
+import {mixin} from "./mixins/hotkeys";
 
 
 var computeWindowScale = function( config ) {
@@ -34,6 +35,9 @@ export default {
     stepIndex: Number,
     slidesHeaderIndices: Object,
   },
+  mixins: [
+    mixin
+  ],
   data() {
     return {
       scale: 1
@@ -55,7 +59,7 @@ export default {
       return {
         start: this.stepIndex !== undefined ? this.stepIndex : 0,
         autoWidth: true,
-         easing: 'cubic-bezier(0.37, 0, 0.63, 1)',
+        easing: 'cubic-bezier(0.37, 0, 0.63, 1)',
         type  : 'fade',
         throttle:0,
         speed:0,
@@ -89,15 +93,6 @@ export default {
     }
   },
   methods: {
-    onKeydownHotBox(e) {
-      e.preventDefault();
-    },
-    onKeyupHotBox(e) {
-      e.preventDefault();
-    },
-    onTapDummy(e) {
-      e.stopPropagation();
-    },
     centerBtnTap () {
       this.showTray = !this.showTray;
     },
