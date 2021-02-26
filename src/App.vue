@@ -47,6 +47,11 @@
         <label>Open Tree: <input type="text" name="treeid" v-model="formValueTreeId"></label>
         <button type="submit">Load</button>
       </form>
+      <hr>
+      <h1>GingkStep</h1>
+      <p>A song lyrics/chords/transposer/page-turner/slideshow/presentation viewer utility for offline and online synced sessions across device displays</p>
+      <p>WIKI For more info: [<a href="https://github.com/Glidias/gingkstep/wiki" target="_blank">link</a>]</p>
+      <p><a href="https://github.com/Glidias/gingkstep/wiki/Gingkstep-Usage" target="_blank">Frontend usage guide</a></p>
     </div>
   </div>
 </template>
@@ -542,6 +547,11 @@ body {
   background-color: black;
   color:white;
 }
+
+
+  a {
+    color:orange;
+  }
 
 #impress {
   .introsong {
