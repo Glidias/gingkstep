@@ -67,11 +67,12 @@ export default {
     },
   },
   mounted () {
-     this.$refs.splider.splide.on("move", (newIndex, oldIndex) => {
-       this.$emit('goto', newIndex);
-     });
-     this._resizeHandler = this.onResize.bind(this);
-     window.addEventListener('resize', this._resizeHandler);
+    this.$refs.splider.splide.on("move", (newIndex, oldIndex) => {
+      this.$emit('goto', newIndex);
+    });
+    this._resizeHandler = this.onResize.bind(this);
+    window.addEventListener('resize', this._resizeHandler);
+    this.onResize();
   },
   beforeDestroy () {
     if (this._resizeHandler) window.removeEventListener('resize', this._resizeHandler);
