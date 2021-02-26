@@ -1,5 +1,5 @@
 <template>
-  <div id="impress" data-transition-duration="0">
+  <div id="impress" :style="`transform: scale(${scale})`">
      <splide ref="splider" :options="splideOptions" class="scrollslides">
         <splide-slide class="step" v-for="(li, i) in stepList" :key="i" v-html="li" :class="{intro:slidesHeaderIndices && slidesHeaderIndices[i]}"></splide-slide>
       </splide>
@@ -7,13 +7,46 @@
 </template>
 
 <script>
+
+
+var computeWindowScale = function( config ) {
+  var hScale = window.innerHeight / config.height,
+      wScale = window.innerWidth / config.width,
+      scale = hScale > wScale ? wScale : hScale;
+
+  if ( config.maxScale && scale > config.maxScale ) {
+      scale = config.maxScale;
+  }
+
+  if ( config.minScale && scale < config.minScale ) {
+      scale = config.minScale;
+  }
+  return scale;
+};
+
+
 export default {
    props: {
     stepList: Array,
     stepIndex: Number,
     slidesHeaderIndices: Object,
   },
+  data() {
+    return {
+      scale: 1
+    }
+  },
   computed: {
+    config () {
+      return {
+        width: 1024,
+        height: 768,
+        minScale: 0,
+        maxScale: 1.5625,
+        scale: 1
+      }
+    },
+
     splideOptions() {
       // var cols = this.testC;
       return {
@@ -37,8 +70,11 @@ export default {
      this.$refs.splider.splide.on("move", (newIndex, oldIndex) => {
        this.$emit('goto', newIndex);
      });
+     this._resizeHandler = this.onResize.bind(this);
+     window.addEventListener('resize', this._resizeHandler);
   },
   beforeDestroy () {
+    if (this._resizeHandler) window.removeEventListener('resize', this._resizeHandler);
     this.$refs.splider.splide.off('move');
   },
   watch: {
@@ -47,13 +83,18 @@ export default {
         this.$refs.splider.splide.go(newVal);
       }
     }
-  }
+  },
+  methods: {
+    onResize () {
+      this.scale = computeWindowScale(this.config);
+    }
+  },
 }
 </script>
 
 <style lang="scss" >
   #impress {
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
     line-height: .8;
     font-size: 45px;
 
