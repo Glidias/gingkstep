@@ -1,8 +1,11 @@
 <template>
-  <div id="impress" :style="`transform: scale(${scale})`">
-     <splide ref="splider" :options="splideOptions" class="scrollslides">
-        <splide-slide class="step" v-for="(li, i) in stepList" :key="i" v-html="li" :class="{intro:slidesHeaderIndices && slidesHeaderIndices[i]}"></splide-slide>
-      </splide>
+  <div>
+    <div id="impress" :style="`transform: scale(${scale})`">
+      <splide ref="splider" :options="splideOptions" class="scrollslides">
+          <splide-slide class="step" v-for="(li, i) in stepList" :key="i" v-html="li" :class="{intro:slidesHeaderIndices && slidesHeaderIndices[i]}"></splide-slide>
+        </splide>
+    </div>
+    <input type="checkbox" style="position:absolute;left:10px;margin-top:13px" @click.prevent.stop="" class="dummy-cb" @mousedown.stop v-touch:tap="onTapDummy"  @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)">
   </div>
 </template>
 
@@ -86,6 +89,18 @@ export default {
     }
   },
   methods: {
+    onKeydownHotBox(e) {
+      e.preventDefault();
+    },
+    onKeyupHotBox(e) {
+      e.preventDefault();
+    },
+    onTapDummy(e) {
+      e.stopPropagation();
+    },
+    centerBtnTap () {
+      this.showTray = !this.showTray;
+    },
     onResize () {
       this.scale = computeWindowScale(this.config);
     }
@@ -96,15 +111,22 @@ export default {
 <style lang="scss" >
   #impress {
 
+
+
     line-height: .8;
     font-size: 45px;
 
     .song {
+      &:before {
+        font-size: 0.65em;
+        opacity:.4;
+      }
 
       >i {
         text-decoration:underline;
-        margin-bottom:0.4em;
-        font-size:0.8em;
+        margin-bottom:0.9em;
+        font-size:0.65em;
+        opacity:.4;
       }
 
     }
@@ -244,8 +266,12 @@ transform-style: preserve-3d;
 
       p {
         font-weight: 500;
-        line-height: 60px;
+        //line-height: 60px;
+        line-height:1.5;
 
+        &.song {
+          line-height:1.6;
+        }
         margin-bottom: 20px;
         i {
           font-weight:400;

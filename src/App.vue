@@ -4,7 +4,7 @@
       <slides-overview @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
         <div class="traycontents">
           <div>
-             <label><input type="checkbox" v-model="showChords">Show Chords?</label>
+             <label><input type="checkbox" v-model="showChords" @keydown.stop>Show Chords?</label>
             <select v-show="showChords" v-model="chordMode" @keydown.stop="">
                 <option :value="Constants.CHORD_MODE_LETTER">Letters</option>
                 <option :value="Constants.CHORD_MODE_ROMAN">Roman</option>
@@ -15,14 +15,14 @@
 
               <div v-show="curDefKeyIndex >=0 && showChords" style="margin-top:10px;">
                 <span class="keyer">Key:
-                  <select @change="onKeyDropdownChange($event)">
+                  <select @change="onKeyDropdownChange($event)" @keydown.stop>
                     <option v-for="(li, i) in keyOptions" :key="i" :value="li" :selected="li === curKeyLabel ? true : undefined">{{li}}</option>
                   </select>
                 </span>
                 <span v-if="curDefKey" v-show="curKeyLabelPrefered !== curDefKey">{{curDefKey}}</span>
-                 <input type="radio" id="radioflat" :value="false" v-model="preferSharp">
+                 <input type="radio" id="radioflat" :value="false" v-model="preferSharp" @keydown.stop>
                   <label for="radioflat">b</label>
-                  <input type="radio" id="radiosharp" :value="true" v-model="preferSharp">
+                  <input type="radio" id="radiosharp" :value="true" v-model="preferSharp" @keydown.stop>
                   <label for="radiosharp">#</label>
               </div>
 
@@ -37,7 +37,7 @@
       <slide-show @goto="onGoto" :step-index="stepIndex" :step-list="slidesFlattened" :slides-header-indices="slideHeaderIndices" v-if="!showOverview"></slide-show>
       <a id="hamburger" @click="showOverview = !showOverview"></a>
     </div>
-    <div v-else style="padding:15px">
+    <div v-else style="padding:15px" class="startscrn">
       <form @submit.prevent="onSubmitJoin($event)">
         <label>Join Room: <input type="text" name="roomid"></label>
         <button type="submit">Join</button>
@@ -543,6 +543,7 @@ body {
   margin: 0;
   overflow:hidden;
   touch-action: none;
+
   user-select: none;
 
   width:100%;
@@ -571,6 +572,23 @@ body {
 
 
 #app {
+
+  .dummy-cb {
+    background-color: #1c1c20;
+  opacity:.15;
+    &:focus {
+      outline:rgb(100, 100, 48) 2px solid;
+    }
+  }
+  .startscrn {
+    //font-size:14px;
+    form {
+
+      input {
+        max-width:130px;
+      }
+    }
+  }
 
 ///*
   -webkit-font-smoothing: antialiased;
@@ -835,7 +853,7 @@ div.songinfo-label {
       content: attr(modulate);
       font-style:italic;
       display:block;
-      color:#777777;
+      color:#888888;
       font-size:0.8em;
     }
   }

@@ -31,7 +31,9 @@
     <div class="bottombar">
       <div class="btn left arial" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">↑</div>
       <div class="btn right arial" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">↓</div>
-      <div class="btn center" v-touch:tap="centerBtnTap"></div>
+      <div class="btn center" v-touch:tap="centerBtnTap" @keydown.stop="">
+        <input type="checkbox" style="position:absolute;left:8px;" @click.prevent.stop="" class="dummy-cb" @mousedown.stop v-touch:tap="onTapDummy"  @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)">
+      </div>
       <div class="btn left" v-touch:tap="returnTap" v-show="splideIndex  > lastScrolledSlideIndex">⏎</div>
       <div class="btn right" v-touch:tap="returnTap" v-show="splideIndex < lastScrolledSlideIndex">⏎</div>
     </div>
@@ -169,8 +171,17 @@ export default {
    }
   },
   methods: {
+    onKeydownHotBox(e) {
+      e.preventDefault();
+    },
+    onKeyupHotBox(e) {
+      e.preventDefault();
+    },
     centerBtnTap () {
       this.showTray = !this.showTray;
+    },
+     onTapDummy(e) {
+      e.stopPropagation();
     },
     onTapSlideOverview() {
       this.showTray = false;
@@ -443,6 +454,8 @@ $bottom-bar-height:50px;
 
   }
 }
+
+
 .offseter {
   transition: transform 0.25s cubic-bezier(0.37, 0, 0.63, 1);
   .no-transition & {
