@@ -464,6 +464,7 @@ $bottom-bar-height:50px;
 }
 .slide-overview {
 
+font-size:17px;
     text-align: center;
 background-color:#1b1a1a;
   overflow: hidden;
