@@ -7,6 +7,7 @@
 </template>
 
 <script>
+import { NO_ARROWS } from './mixins/hotkeys';
 
 
 var computeWindowScale = function( config ) {
@@ -57,6 +58,7 @@ export default {
         throttle:0,
         speed:0,
         focus: "center",
+        keyboard: NO_ARROWS ? false : 'global',
         arrows: false,
         pagination: false,
         perPage: 1,

@@ -41,6 +41,7 @@
 </template>
 
 <script>
+import { NO_ARROWS } from './mixins/hotkeys';
 
 function isTouchDevice() {
   return (('ontouchstart' in window) ||
@@ -140,6 +141,7 @@ export default {
         easing: 'cubic-bezier(0.37, 0, 0.63, 1)',
         throttle:0,
         speed:250,
+        keyboard: NO_ARROWS ? false : 'global',
         focus: "center",
         arrows: false,
         perPage: 1,
@@ -195,6 +197,7 @@ export default {
       this.swipeHandler("bottom", e, true);
     },
      tapHandlerLeft2(e) {
+       if (NO_ARROWS) return;
        if (this.splideIndex !== this.lastScrolledSlideIndex)  this.returnTap();
       else this.swipeHandler("bottom", e, true);
     },
@@ -202,6 +205,7 @@ export default {
       this.swipeHandler("top");
     },
     tapHandlerRight2() {
+      if (NO_ARROWS) return;
       if (this.splideIndex !== this.lastScrolledSlideIndex) this.goto(this.splideIndex, 0, 0);
       else this.swipeHandler("top");
     },

@@ -5,6 +5,8 @@ export const HOTKEY_STEP_BINDINGS = [18, 32, 17]; // alt(left), spacebar(middle)
 var maskState = 0;
 var heldMaskState = 0;
 
+export const NO_ARROWS = new URLSearchParams(window.location.search).has('noarrows');
+
 export const COMMANDS = [0, 0, 0, 0, 0, 0, 0, 0];
 COMMANDS[1] = 'prevStep';
 COMMANDS[4] = 'nextStep';

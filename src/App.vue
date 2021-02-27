@@ -60,7 +60,7 @@
 import SlidesOverview from "./components/SlidesOverview";
 import SlideShow from "./components/SlideShow";
 import axios from 'axios';
-import {BUS} from './components/mixins/hotkeys';
+import {BUS, NO_ARROWS} from './components/mixins/hotkeys';
 import {HOST_PREFIX} from './constants';
 import {Chord} from './util/chord';
 import {mixin} from './components/mixins/hotkeys';
@@ -518,7 +518,7 @@ export default {
         }
         */
         //window.addEventListener('popstate', this.onPopState.bind(this));
-        history.replaceState(toLoad, "", "?s="+toLoad);
+        history.replaceState(toLoad, "", "?s="+toLoad+(NO_ARROWS ? '&noarrows': ''));
       }
 
     },
