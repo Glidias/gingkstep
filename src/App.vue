@@ -1,5 +1,5 @@
 <template>
-  <div id="app" :class="{'nashville': chordMode === Constants.CHORD_MODE_NASHVILLE, 'using-capo': useCapo, 'show-chords':showChords, 'show-overview':showOverview, 'is-host':isHost, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
+  <div id="app" :class="{'chord-letters': chordMode === Constants.CHORD_MODE_LETTER, 'nashville': chordMode === Constants.CHORD_MODE_NASHVILLE, 'using-capo': useCapo, 'show-chords':showChords, 'show-overview':showOverview, 'is-host':isHost, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
     <div v-if="slides && slides.length" @keyup="onKeyupHotBox($event)" @keydown="onKeydownHotBox($event)">
       <slides-overview @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
         <div class="traycontents">
@@ -62,7 +62,7 @@ import SlideShow from "./components/SlideShow";
 import axios from 'axios';
 import {BUS, NO_ARROWS} from './components/mixins/hotkeys';
 import {HOST_PREFIX} from './constants';
-import {Chord} from './util/chord';
+import {Chord, romanToLetter} from './util/chord';
 import {mixin} from './components/mixins/hotkeys';
 
 import {PIANO_KEYS_12_FLAT, PIANO_KEYS_12_SHARP} from './util/keys';
@@ -396,7 +396,7 @@ export default {
           });
 
           // typical key tranpsition
-          document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q, key)=>{
+          document.querySelectorAll(`.song[data-songid="${i}"]`).forEach((q)=>{
             let chordStr;
             let keyAttr = q.hasAttribute('key') ? 'key' : 'keyx';
             if (!q.hasAttribute(keyAttr)) return;
@@ -431,6 +431,16 @@ export default {
               q.setAttribute(keyAttr, (capoKeyToUse || lastKey).replace("#", 'h'));
               chordStr = songPrepKey;
             }
+            let signatureChord = Chord.parse(chordStr);
+            let signatureChordVal = signatureChord.getTrebleVal();
+            q.querySelectorAll('em > i').forEach((c)=> {
+              let em = c.parentNode;
+              if (!em.hasAttribute('t')) return;
+              c.setAttribute('t', romanToLetter(em.getAttribute('t'), signatureChord, signatureChordVal));
+              if (em.hasAttribute('b')) {
+                c.setAttribute('b', '/'+romanToLetter(em.getAttribute('b'), signatureChord, signatureChordVal));
+              }
+            });
             if (!isIntro) lastKey = chordStr;
           });
 
@@ -856,6 +866,21 @@ div.songinfo-label {
 
 .show-chords {
 
+  &.chord-letters {
+  .song em {
+      > i {
+        &:before {
+          content:attr(t);
+        }
+
+        &:after {
+          content:attr(b);
+        }
+      }
+    }
+  }
+
+
   &.using-capo {
     .song > .capo-change {
       display:inline;
@@ -907,6 +932,8 @@ div.songinfo-label {
       //color:yellow;
     }
   }
+
+
 
   .song em>* {
     font-size:0.75em;

@@ -40,13 +40,13 @@ $EXTENSIONS_ONLY: 0;
 				@if ($n != 0) {
 					@if ($EXTENSIONS_ONLY == 0) {
 						$c: nth($theKeys, 12 + $i + $offset - $ks);
-						em[t=#{$n}]>* {
+						>span>em[t=#{$n}]>* {
 							&:before {
 								content:'#{$c}#{$m}';
 							}
 						}
 						@if ($isMinor == 0) {
-							em[b=#{$n}]>* {
+							>span>em[b=#{$n}]>* {
 								&:after {
 									content:'/#{$c}';
 								}
@@ -57,13 +57,13 @@ $EXTENSIONS_ONLY: 0;
 						@for $a from 1 through length($addSharps) {
 							$c: nth($keysSharpV,  $i + $offset + $a - $ks);
 							$d: nth($addSharps, $a);
-							em[t=#{$d}#{$n}]>* {
+							>span>em[t=#{$d}#{$n}]>* {
 								&:before {
 									content:'#{$c}#{$m}';
 								}
 							}
 							@if ($isMinor == 0) {
-								em[b=#{$d}#{$n}]>* {
+								>span>em[b=#{$d}#{$n}]>* {
 									&:after {
 										content:'/#{$c}';
 									}
@@ -75,13 +75,13 @@ $EXTENSIONS_ONLY: 0;
 						@for $a from 1 through length($addFlats) {
 							$c: nth($keysFlatV, 12 + $i + $offset - $a - $ks);
 							$d: nth($addFlats, $a);
-							em[t=#{$d}#{$n}]>* {
+							>span>em[t=#{$d}#{$n}]>* {
 								&:before {
 									content:'#{$c}#{$m}';
 								}
 							}
 							@if ($isMinor == 0) {
-								em[b=#{$d}#{$n}]>* {
+								>span>em[b=#{$d}#{$n}]>* {
 									&:after {
 										content:'/#{$c}';
 									}
@@ -104,13 +104,13 @@ $EXTENSIONS_ONLY: 0;
 		@if ($k != 0) {
 			$v: nth($keysV, $i);
 			.song {
-				em[t=#{$k}]>* {
+				>span>em[t=#{$k}]>* {
 					&:before {
 						content:'#{$v}#{$m}';
 					}
 				}
 				@if ($isMinor == 0) {
-					em[b=#{$k}]>* {
+					>span>em[b=#{$k}]>* {
 						&:after {
 							content:'/#{$v}';
 						}
@@ -119,13 +119,13 @@ $EXTENSIONS_ONLY: 0;
 				@for $a from 1 through length($addSharps) {
 					$d: nth($addSharps, $a);
 					$c: nth($addSharpsV, $a);
-					em[t=#{$d}#{$k}] > * {
+					>span>em[t=#{$d}#{$k}] > * {
 						&:before {
 							content:'#{$c}#{$v}#{$m}';
 						}
 					}
 					@if ($isMinor == 0) {
-						em[b=#{$d}#{$k}] > * {
+						>span>em[b=#{$d}#{$k}] > * {
 							&:after {
 								content:'/#{$c}#{$v}';
 							}
@@ -134,13 +134,13 @@ $EXTENSIONS_ONLY: 0;
 				}
 				@for $a from 1 through length($addFlats) {
 					$d: nth($addFlats, $a);
-					em[t=#{$d}#{$k}] > * {
+					>span>em[t=#{$d}#{$k}] > * {
 						&:before {
 							content:'#{$d}#{$v}#{$m}';
 						}
 					}
 					@if ($isMinor == 0) {
-						em[b=#{$d}#{$k}] > * {
+						>span>em[b=#{$d}#{$k}] > * {
 							&:after {
 								content:'/#{$d}#{$v}';
 							}
@@ -160,13 +160,13 @@ $EXTENSIONS_ONLY: 0;
 		@if ($k != 0) {
 			$c: nth($daKeys, $i);
 			.song {
-				em[t=#{$k}#{$m}]>* {
+				>span>em[t=#{$k}#{$m}]>* {
 					&:before {
 						content:'#{$c}#{$m}';
 					}
 				}
 				@if ($isMinor == 0) {
-					em[b=#{$k}]>* {
+					>span>em[b=#{$k}]>* {
 						&:after {
 							content:'/#{$c}';
 						}
@@ -203,9 +203,10 @@ $EXTENSIONS_ONLY: 0;
 }
 
 
+// Below tranposable CSS truth table commented away. Bloats too many unused CSS permutations bad for performance!
 
 // major numeral keys transposable
-///*
+/*
 @include generate-numeric-keys-trans($numerals, $keys);
 @include generate-numeric-keys-trans($numerals, $keysSharp, $keysSharpV);
 @include generate-numeric-keys-trans($numerals, $keysFlat, $keysFlatV);
@@ -213,10 +214,10 @@ $EXTENSIONS_ONLY: 0;
 @include generate-numeric-keys-trans($numerals, $keys, 0, 0, 1);
 @include generate-numeric-keys-trans($numerals, $keysSharp, $keysSharpV, 0, 1);
 @include generate-numeric-keys-trans($numerals, $keysFlat, $keysFlatV, 0, 1);
-//*/
+*/
 
 // minor numeral keys transpoable
-///*
+/*
 @include generate-numeric-keys-trans($numeralsLc, $keys, 0, 1);
 @include generate-numeric-keys-trans($numeralsLc, $keysSharp, $keysSharpV, 1);
 @include generate-numeric-keys-trans($numeralsLc, $keysFlat, $keysFlatV, 1);
@@ -224,4 +225,4 @@ $EXTENSIONS_ONLY: 0;
 @include generate-numeric-keys-trans($numeralsLc, $keys, 0, 1, 1);
 @include generate-numeric-keys-trans($numeralsLc, $keysSharp, $keysSharpV, 1, 1);
 @include generate-numeric-keys-trans($numeralsLc, $keysFlat, $keysFlatV, 1, 1);
-//*/
+*/

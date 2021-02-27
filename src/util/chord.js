@@ -7,32 +7,76 @@
 const chordRegex = /(^[A-G])([h#b]*)?([^/\s]*)(\/([A-G])([h#b]*)?)?$/; ///([A-G])(h|#|b)?([^/\s]*)(\/([A-G])(h|#|b)?)?/i;
 const romanRegex = /(^([h#b]*)?([ivIV]+))([^/\s]*)(\/([h#b]*)?([ivIV]+))?$/;
 const nashVilleRegex = /(^([h#b]*)?([1-7]+))([^/\s]*)(\/([h#b]*)?([1-7]+))?$/;
+const romanRegexTB = /^([hb]*)?([ivIV]+)/;
+
 var TOLERANCE_KEY_ACCIDENTALS = 1;
 const { root } = require("cheerio");
 const {
 	getSharpFlatDelta,
-	A, G, PIANO_KEYS, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP, DIFF_ACCIDENTALS_KEYS
+	A, G, PIANO_KEYS, PIANO_KEYS_12_SHARP, PIANO_KEYS_12_FLAT, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP, DIFF_ACCIDENTALS_KEYS
   } = require("./keys");
 //, SIGN_AS_SHARP_MINOR, MINOR_SCALE_FLATS
 
-/*
-const ROMAN_TO_DECIMAL_MAP = {
-  'i': '1',
-  'I': '1',
-  'ii': '2',
-  'II': '2',
-  'iii': '3',
-  'III': '3',
-  'iv': '4',
-  'IV': '4',
-  'V': '5',
-  'V': '5',
-  'vi': '6',
-  'VI': '6',
-  'vii': '7',
-  'VII': '7',
+
+const ROMAN_TO_OFFSET_MAP = { // from natural major root
+  'i': 0,
+  'I': 0,
+  'ii': 2,
+  'II': 2,
+  'iii': 4,
+  'III': 4,
+  'iv': 5,
+  'IV': 5,
+  'V': 7,
+  'v': 7,
+  'vi': 9,
+  'VI': 9,
+  'vii': 11,
+  'VII': 11,
 };
-*/
+
+const romanToLetter = (s, signatureChord, signatureChordVal) => {
+  let parts = romanRegexTB.exec(s);
+
+  if (parts) {
+    let [, modifier, base] = parts;
+    if (!base || ROMAN_TO_OFFSET_MAP[base]===undefined) {
+      return null;
+    }
+    let offset = ROMAN_TO_OFFSET_MAP[base];
+    if (signatureChord.isMinor) { // natural minor offset flat for minor 3rd, 6th and 7th considerations
+      if (offset === 4 || offset === 9 || offset === 11) offset -= 1;
+    }
+    if (modifier) {
+      offset += getSharpFlatDelta(modifier);
+    }
+
+    let minorSuffix = s.toLowerCase() === s ? 'm' : '';
+
+    offset += signatureChordVal != null ? signatureChordVal : signatureChord.getTrebleVal();
+    offset %= 12;
+    if (PIANO_KEYS[offset]) return PIANO_KEYS[offset]+minorSuffix;
+
+    let signatureSharps = signatureChord.getSignAsSharp();
+
+    let chord;
+    if (signatureSharps !== 0) {
+      if (modifier) { // got modifier, assumed non-diatonic
+        // prefer against signature for natural possibilities
+        chord = (signatureSharps ? PIANO_KEYS_12_FLAT : PIANO_KEYS_12_SHARP)[offset];
+      } else { // follow current signature
+        chord = (signatureSharps ? PIANO_KEYS_12_SHARP : PIANO_KEYS_12_FLAT)[offset];
+      }
+    } else {
+      chord = (SIGN_AS_SHARP[offset] ? PIANO_KEYS_12_SHARP : PIANO_KEYS_12_FLAT)[offset];
+
+    }
+
+    return chord + minorSuffix;
+  }
+  return null;
+};
+
 const PIANO_ROMAN_KEYS = ['I', 0, 'II', 0, 'III', 'IV', 0, 'V', 0, 'VI', 0, 'VII',  'I', 0, 'II', 0, 'III', 'IV', 0, 'V', 0, 'VI', 0, 'VII'];
 const DECIMAL_TO_ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 
@@ -594,11 +638,15 @@ class Chord {
         }
       }
     }
-    return `<em t="${trebleChord}"${this.bassBase ? ` b="${bassChord}"` : ''}><i>${this.extension ? `<sup e="${this.extension}"></sup>` : ''}</i></em>`;
+
+    if (!signatureChord) signatureChord = rootChord;
+    let signatureVal = signatureChord ? signatureChord.getTrebleVal() : null;
+    return `<em t="${trebleChord}"${this.bassBase ? ` b="${bassChord}"` : ''}><i t="${signatureVal !== null ? romanToLetter(trebleChord, signatureChord, signatureVal) : this.base + (this.modifier||'')}"${this.bassBase ? ` b="/${signatureVal !== null ? romanToLetter(bassChord, signatureChord, signatureVal) : this.bassBase + (this.bassModifier||'')}"` : ''}>${this.extension ? `<sup e="${this.extension}"></sup>` : ''}</i></em>`;
   }
 }
 
 module.exports = {
   Chord,
-  PIANO_ROMAN_KEYS
+  PIANO_ROMAN_KEYS,
+  romanToLetter
 }
