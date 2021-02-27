@@ -88,7 +88,6 @@ export default {
       showTray: false,
       noTransition: false,
 
-      // refactor: this should be global retrive deriove and react to it
       lastScrolledSlideIndex_:0,
       innerIndex_: 0,
     };
@@ -197,8 +196,8 @@ export default {
       this.swipeHandler("bottom", e, true);
     },
      tapHandlerLeft2(e) {
-       if (NO_ARROWS) return;
-       if (this.splideIndex !== this.lastScrolledSlideIndex)  this.returnTap();
+      if (NO_ARROWS) return;
+      //if (this.splideIndex !== this.lastScrolledSlideIndex)  this.returnTap();
       else this.swipeHandler("bottom", e, true);
     },
     tapHandlerRight(e) {
@@ -210,25 +209,25 @@ export default {
       else this.swipeHandler("top");
     },
     swipeHandler(direction, ev, skipRetConsider) {
+
       if (direction === 'left' || direction === 'right') {
         if (this.splideOptions.drag) {
             this.$refs.splider.splide.go(direction === 'left' ? '+' : '-')
         }
       }
       else {
-        if (direction === 'top') {
-
-           if (!skipRetConsider && this.splideIndex !== this.lastScrolledSlideIndex) return this.goto(this.splideIndex, 0, 0);
+        if (direction === 'top') { // down key/swipe up
+          //!skipRetConsider &&
+          if (this.splideIndex !== this.lastScrolledSlideIndex) return this.goto(this.splideIndex, 0, 0);
           if (this._lastScrolledElem) {
             if( this._lastScrolledElem.nextSibling) {
-
                this.goto(this.lastScrolledSlideIndex, this._lastScrolledElem.nextSibling, ++this.innerIndex_);
             }
           }
-        } else {
-           if (!skipRetConsider && this.splideIndex !== this.lastScrolledSlideIndex)  return this.returnTap();
+        } else { // up key/swipe down
+           //if (!skipRetConsider && this.splideIndex !== this.lastScrolledSlideIndex)  return this.returnTap();
 
-
+          if (this.splideIndex !== this.lastScrolledSlideIndex) return this.goto(this.splideIndex, 0, this.slideList[this.splideIndex].slides.length-1);
           if (this._lastScrolledElem) {
             if( this._lastScrolledElem.previousSibling) {
 
