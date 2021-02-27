@@ -13,7 +13,7 @@ function parseChordProBody(content, assertNoErr=false) {
      *  @type {import('chordsheetjs').Song}
      */
     let song = null;
-    content = content.replace(/#/g, "h").replace(/\]\[/g, '] [');
+    // content = content.replace(/#/g, "h").replace(/\]\[/g, '] [');
     try {
         song = new CS.ChordProParser().parse(content);
     }
@@ -24,9 +24,11 @@ function parseChordProBody(content, assertNoErr=false) {
             return null;
         }
     }
+    /*
     if (song.metadata.key) {
         song.metadata.key = song.metadata.key.replace(/h/g, "#");
     }
+    */
     return song;
 }
 
