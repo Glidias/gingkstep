@@ -575,7 +575,7 @@ body {
   font-family: 'Open Sans', 'Work Sans', sans-serif;
  // font-weight:bold;
 
-  background-color:  #1c1c20;
+  background-color: #222233;// #1c1c20;
 
   color:#aaccff;
 }
@@ -594,10 +594,18 @@ body {
 }
 
 
+
 #app {
 
+  &.is-guest {
+    .dummy-cb {
+      display:none;
+    }
+  }
+
   .dummy-cb {
-    background-color: #555555;;
+    background-color: #555555;
+    //box-sizing:border-box;
     width:15px;
     height:15px;
     display:inline-block;

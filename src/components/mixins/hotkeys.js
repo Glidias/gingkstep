@@ -25,6 +25,7 @@ function handleChordKeys(state) {
 export const mixin = {
   methods: {
     onKeydownHotBox(e) {
+      e.preventDefault();
       let index = HOTKEY_STEP_BINDINGS.indexOf(e.keyCode);
       if (index >=0) {
         maskState |= (1 << index);
@@ -32,6 +33,7 @@ export const mixin = {
       }
     },
     onKeyupHotBox(e) {
+      e.preventDefault();
       let index = HOTKEY_STEP_BINDINGS.indexOf(e.keyCode);
       if (index >=0) {
         maskState &= ~(1 << index);
