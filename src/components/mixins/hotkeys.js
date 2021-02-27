@@ -26,7 +26,6 @@ export const mixin = {
   methods: {
     onKeydownHotBox(e) {
       e.preventDefault();
-      console.log(e.keyCode);
       let index = HOTKEY_STEP_BINDINGS.indexOf(e.keyCode);
       if (index >=0) {
         maskState |= (1 << index);
