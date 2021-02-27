@@ -703,7 +703,6 @@ background-color:#1e1e1e;//#1b1a1a;
     margin-left:15px;
   }
   .tray.collapsed {
-    display:none;
       transform:translateY(100%);
   }
 </style>
