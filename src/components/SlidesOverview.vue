@@ -32,7 +32,7 @@
       <div class="btn left arial" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">↑</div>
       <div class="btn right arial" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">↓</div>
       <div class="btn center" v-touch:tap="centerBtnTap" @keydown.stop="">
-        <input type="text" style="position:absolute;left:11px;top:10px" @click.stop="" class="dummy-cb" @mousedown.stop v-touch:tap="onTapDummy"  @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)">
+        <a href="javascript:;" style="position:absolute;left:13px;" @click.stop="" class="dummy-cb" @mousedown.stop v-touch:tap="onTapDummy"  @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)"></a>
       </div>
       <div class="btn left" v-touch:tap="returnTap" v-show="splideIndex  > lastScrolledSlideIndex">⏎</div>
       <div class="btn right" v-touch:tap="returnTap" v-show="splideIndex < lastScrolledSlideIndex">⏎</div>
@@ -463,7 +463,7 @@ $bottom-bar-height:50px;
 
 font-size:17px;
     text-align: center;
-background-color: #333; //#1b1b1b;//#1b1a1a;
+background-color:#1b1b1b;//#1b1a1a;
   overflow: hidden;
   position: relative;
   height: 100%;
@@ -660,7 +660,7 @@ background-color: #333; //#1b1b1b;//#1b1a1a;
       &.selected {
         outline:rgba(121, 78, 0, 1) 1px solid;
         cursor:auto !important;
-        background-color:#222233 !important;
+        background-color:#1c1c20 !important;
       }
       /*
        .no-touch & {
@@ -675,7 +675,7 @@ background-color: #333; //#1b1b1b;//#1b1a1a;
        &.selected {
         outline:rgba(121, 78, 0, 0.3) 1px solid;
         cursor:auto !important;
-        background-color:#2f2f35 !important;
+      //  background-color:#171717 !important;//##181818 !important;
 
       }
        .no-touch & {
