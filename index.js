@@ -77,7 +77,6 @@ app.get('/loadtree', async (req, res) => {
 io.on('connection', (socket) => {
 
   socket.on("host-room", async (treeD, keys)=> {
-    console.log(treeD + ', '+ keys);
     const sessionPin = await startSession(socket, treeD, keys);
     io.to(socket.id).emit("hostingRoom", sessionPin);
     socket.on('slide-change', msg => {
