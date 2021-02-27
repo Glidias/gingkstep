@@ -25,19 +25,20 @@ function handleChordKeys(state) {
 export const mixin = {
   methods: {
     onKeydownHotBox(e) {
-      e.preventDefault();
+
       let index = HOTKEY_STEP_BINDINGS.indexOf(e.keyCode);
       if (index >=0) {
+        e.preventDefault();
         maskState |= (1 << index);
         heldMaskState |= (1 << index);
       }
     },
     onKeyupHotBox(e) {
-      e.preventDefault();
+
       let index = HOTKEY_STEP_BINDINGS.indexOf(e.keyCode);
       if (index >=0) {
         maskState &= ~(1 << index);
-
+        e.preventDefault();
         if (maskState === 0) {
           handleChordKeys(heldMaskState);
           heldMaskState = 0;

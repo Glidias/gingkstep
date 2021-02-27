@@ -1,6 +1,6 @@
 <template>
   <div id="app" :class="{'nashville': chordMode === Constants.CHORD_MODE_NASHVILLE, 'using-capo': useCapo, 'show-chords':showChords, 'show-overview':showOverview, 'is-host':isHost, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
-    <div v-if="slides && slides.length" @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)">
+    <div v-if="slides && slides.length" @keyup="onKeyupHotBox($event)" @keydown="onKeydownHotBox($event)">
       <slides-overview @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
         <div class="traycontents">
           <div>
