@@ -597,7 +597,10 @@ body {
 #app {
 
   .dummy-cb {
-    background-color: #1c1c20;
+    background-color: #555555;;
+    width:15px;
+    height:15px;
+    display:inline-block;
   opacity:.15;
     &:focus {
       outline:rgb(100, 100, 48) 2px solid;

@@ -32,7 +32,7 @@
       <div class="btn left arial" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">↑</div>
       <div class="btn right arial" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">↓</div>
       <div class="btn center" v-touch:tap="centerBtnTap" @keydown.stop="">
-        <input type="checkbox" style="position:absolute;left:8px;" @click.stop="" class="dummy-cb" @mousedown.stop v-touch:tap="onTapDummy"  @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)">
+        <a href="#" style="position:absolute;left:13px;" @click.stop.prevent="" class="dummy-cb" @mousedown.stop v-touch:tap="onTapDummy"  @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)"></a>
       </div>
       <div class="btn left" v-touch:tap="returnTap" v-show="splideIndex  > lastScrolledSlideIndex">⏎</div>
       <div class="btn right" v-touch:tap="returnTap" v-show="splideIndex < lastScrolledSlideIndex">⏎</div>
@@ -133,11 +133,11 @@ export default {
     },
     isTouchDevice: isTouchDevice,
     splideOptions() {
-      // var cols = this.testC;
+       var cols = this.testC;
       return {
         autoWidth: true,
         start: 0, //this.stepIndex !== undefined ? getSlideIndexFromStep(this.stepIndex, this.slideList) : 0,
-        // trimSpace: cols > 1 ? true : false,
+        //trimSpace: false, //cols > 1 ? true : false,
 
         easing: 'cubic-bezier(0.37, 0, 0.63, 1)',
         throttle:0,
@@ -463,7 +463,7 @@ $bottom-bar-height:50px;
 
 font-size:17px;
     text-align: center;
-background-color:#1b1a1a;
+background-color:#1b1b1b;//#1b1a1a;
   overflow: hidden;
   position: relative;
   height: 100%;
@@ -511,11 +511,12 @@ background-color:#1b1a1a;
     box-sizing: border-box;
     padding-bottom: 15px;
     column-gap: 0;
-    //opacity:.3;
+     color:#666666;
+ //   opacity:.4;
    // color:#666666;
     &.selected {
-     // opacity:1;
-      //color:#ffffff;
+   //  opacity:1;
+      color:#aaccff;
      //  background-color:#141414;
 
 
@@ -591,6 +592,12 @@ background-color:#1b1a1a;
     bottom:15px;
     pointer-events:none;
     touch-action:none;
+    &__page {
+      background-color:#666666;
+      &.is-active {
+        background-color:#aaccff;
+      }
+    }
   }
 }
 

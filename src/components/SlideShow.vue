@@ -5,7 +5,7 @@
           <splide-slide class="step" v-for="(li, i) in stepList" :key="i" v-html="li" :class="{intro:slidesHeaderIndices && slidesHeaderIndices[i]}"></splide-slide>
         </splide>
     </div>
-    <input type="checkbox" style="position:absolute;left:10px;margin-top:13px" @click.stop="" class="dummy-cb" @mousedown.stop v-touch:tap="onTapDummy"  @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)">
+    <a href="#" style="position:absolute;left:10px;margin-top:13px" @click.stop.prevent="" class="dummy-cb" @mousedown.stop v-touch:tap="onTapDummy"  @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)"></a>
   </div>
 </template>
 
