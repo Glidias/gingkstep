@@ -1,6 +1,6 @@
 import Vue from 'vue';
 
-export const HOTKEY_STEP_BINDINGS = [17, 32, 37]; // ctrl (left), spacebar(middle), left arrow key (right)
+export const HOTKEY_STEP_BINDINGS = [18, 32, 17]; // alt(left), spacebar(middle), ctrl(right)
 
 var maskState = 0;
 var heldMaskState = 0;
@@ -26,6 +26,7 @@ export const mixin = {
   methods: {
     onKeydownHotBox(e) {
       e.preventDefault();
+      console.log(e.keyCode);
       let index = HOTKEY_STEP_BINDINGS.indexOf(e.keyCode);
       if (index >=0) {
         maskState |= (1 << index);

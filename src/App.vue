@@ -1,6 +1,6 @@
 <template>
   <div id="app" :class="{'nashville': chordMode === Constants.CHORD_MODE_NASHVILLE, 'using-capo': useCapo, 'show-chords':showChords, 'show-overview':showOverview, 'is-host':isHost, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
-    <div v-if="slides && slides.length">
+    <div v-if="slides && slides.length" @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)">
       <slides-overview @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
         <div class="traycontents">
           <div>
@@ -63,6 +63,8 @@ import axios from 'axios';
 import {BUS} from './components/mixins/hotkeys';
 import {HOST_PREFIX} from './constants';
 import {Chord} from './util/chord';
+import {mixin} from './components/mixins/hotkeys';
+
 import {PIANO_KEYS_12_FLAT, PIANO_KEYS_12_SHARP} from './util/keys';
 const PIANO_KEYS_12_SHARP_MINOR = PIANO_KEYS_12_SHARP.map(v => v+'m');
 const PIANO_KEYS_12_FLAT_MINOR = PIANO_KEYS_12_FLAT.map(v => v+'m');
@@ -85,6 +87,7 @@ export default {
   components: {
     SlidesOverview, SlideShow
   },
+  mixins: [mixin],
   data () {
     let urlParams = new URLSearchParams(window.location.search);
     return {

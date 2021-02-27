@@ -1,16 +1,12 @@
 <template>
-  <div>
     <div id="impress" :style="`transform: scale(${scale})`">
       <splide ref="splider" :options="splideOptions" class="scrollslides">
           <splide-slide class="step" v-for="(li, i) in stepList" :key="i" v-html="li" :class="{intro:slidesHeaderIndices && slidesHeaderIndices[i]}"></splide-slide>
         </splide>
     </div>
-    <a href="javascript:;" style="position:absolute;left:10px;margin-top:13px" @click.stop="" class="dummy-cb" @mousedown.stop v-touch:tap="onTapDummy"  @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)"></a>
-  </div>
 </template>
 
 <script>
-import {mixin} from "./mixins/hotkeys";
 
 
 var computeWindowScale = function( config ) {
@@ -35,9 +31,6 @@ export default {
     stepIndex: Number,
     slidesHeaderIndices: Object,
   },
-  mixins: [
-    mixin
-  ],
   data() {
     return {
       scale: 1

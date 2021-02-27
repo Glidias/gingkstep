@@ -32,7 +32,7 @@
       <div class="btn left arial" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">↑</div>
       <div class="btn right arial" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">↓</div>
       <div class="btn center" v-touch:tap="centerBtnTap" @keydown.stop="">
-        <a href="javascript:;" style="position:absolute;left:13px;" @click.stop="" class="dummy-cb" @mousedown.stop v-touch:tap="onTapDummy"  @keyup.stop="onKeyupHotBox($event)" @keydown.stop="onKeydownHotBox($event)"></a>
+
       </div>
       <div class="btn left" v-touch:tap="returnTap" v-show="splideIndex  > lastScrolledSlideIndex">⏎</div>
       <div class="btn right" v-touch:tap="returnTap" v-show="splideIndex < lastScrolledSlideIndex">⏎</div>
@@ -40,8 +40,7 @@
   </div>
 </template>
 
-<script> //
-import {mixin} from "./mixins/hotkeys";
+<script>
 
 function isTouchDevice() {
   return (('ontouchstart' in window) ||
@@ -101,7 +100,6 @@ export default {
     }
     return d;
   },
-  mixins: [mixin],
   computed: {
     lastScrolledSlideIndex () {
       return this.stepIndex !== undefined ? this.subIndexArr[this.stepIndex][0] : this.lastScrolledSlideIndex_;
@@ -463,7 +461,7 @@ $bottom-bar-height:50px;
 
 font-size:17px;
     text-align: center;
-background-color:#1b1b1b;//#1b1a1a;
+background-color:#1e1e1e;//#1b1a1a;
   overflow: hidden;
   position: relative;
   height: 100%;
