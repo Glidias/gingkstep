@@ -404,6 +404,7 @@ async function parseGingkoTree(tree) {
 
     let songOutput;
     let songKeyLabel;
+    let songKey;
     let origSongKeyLabel;
     let songCapo;
     let songMeta;
@@ -493,6 +494,7 @@ async function parseGingkoTree(tree) {
       }
 
     }
+
     let obj = {
       slides,
       origKey: origSongKeyLabel,
