@@ -429,14 +429,15 @@ export default {
             } else { // use lastKey no modulation
               let capoKeyToUse = useCapo && q.hasAttribute('capo') ? Chord.parse(lastKey).transpose(-parseInt(q.getAttribute('capo'))).toString() :  capoKey;
               q.setAttribute(keyAttr, (capoKeyToUse || lastKey).replace("#", 'h'));
-              chordStr = songPrepKey;
+              chordStr = (capoKeyToUse || lastKey);
             }
             let signatureChord = Chord.parse(chordStr);
             let signatureChordVal = signatureChord.getTrebleVal();
             q.querySelectorAll('em > i').forEach((c)=> {
               let em = c.parentNode;
               if (!em.hasAttribute('t')) return;
-              c.setAttribute('t', romanToLetter(em.getAttribute('t'), signatureChord, signatureChordVal));
+              let cur = c.getAttribute('t');
+              c.setAttribute('t', romanToLetter(em.getAttribute('t'), signatureChord, signatureChordVal, cur.charAt(cur.length-1) === 'm'));
               if (em.hasAttribute('b')) {
                 c.setAttribute('b', '/'+romanToLetter(em.getAttribute('b'), signatureChord, signatureChordVal));
               }
