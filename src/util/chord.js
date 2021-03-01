@@ -35,7 +35,7 @@ const ROMAN_TO_OFFSET_MAP = { // from natural major root
   'VII': 11,
 };
 
-const romanToLetter = (s, signatureChord, signatureChordVal) => {
+const romanToLetter = (s, signatureChord, signatureChordVal, isMinor) => {
   let parts = romanRegexTB.exec(s);
 
   if (parts) {
@@ -51,7 +51,7 @@ const romanToLetter = (s, signatureChord, signatureChordVal) => {
       offset += getSharpFlatDelta(modifier);
     }
 
-    let minorSuffix = s.toLowerCase() === s ? 'm' : '';
+    let minorSuffix = isMinor ? 'm' : '';
 
     offset += signatureChordVal != null ? signatureChordVal : signatureChord.getTrebleVal();
     offset %= 12;
@@ -641,7 +641,7 @@ class Chord {
 
     if (!signatureChord) signatureChord = rootChord;
     let signatureVal = signatureChord ? signatureChord.getTrebleVal() : null;
-    return `<em t="${trebleChord}"${this.bassBase ? ` b="${bassChord}"` : ''}><i t="${signatureVal !== null ? romanToLetter(trebleChord, signatureChord, signatureVal) : this.base + (this.modifier||'')}"${this.bassBase ? ` b="/${signatureVal !== null ? romanToLetter(bassChord, signatureChord, signatureVal) : this.bassBase + (this.bassModifier||'')}"` : ''}>${this.extension ? `<sup e="${this.extension}"></sup>` : ''}</i></em>`;
+    return `<em t="${trebleChord}"${this.bassBase ? ` b="${bassChord}"` : ''}><i t="${signatureVal !== null ? romanToLetter(trebleChord, signatureChord, signatureVal, this.isMinor) : this.base + (this.modifier||'')}"${this.bassBase ? ` b="/${signatureVal !== null ? romanToLetter(bassChord, signatureChord, signatureVal) : this.bassBase + (this.bassModifier||'')}"` : ''}>${this.extension ? `<sup e="${this.extension}"></sup>` : ''}</i></em>`;
   }
 }
 
