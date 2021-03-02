@@ -61,7 +61,7 @@ import SlidesOverview from "./components/SlidesOverview";
 import SlideShow from "./components/SlideShow";
 import axios from 'axios';
 import {BUS, NO_ARROWS} from './components/mixins/hotkeys';
-import {HOST_PREFIX} from './constants';
+import {HOST_PREFIX, QPARAM_autoload, QPARAM_showchords, QUERY_KEEP_PARAMS} from './constants';
 import {Chord, romanToLetter} from './util/chord';
 import {mixin} from './components/mixins/hotkeys';
 
@@ -93,7 +93,7 @@ export default {
     return {
       Constants,
       showOverview: true,
-      showChords: false,
+      showChords: urlParams.has(QPARAM_showchords),
       sessionPin: '',
       attemptingConnect: false,
       isHost: false,
@@ -529,7 +529,12 @@ export default {
         }
         */
         //window.addEventListener('popstate', this.onPopState.bind(this));
-        history.replaceState(toLoad, "", "?s="+toLoad+(NO_ARROWS ? '&noarrows': ''));
+        let qParams = '';
+        let urlParams = new URLSearchParams(window.location.search);
+        QUERY_KEEP_PARAMS.forEach((param)=>{
+          if (urlParams.has(param)) qParams += '&' + param;
+        });
+        history.replaceState(toLoad, "", "?s=" + toLoad + qParams);
       }
 
     },
@@ -560,7 +565,7 @@ export default {
   },
   mounted () {
      let urlParams = new URLSearchParams(window.location.search);
-     if (urlParams.has('autoload') && urlParams.has('s') && urlParams.get('s')) {
+     if (urlParams.has(QPARAM_autoload) && urlParams.has('s') && urlParams.get('s')) {
        if (this.formValueTreeId) this.onSubmitLoad();
      }
      BUS.$on('hotkeyTriggered', this.onHotkeyTriggered.bind(this));
