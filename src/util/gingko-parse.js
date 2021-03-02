@@ -456,7 +456,7 @@ async function parseGingkoTree(tree) {
             slides[0] += `<div class="songinfo-label key-signature" data-songid="${songIndex}">${songOutput.songKeyLabelPrefered}</div>`;
             songKeyLabel = songOutput.songKeyLabelPrefered;
             if (songKeyLabel) songOutput.origPreferedKeyChord = Chord.parse(songKeyLabel);
-            songKey = songOutput.songKey;
+            songKey = songOutput.songKeyLabelPrefered;
             origSongKeyLabel =  songMeta.key ? songMeta.key : null;
           }
           if (songOutput.songCapoPrefered) {
