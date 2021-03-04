@@ -605,7 +605,7 @@ body {
   }
 
 #impress {
-  .introsong {
+  .intro {
     .is-guest & {
       visibility: hidden;
     }

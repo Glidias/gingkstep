@@ -507,6 +507,10 @@ background-color:#1e1e1e;//#1b1a1a;
     column-fill: auto;
     height: 100%;
     min-height:100%;
+    a {
+      pointer-events:none;
+      touch-action: none;
+    }
 
 
     box-sizing: border-box;
