@@ -2,5 +2,6 @@ export const HOST_PREFIX = process.env.NODE_ENV === 'development' ? 'http://loca
 export const QPARAM_noarrows = 'noarrows';
 export const QPARAM_autoload = 'autoload';
 export const QPARAM_showchords = 'showchords';
-export const QUERY_KEEP_PARAMS = new Set([QPARAM_autoload, QPARAM_noarrows, QPARAM_showchords]);
+export const QPARAM_pastejson = 'pastejson';
+export const QUERY_KEEP_PARAMS = new Set([QPARAM_autoload, QPARAM_noarrows, QPARAM_showchords, QPARAM_pastejson]);
 
