@@ -7,7 +7,8 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "start": "node index.js",
-    "startdev": "nodemon index.js"
+    "startdev": "nodemon index.js",
+    "serve:prod": "vue-cli-service build --mode=production --watch & node ./serve.js"
   },
   "dependencies": {
     "@splidejs/splide": "Glidias/splide",
@@ -24,6 +25,7 @@
     "socket.io-client": "^3.1.1",
     "v-namespace": "1.0.1",
     "vue": "^2.6.11",
+    "vue-pwa-install": "^1.1.0",
     "vue-socket.io": "^3.0.10",
     "vue2-touch-events": "^3.1.1"
   },

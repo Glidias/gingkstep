@@ -5,6 +5,9 @@ import Vue2TouchEvents from 'vue2-touch-events';
 import VueSocketIO from 'vue-socket.io';
 import io from 'socket.io-client';
 import {HOST_PREFIX} from './constants';
+import VueInstall from "vue-pwa-install";
+
+Vue.use(VueInstall);
 
 
 Vue.use(Vue2TouchEvents, {

@@ -52,6 +52,17 @@
       <p>A song lyrics/chords/transposer/page-turner/slideshow/presentation viewer utility for offline and online synced sessions across device displays</p>
       <p>WIKI For more info: [<a href="https://github.com/Glidias/gingkstep/wiki" target="_blank">link</a>]</p>
       <p><a href="https://github.com/Glidias/gingkstep/wiki/Gingkstep-Usage" target="_blank">Frontend usage guide</a></p>
+      <form v-if="showPasteBox" @submit.prevent="onPasteSubmitLoad($event)">
+        <textarea name="json" :value="mockDataStr"></textarea>
+        <div>
+          <button type="submit">Load</button>
+        </div>
+      </form>
+       <div class="banner" v-if="deferredPrompt">
+        <hr>
+        <p>Do you want to install Gingkstep App?</p>
+        <button @onClick="promptInstall">Yes, Install it!</button>
+      </div>
     </div>
   </div>
 </template>
@@ -92,12 +103,15 @@ export default {
     let urlParams = new URLSearchParams(window.location.search);
     return {
       Constants,
+      mockDataStr: window.localStorage.getItem('mockData'),
       showOverview: true,
+      showPasteBox: urlParams.has('pastejson'),
       showChords: urlParams.has(QPARAM_showchords),
       sessionPin: '',
       attemptingConnect: false,
       isHost: false,
       strongHighlight: false,
+      deferredPrompt: null,
       songFocusIndex: 0,
       useCapo: false, // ux: currently, this is simply a global setting for convention
 
@@ -511,6 +525,21 @@ export default {
       if (!e.currentTarget.roomid.value) return;
       this.lazyEmit('join-room', e.currentTarget.roomid.value);
     },
+    onPasteSubmitLoad (e) {
+      if (!e.currentTarget.json.value) return;
+      let mockData = null;
+      try {
+        mockData = JSON.parse(e.currentTarget.json.value);
+      } catch(err) {
+        alert('failed to parse json');
+      }
+      if (mockData && mockData.result) {
+        window.localStorage.setItem('mockData', e.currentTarget.json.value);
+        this.setSlides(mockData.result);
+      }
+
+      //this.lazyEmit('join-room', e.currentTarget.json.value);
+    },
      async onSubmitLoad () { //e
 
       let toLoad = this.formValueTreeId; //e.currentTarget.treeid.value;
@@ -540,6 +569,18 @@ export default {
     },
     hostSession () {
       this.lazyEmit('host-room', this.formValueTreeId);
+    },
+    promptInstall () {
+      // Show the prompt:
+     this.deferredPrompt.prompt();
+
+     // Wait for the user to respond to the prompt:
+     this.deferredPrompt.userChoice.then(choiceResult => {
+       if (choiceResult.outcome === "accepted") {
+         // User accepted the install prompt
+       }
+       this.deferredPrompt = null;
+     });
     }
   },
   watch: {
@@ -563,6 +604,14 @@ export default {
       this.handleTranposeSongKeys(this.slideActiveKeys, this.slideActiveKeys, true);
     }
   },
+  created () {
+    this.$on("canInstall", (e) => {
+      e.preventDefault();
+      console.log('can install!');
+      console.log(e);
+      this.deferredPrompt = e;
+    });
+  },
   mounted () {
      let urlParams = new URLSearchParams(window.location.search);
      if (urlParams.has(QPARAM_autoload) && urlParams.has('s') && urlParams.get('s')) {
@@ -578,6 +627,11 @@ export default {
 //@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
 //@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400&family=Open+Sans:wght@400;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap');
+
+:root {
+   --overview-font-size: 17px;
+}
+
 body {
 
 

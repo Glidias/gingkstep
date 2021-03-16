@@ -462,7 +462,9 @@ $bottom-bar-height:50px;
 }
 .slide-overview {
 
-font-size:17px;
+
+
+font-size:var(--overview-font-size);
     text-align: center;
 background-color:#1e1e1e;//#1b1a1a;
   overflow: hidden;
