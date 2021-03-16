@@ -89,7 +89,7 @@ import SlidesOverview from "./components/SlidesOverview";
 import SlideShow from "./components/SlideShow";
 import axios from 'axios';
 import {BUS, NO_ARROWS} from './components/mixins/hotkeys';
-import {HOST_PREFIX, QPARAM_autoload, QPARAM_showchords, QUERY_KEEP_PARAMS} from './constants';
+import {HOST_PREFIX, QPARAM_autoload, QPARAM_pastejson, QPARAM_showchords, QUERY_KEEP_PARAMS} from './constants';
 import {Chord, romanToLetter} from './util/chord';
 import {mixin} from './components/mixins/hotkeys';
 
@@ -122,7 +122,7 @@ export default {
       Constants,
       mockDataStr: window.localStorage.getItem('mockData'),
       showOverview: true,
-      showPasteBox: urlParams.has('pastejson'),
+      showPasteBox: urlParams.has(QPARAM_pastejson),
       showChords: urlParams.has(QPARAM_showchords),
       sessionPin: '',
       attemptingConnect: false,
