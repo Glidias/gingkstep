@@ -25,8 +25,25 @@
                   <input type="radio" id="radiosharp" :value="true" v-model="preferSharp" @keydown.stop>
                   <label for="radiosharp">#</label>
               </div>
-
-            <p v-if="!isHost"><label><input type="checkbox" v-model="strongHighlight">Select Highlight</label></p>
+            <p><label v-if="!isHost"><input type="checkbox" v-model="strongHighlight">Select Highlight</label> <span v-if="!isHost"><select v-model.number="fontSize">
+                <option :value="17">17</option>
+                <option :value="18">18</option>
+                <option :value="19">19</option>
+                <option :value="20">20</option>
+                <option :value="21">21</option>
+                <option :value="22">22</option>
+                <option :value="23">23</option>
+                <option :value="24">24</option>
+                <option :value="25">25</option>
+                <option :value="26">26</option>
+                <option :value="27">27</option>
+                <option :value="28">28</option>
+                <option :value="29">29</option>
+                <option :value="30">30</option>
+                <option :value="31">31</option>
+                <option :value="32">32</option>
+                <option :value="33">33</option>
+              </select><label>:txtSize</label></span></p>
           </div>
           <form @submit.prevent="hostSession">
             <p class="pin" v-if="sessionPin"><span :style="{textDecoration:isHost ? 'underline' : 'none'}">Session Pin</span>: <b>{{sessionPin}}</b></p>
@@ -114,6 +131,7 @@ export default {
       deferredPrompt: null,
       songFocusIndex: 0,
       useCapo: false, // ux: currently, this is simply a global setting for convention
+      fontSize:  parseInt(window.getComputedStyle(document.documentElement).getPropertyValue('--overview-font-size')),
 
       slides: null,
 
@@ -584,6 +602,11 @@ export default {
     }
   },
   watch: {
+    fontSize(val) {
+      let root = document.documentElement;
+      root.style.setProperty('--overview-font-size', val+'px');
+      window.dispatchEvent(new Event('resize'));
+    },
     showChords () {
       window.dispatchEvent(new Event('resize'));
     },
