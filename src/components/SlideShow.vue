@@ -146,6 +146,9 @@ export default {
        pre {
         display:none;
       }
+      .song {
+        display:none;
+      }
     }
 
 

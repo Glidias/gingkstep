@@ -658,6 +658,15 @@ background-color:#1e1e1e;//#1b1a1a;
   }
 
     .content {
+      &[data-inner-index='0'] {
+        ::v-deep .song {
+          display:none;
+          .show-chords & {
+            display:block;
+          }
+        }
+
+      }
       cursor: pointer;
       z-index:112;
       padding: 1px 15px;
