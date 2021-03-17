@@ -109,7 +109,7 @@ export default {
   },
   computed: {
     printUrl () {
-      return `${process.env.BASE_URL}print?s=${this.treeId}` + (this.showChords ? `&showchords` : '') + (this.chordMode ? `?nummode=${this.chordMode}` : '');
+      return `${process.env.BASE_URL}print?s=${this.treeId}` + (this.showChords ? `&showchords` : '') + (this.chordMode ? `&nummode=${this.chordMode}` : '');
     },
     printUrlSingle () {
       return this.printUrl + '&song=' + (this.splideIndex+1);
