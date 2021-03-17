@@ -27,6 +27,10 @@
     </div>
     <div class="tray" :class="{collapsed:!showTray}">
       <slot />
+      <div class="print-tray">
+        <a class="printbtn" :href="printUrl" target="_blank">&#128438;<sub>(*)</sub></a><br>
+        <a class="printbtn-single" :href="printUrlSingle" target="_blank">&#128438;<sub>[{{this.splideIndex+1}}]</sub></a>
+      </div>
     </div>
     <div class="bottombar">
       <div class="btn left arial" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">↑</div>
@@ -74,6 +78,9 @@ export default {
       type:Boolean,
       default: false
     },
+    treeId: String,
+    showChords: Boolean,
+    chordMode: Number,
     stepIndex: {
       type: Number,
       required: false
@@ -101,6 +108,12 @@ export default {
     return d;
   },
   computed: {
+    printUrl () {
+      return `${process.env.BASE_URL}print?s=${this.treeId}` + (this.showChords ? `&showChords` : '') + (this.chordMode ? `?nummode=${this.chordMode}` : '');
+    },
+    printUrlSingle () {
+      return this.printUrl + '&song=' + (this.splideIndex+1);
+    },
     lastScrolledSlideIndex () {
       return this.stepIndex !== undefined ? this.subIndexArr[this.stepIndex][0] : this.lastScrolledSlideIndex_;
     },
@@ -377,6 +390,26 @@ export default {
 
 
 $bottom-bar-height:50px;
+
+.print-tray {
+  position:absolute;
+  right:25px;
+  transform:translateY(-50%);
+  top:50%;
+  text-align:right;
+  line-height:3em;
+    >* {
+       font-size:18px;
+
+         width:auto;
+
+     text-decoration: none;
+    }
+  ::v-deep sub {
+    font-size:0.5em;
+  }
+}
+
 
 .bottombar {
   position:absolute;

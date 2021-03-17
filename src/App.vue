@@ -1,7 +1,7 @@
 <template>
   <div id="app" :class="{'chord-letters': chordMode === Constants.CHORD_MODE_LETTER, 'nashville': chordMode === Constants.CHORD_MODE_NASHVILLE, 'using-capo': useCapo, 'show-chords':showChords, 'show-overview':showOverview, 'is-host':isHost, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
     <div v-if="slides && slides.length" @keyup="onKeyupHotBox($event)" @keydown="onKeydownHotBox($event)">
-      <slides-overview @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
+      <slides-overview :tree-id="formValueTreeId" :chord-mode="chordMode" :show-chords="showChords" @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
         <div class="traycontents">
           <div>
              <label><input type="checkbox" v-model="showChords" @keydown.stop>Show Chords?</label>
@@ -25,7 +25,7 @@
                   <input type="radio" id="radiosharp" :value="true" v-model="preferSharp" @keydown.stop>
                   <label for="radiosharp">#</label>
               </div>
-            <p><label v-if="!isHost"><input type="checkbox" v-model="strongHighlight">Select Highlight</label> <span v-if="!isHost"><select v-model.number="fontSize">
+            <p><label v-if="!isHost"><input type="checkbox" v-model="strongHighlight">Select Highlight</label> <span><select v-model.number="fontSize">
                 <option :value="17">17</option>
                 <option :value="18">18</option>
                 <option :value="19">19</option>
