@@ -9,8 +9,9 @@ html
   body(class=(numMode === undefined || numMode === 0 ? 'chord-letters' : numMode==='2' ? 'nashville' : 'roman')+(showChords ? ' show-chords' : ''))
     .songlist
       each s, si in songs
-        article
-          each d, index in s.slides
-            div.content(data-inner-index=index) !{d}
-        if si !== songs.length-1
-          hr
+        if (!songFilter || songFilter==-''+(si+1))
+          article
+            each d, index in s.slides
+              div.content(data-inner-index=index) !{d}
+          if !songFilter && si !== songs.length-1
+            hr

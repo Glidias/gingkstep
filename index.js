@@ -117,7 +117,7 @@ app.get('/print', async (req, res) => {
   }
   res.type('html');
   if (result) {
-    res.render('print', {songs: result, showChords: req.query.showchords !== undefined, numMode: req.query.nummode });
+    res.render('print', {songs: result, songFilter: req.query.song, showChords: req.query.showchords !== undefined, numMode: req.query.nummode });
   } else {
     res.send("Error: " + errorCode)
   }
