@@ -9,6 +9,9 @@ import VueInstall from "vue-pwa-install";
 
 Vue.use(VueInstall);
 
+import wb from "./registerServiceWorker";
+Vue.prototype.$workbox = wb;
+
 
 Vue.use(Vue2TouchEvents, {
   touchClass: '',

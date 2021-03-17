@@ -588,17 +588,22 @@ export default {
     hostSession () {
       this.lazyEmit('host-room', this.formValueTreeId);
     },
-    promptInstall () {
+    async promptInstall () {
       // Show the prompt:
-     this.deferredPrompt.prompt();
+   //  this.deferredPrompt.prompt();
 
      // Wait for the user to respond to the prompt:
+    /*
      this.deferredPrompt.userChoice.then(choiceResult => {
        if (choiceResult.outcome === "accepted") {
          // User accepted the install prompt
        }
+    */
+       await this.$workbox.messageSW({ type: "SKIP_WAITING" });
        this.deferredPrompt = null;
-     });
+
+     //});
+
     }
   },
   watch: {
@@ -628,12 +633,20 @@ export default {
     }
   },
   created () {
+    /*
     this.$on("canInstall", (e) => {
       e.preventDefault();
       console.log('can install!');
       console.log(e);
       this.deferredPrompt = e;
     });
+    */
+    if (this.$workbox) {
+      this.$workbox.addEventListener("waiting", () => {
+        console.log('workbox waiting!');
+        this.deferredPrompt = true;
+      });
+    }
   },
   mounted () {
      let urlParams = new URLSearchParams(window.location.search);
