@@ -1,0 +1,136 @@
+@import url("https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap");
+:root {
+  --overview-font-size: 17px; }
+
+body {
+  font-family: 'Open Sans', 'Work Sans', sans-serif; }
+
+.song > i {
+  display: none; }
+.song > div {
+  display: none; }
+.song em {
+  display: none; }
+
+.content[data-inner-index='0'] .song {
+  display: none; }
+  .show-chords .content[data-inner-index='0'] .song {
+    display: block; }
+
+/*
+.song > span del {
+  display:none;
+  text-decoration:none;
+}
+*/
+div.songinfo-label {
+  display: none;
+  line-height: 1.2;
+  font-size: 0.8em; }
+  div.songinfo-label.key-signature:before {
+    content: "Key: "; }
+  div.songinfo-label.capo {
+    text-decoration: line-through; }
+    div.songinfo-label.capo:before {
+      content: "Capo: "; }
+    div.songinfo-label.capo > span {
+      display: none; }
+      div.songinfo-label.capo > span:before {
+        content: "(key: "; }
+      div.songinfo-label.capo > span:after {
+        content: ")"; }
+    .using-capo div.songinfo-label.capo {
+      text-decoration: underline; }
+      .using-capo div.songinfo-label.capo > span {
+        display: inline; }
+
+.show-chords.chord-letters .song em > i:before {
+  content: attr(t); }
+.show-chords.chord-letters .song em > i:after {
+  content: attr(b); }
+.show-chords.using-capo .song > .capo-change {
+  display: inline; }
+.show-chords .song {
+  line-height: 2.3em !important; }
+  .show-chords .song > * {
+    vertical-align: bottom; }
+  .show-chords .song > i {
+    display: block;
+    line-height: 1.3;
+    color: #888888;
+    font-weight: 400;
+    font-size: 0.95em; }
+  .show-chords .song > .capo-change {
+    display: none;
+    font-size: 0.8em; }
+  .show-chords .song:before {
+    content: attr(modulate);
+    font-style: italic;
+    display: block;
+    color: #888888;
+    font-size: 0.8em; }
+.show-chords div.songinfo-label {
+  display: block; }
+.show-chords .song em {
+  display: inline;
+  position: relative;
+  font-style: normal; }
+  .show-chords .song em > i {
+    color: #666666;
+    font-style: normal; }
+.show-chords .song em > * {
+  font-size: 0.75em;
+  letter-spacing: 1px;
+  font-weight: 500; }
+.show-chords .song > em > * {
+  position: absolute;
+  top: -2.1em;
+  display: block;
+  left: 0; }
+.show-chords .song em > i > sup:after {
+  content: attr(e); }
+.show-chords .song > span {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  line-height: 1.6;
+  /*
+  del {
+    display:inline;
+  }
+  */
+  /*
+  ins:before {
+    content: ' ';
+  }
+  */
+  /*
+  &.spaced {
+    margin-right:0.5em;
+  }
+  */ }
+  .show-chords .song > span > * {
+    line-height: 1; }
+  .show-chords .song > span > em {
+    margin-right: 0.65em; }
+
+article > * {
+  flex: 1;
+  break-inside: avoid-column; }
+  article > * p.song {
+    font-weight: 400; }
+    article > * p.song > i {
+      font-size: 0.9em;
+      margin-bottom: 0.4em;
+      text-decoration: underline; }
+  article > *:first-child pre {
+    display: none; }
+  article > *:first-child p:first-child {
+    text-decoration: underline; }
+  article > *:first-child p + br {
+    display: none; }
+  article > *:first-child pre + br {
+    display: none; }
+
+/*# sourceMappingURL=song-printable.css.map */

@@ -1,0 +1,247 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap');
+
+:root {
+	--overview-font-size: 17px;
+ }
+
+ body {
+   //padding: 0;
+   //margin: 0;
+
+   font-family: 'Open Sans', 'Work Sans', sans-serif;
+  // font-weight:bold;
+
+ }
+
+
+.song  {
+	> i {
+	display:none;
+	}
+	> div {
+		display:none;
+	}
+
+	em {
+		display:none;
+	}
+}
+
+.content {
+	&[data-inner-index='0'] {
+	.song {
+	  display:none;
+	  .show-chords & {
+		display:block;
+	  }
+	}
+ }
+}
+
+
+ /*
+ .song > span del {
+   display:none;
+   text-decoration:none;
+ }
+ */
+
+ div.songinfo-label {
+   display:none;
+
+   line-height:1.2;
+   font-size:0.8em;
+   &.key-signature {
+	 &:before {
+	   content: "Key: ";
+	 }
+   }
+   &.capo {
+	 &:before {
+	   content: "Capo: ";
+	 }
+	 > span {
+	   display:none;
+	   &:before {
+		 content:"(key: ";
+	   }
+	   &:after {
+		 content:")";
+	   }
+	 }
+	 text-decoration: line-through;
+	 .using-capo & {
+		text-decoration: underline;
+		> span {
+		  display:inline;
+		}
+	 }
+   }
+ }
+
+
+
+ .show-chords {
+
+   &.chord-letters {
+   .song em {
+	   > i {
+		 &:before {
+		   content:attr(t);
+		 }
+
+		 &:after {
+		   content:attr(b);
+		 }
+	   }
+	 }
+   }
+
+
+   &.using-capo {
+	 .song > .capo-change {
+	   display:inline;
+	 }
+   }
+
+
+   .song {
+
+	 line-height:2.3em !important;
+	 //
+	 >* {
+		 vertical-align:bottom;
+	 }
+
+	 >i {
+	   display:block;
+	   line-height:1.3;
+	   color:#888888;
+	   font-weight:400;
+	   font-size:0.95em;
+	 }
+
+	 >.capo-change {
+	   display:none;
+
+	   font-size:0.8em;
+	   //text-decoration:italic;
+	 }
+
+	 &:before {
+	   content: attr(modulate);
+	   font-style:italic;
+	   display:block;
+	   color:#888888;
+	   font-size:0.8em;
+	 }
+   }
+
+   div.songinfo-label {
+	 display:block;
+   }
+
+   .song em {
+	 display:inline;
+	 position:relative;
+	 font-style:normal;
+	 > i {
+	   color:#666666;
+	   font-style:normal;
+	   //color:yellow;
+	 }
+   }
+
+
+
+   .song em>* {
+	 font-size:0.75em;
+	  letter-spacing:1px;
+	 font-weight:500;
+   }
+   .song>em>*{
+	 position:absolute;
+	 top:-2.1em;
+	 display:block;
+
+	 left:0;
+   }
+   .song em>i>sup:after {
+	 content: attr(e);
+   }
+
+
+   .song >span {
+	 display:inline-flex;
+	 flex-direction:column;
+	 align-items:flex-start;
+	 justify-content: flex-end;
+	 line-height:1.6;
+	 /*
+	 del {
+	   display:inline;
+	 }
+	 */
+
+	 /*
+	 ins:before {
+	   content: ' ';
+	 }
+	 */
+	 >* {
+	   line-height:1;
+	 }
+	 >em {
+	   margin-right:0.65em;
+	 }
+	 /*
+	 &.spaced {
+	   margin-right:0.5em;
+	 }
+	 */
+   }
+
+}
+
+article {
+
+
+	> * {
+
+        p.song {
+          font-weight:400;
+          > i {
+          font-size:0.9em;
+          margin-bottom:0.4em;
+          text-decoration:underline;
+        }
+
+      }
+
+      &:first-child {
+         pre {
+          display:none;
+        }
+        p:first-child {
+          text-decoration:underline;
+        }
+
+
+        p + br {
+          display:none;
+        }
+        pre + br {
+          display:none
+        }
+
+      }
+      flex: 1;
+      break-inside: avoid-column;
+
+
+
+
+    }
+
+
+}

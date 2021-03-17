@@ -13,6 +13,9 @@ const io = require('socket.io')(http, {
   } : undefined)
 });
 
+
+app.set('view engine', 'pug')
+
 const { curly } = require('node-libcurl');
 const { parseGingkoTree } = require('./src/util/gingko-parse.js');
 
@@ -25,8 +28,6 @@ Open Session (Gingko Tree ID): []
 Join Session: []
 TO:
 Overview / Slideshow
-1) Start session (Show session Id)
-2) Change Key
 */
 async function startSession(socket, treeId, transpose) { // sessionPassword // hostPassword
   // [by hostId to sessionId] : treeId
@@ -94,6 +95,32 @@ io.on('connection', (socket) => {
     io.to(socket.id).emit("joinedRoom", [sessionPin, data.treeId]);
   });
 
+});
+
+app.get('/print', async (req, res) => {
+  let errorCode = 0;
+  let result = null;
+  if (req.query.s) {
+    try {
+      const curlOpts = {
+        httpHeader: ['Content-type: text/json'],
+        SSL_VERIFYPEER: 0
+      };
+      const { statusCode, data, headers } = await curly.get('https://gingkoapp.com/' + req.query.s + '.json', curlOpts);
+      result = await parseGingkoTree(data);
+    } catch(err) {
+      if (IS_DEV) console.log(err);
+      errorCode |= 2;
+    }
+  } else {
+    errorCode |= 1;
+  }
+  res.type('html');
+  if (result) {
+    res.render('print', {songs: result, showChords: req.query.showchords !== undefined, numMode: req.query.nummode });
+  } else {
+    res.send("Error: " + errorCode)
+  }
 });
 
 http.listen(port, () => {
