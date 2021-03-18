@@ -123,6 +123,32 @@ app.get('/print', async (req, res) => {
   }
 });
 
+app.get('/clipboard', async (req, res) => {
+  let errorCode = 0;
+  let result = null;
+  if (req.query.s) {
+    try {
+      const curlOpts = {
+        httpHeader: ['Content-type: text/json'],
+        SSL_VERIFYPEER: 0
+      };
+      const { statusCode, data, headers } = await curly.get('https://gingkoapp.com/' + req.query.s + '.json', curlOpts);
+      result = await parseGingkoTree(data);
+    } catch(err) {
+      if (IS_DEV) console.log(err);
+      errorCode |= 2;
+    }
+  } else {
+    errorCode |= 1;
+  }
+  res.type('html');
+  if (result) {
+    res.render('clipboard', {data:JSON.stringify({error: errorCode, result})});
+  } else {
+    res.send("Error: " + errorCode)
+  }
+});
+
 http.listen(port, () => {
   console.log(`Socket.IO server running at http://localhost:${port}/`);
 });
