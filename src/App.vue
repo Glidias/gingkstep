@@ -45,7 +45,7 @@
                 <option :value="33">33</option>
               </select><label>:txtSize</label></span></p>
           </div>
-          <form @submit.prevent="hostSession">
+          <form @submit.prevent="hostSession" v-if="!usingMock">
             <p class="pin" v-if="sessionPin"><span :style="{textDecoration:isHost ? 'underline' : 'none'}">Session Pin</span>: <b>{{sessionPin}}</b></p>
             <button class="button reset" v-else type="submit">Host Session</button>
           </form>
@@ -75,7 +75,7 @@
         <button @click="promptInstall">Yes, Install/Update it!</button>
       </div>
       <hr>
-      <label style="font-size:0.8rem">Offline local JSON load:</label>
+      <label style="font-size:0.8rem">Offline local JSON pastebox:</label>
       <form @submit.prevent="onPasteSubmitLoad($event)">
         <textarea name="json" :value="mockDataStr"></textarea>
         <span>
