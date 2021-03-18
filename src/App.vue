@@ -75,12 +75,12 @@
         <button @click="promptInstall">Yes, Install/Update it!</button>
       </div>
       <hr>
-      Offline local JSON load: <code>https://gingkstep.herokuapp.com/loadtree?s=xxxxxx`.</code> Replace xxxxxx with your tree id and copy+paste json into box to load locally.
+      <label style="font-size:0.8rem">Offline local JSON load:</label>
       <form @submit.prevent="onPasteSubmitLoad($event)">
         <textarea name="json" :value="mockDataStr"></textarea>
-        <div>
+        <span>
           <button type="submit">JSON Load</button>
-        </div>
+        </span>
       </form>
     </div>
   </div>
