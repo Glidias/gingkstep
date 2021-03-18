@@ -8,27 +8,51 @@ html
     link(rel='stylesheet' href='css/chords.min.css')
   body
     textarea(readonly id="textarea") !{data}
-    button(onclick="copyToClipboard('textarea')") Copy to clipboard
+    button(onclick="copyToClipboardElemId('textarea')") Copy to clipboard
       script.
-        function copyToClipboard(elemId) {
-          // Create an auxiliary hidden input
-          var aux = document.createElement("input");
 
+        function copyToClipboardElemId(elemId) {
           var el = document.getElementById(elemId);
-          // Get the text from the element passed into the input
-          aux.setAttribute("value", el.value || el.innerHTML);
+          copyToClipboard(el.value || el.innerHTML);
+        }
 
-          // Append the aux input to the body
-          document.body.appendChild(aux);
+        function copyToClipboard(textToCopy) {
+          var textArea;
 
-          // Highlight the content
-          aux.select();
-
-          // Execute the copy command
-          if (document.execCommand("copy")) {
-            alert('Copied to clipboard!');
+          function isOS() {
+            //can use a better detection logic here
+            return navigator.userAgent.match(/ipad|iphone/i);
           }
 
-          // Remove the input from the body
-          document.body.removeChild(aux);
+          function createTextArea(text) {
+            textArea = document.createElement('textArea');
+            textArea.readOnly = true;
+            textArea.contentEditable = true;
+            textArea.value = text;
+            document.body.appendChild(textArea);
+          }
+
+          function selectText() {
+            var range, selection;
+
+            if (isOS()) {
+              range = document.createRange();
+              range.selectNodeContents(textArea);
+              selection = window.getSelection();
+              selection.removeAllRanges();
+              selection.addRange(range);
+              textArea.setSelectionRange(0, 999999);
+            } else {
+              textArea.select();
+            }
+          }
+
+          function copyTo() {
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+          }
+
+          createTextArea(textToCopy);
+          selectText();
+          copyTo();
         }
