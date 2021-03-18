@@ -78,7 +78,7 @@
        <div class="banner" v-if="deferredPrompt">
         <hr>
         <p>Do you want to install Gingkstep App?</p>
-        <button @onClick="promptInstall">Yes, Install it!</button>
+        <button @click="promptInstall()">Yes, Install it!</button>
       </div>
     </div>
   </div>
