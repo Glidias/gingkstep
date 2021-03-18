@@ -27,7 +27,7 @@
     </div>
     <div class="tray" :class="{collapsed:!showTray}">
       <slot />
-      <div class="print-tray">
+      <div class="print-tray" v-if="!usingMock">
         <a class="printbtn" :href="printUrl" target="_blank">&#128438;<sub>(*)</sub></a><br>
         <a class="printbtn-single" :href="printUrlSingle" target="_blank">&#128438;<sub>[{{this.splideIndex+1}}]</sub></a>
       </div>
@@ -80,6 +80,7 @@ export default {
     },
     treeId: String,
     showChords: Boolean,
+    usingMock: Boolean,
     chordMode: Number,
     stepIndex: {
       type: Number,

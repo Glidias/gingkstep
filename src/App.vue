@@ -1,7 +1,7 @@
 <template>
   <div id="app" :class="{'chord-letters': chordMode === Constants.CHORD_MODE_LETTER, 'nashville': chordMode === Constants.CHORD_MODE_NASHVILLE, 'using-capo': useCapo, 'show-chords':showChords, 'show-overview':showOverview, 'is-host':isHost, 'is-guest': isGuest, 'attempting-connect':attemptingConnect}">
     <div v-if="slides && slides.length" @keyup="onKeyupHotBox($event)" @keydown="onKeydownHotBox($event)">
-      <slides-overview :tree-id="formValueTreeId" :chord-mode="chordMode" :show-chords="showChords" @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
+      <slides-overview :tree-id="formValueTreeId" :chord-mode="chordMode" :using-mock="usingMock" :show-chords="showChords" @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
         <div class="traycontents">
           <div>
              <label><input type="checkbox" v-model="showChords" @keydown.stop>Show Chords?</label>
@@ -127,6 +127,7 @@ export default {
       showPasteBox: urlParams.has(QPARAM_pastejson),
       showChords: urlParams.has(QPARAM_showchords),
       sessionPin: '',
+      usingMock: false,
       attemptingConnect: false,
       isHost: false,
       strongHighlight: false,
@@ -555,6 +556,7 @@ export default {
       }
       if (mockData && mockData.result) {
         window.localStorage.setItem('mockData', e.currentTarget.json.value);
+        this.usingMock = true;
         this.setSlides(mockData.result);
       }
 
