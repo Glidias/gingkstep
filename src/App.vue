@@ -599,8 +599,9 @@ export default {
          // User accepted the install prompt
        }
     */
-       await this.$workbox.messageSW({ type: "SKIP_WAITING" });
+
        this.deferredPrompt = null;
+       await this.$workbox.messageSW({ type: "SKIP_WAITING" });
 
      //});
 
