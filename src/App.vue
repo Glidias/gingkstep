@@ -69,17 +69,19 @@
       <p>A song lyrics/chords/transposer/page-turner/slideshow/presentation viewer utility for offline and online synced sessions across device displays</p>
       <p>WIKI For more info: [<a href="https://github.com/Glidias/gingkstep/wiki" target="_blank">link</a>]</p>
       <p><a href="https://github.com/Glidias/gingkstep/wiki/Gingkstep-Usage" target="_blank">Frontend usage guide</a></p>
-      <form v-if="showPasteBox" @submit.prevent="onPasteSubmitLoad($event)">
-        <textarea name="json" :value="mockDataStr"></textarea>
-        <div>
-          <button type="submit">Load</button>
-        </div>
-      </form>
        <div class="banner" v-if="deferredPrompt">
         <hr>
         <p>Do you want to install Gingkstep App?</p>
-        <button @click="promptInstall()">Yes, Install it!</button>
+        <button @click="promptInstall">Yes, Install it!</button>
       </div>
+      <hr>
+      Offline local JSON load: <code>https://gingkstep.herokuapp.com/loadtree?s=xxxxxx`</code>
+      <form @submit.prevent="onPasteSubmitLoad($event)">
+        <textarea name="json" :value="mockDataStr"></textarea>
+        <div>
+          <button type="submit">JSON Load</button>
+        </div>
+      </form>
     </div>
   </div>
 </template>

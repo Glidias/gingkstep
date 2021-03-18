@@ -1,6 +1,6 @@
 {
-  "name": "vue",
-  "version": "0.1.0",
+  "name": "gingkstep",
+  "version": "0.8.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -74,5 +74,5 @@
     "vuejs",
     "starter"
   ],
-  "description": "Vue.js example starter project"
+  "description": "A song lyrics/chords/transposer/page-turner/slideshow/presentation viewer utility for offline and online synced sessions across device displays"
 }
