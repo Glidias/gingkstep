@@ -2,7 +2,7 @@
   <div class="slide-overview" :data-columns="testC" :class="{'no-transition': noTransition, 'no-touch':!isTouchDevice, 'faint-select':faintSelect}" @keydown.up="tapHandlerLeft2"  @keydown.down="tapHandlerRight2">
     <div
       class="offseter"
-       :style="{transform: `translateX(${rootOffsetH}px)`}"
+      :style="{transform: `translateX(${rootOffsetH}px)`}"
     >
       <splide ref="splider" :options="splideOptions" class="scrollslides">
         <splide-slide v-for="(ul, s) in slideList" :key="s">
@@ -91,8 +91,8 @@ export default {
     let initial = getNumColumnsFromViewport()
     let d = {
       testC: initial,
-      rootOffsetH: 0,
-      splideIndex: 0,
+      rootOffsetH: 0, // a horizontal root offset displacement to peek into next song slide when viewing last column of current slide
+      splideIndex: 0, // the current Splide focus index
       showTray: false,
       noTransition: false,
 
@@ -161,30 +161,47 @@ export default {
         perMove: 1,
         dragDistanceStartThreshold: 30,
         drag: true,
-
-         height: '100%', //'calc(100vh - 50px)'
-
+        height: '100%'
       };
     },
   },
   watch: {
-    /*
-    splideOptions(val) {
-      this.$refs.splider.options = val;
-      this.$refs.splider.refresh();
-    }
-    */
-   stepIndex (val) {
+    showChords () {
+      this.$nextTick(()=>{
+        this.onResize();
+        // this.$refs.splider.splide.go(this.splideIndex);
+        // refresh glitching workarond::  enforce slide return back to focused step's location
+        setTimeout(()=>{
+          // this.$refs.splider.splide.go(this.splideIndex);
+          if (this.splideIndex === this.lastScrolledSlideIndex) { // refocus current slide
+            let arr = this.subIndexArr;
+            let val = this.stepIndex;
+            let a = arr[val][0];
+            let b = arr[val][1];
+            this.goto(a, 0, b, true);
+          } else {
+            // todo somethin?
+          }
 
-     if (val !== undefined) {
-       let arr = this.subIndexArr;
-       let a = arr[val][0];
-       let b = arr[val][1];
-       if (a !== this.lastScrolledSlideIndex_ || b !== this.innerIndex_) {
-         this.goto(a, 0, b, true);
-       }
-     }
-   }
+          let slideList = this.slideList;
+          for (let i = 0, l = slideList.length; i < l; i++) {
+            if (i !== this.splideIndex) {
+              this['hOffset'+i] = 0;
+            }
+          }
+        }, 1);
+      });
+    },
+    stepIndex (val) {
+      if (val !== undefined) {
+        let arr = this.subIndexArr;
+        let a = arr[val][0];
+        let b = arr[val][1];
+        if (a !== this.lastScrolledSlideIndex_ || b !== this.innerIndex_) {
+          this.goto(a, 0, b, true);
+        }
+      }
+    }
   },
   methods: {
     centerBtnTap () {
@@ -250,21 +267,20 @@ export default {
           }
         }
       }
-
     },
     onResize () {
       this.$el.style.height = window.innerHeight + 'px';
-     this.$refs.splider.$el.style.height = (window.innerHeight - 50) + 'px';
+      this.$refs.splider.$el.style.height = (window.innerHeight - 50) + 'px';
       let slideList = this.slideList;
+      let initial = getNumColumnsFromViewport()
+      this.testC = initial;
 
+      // Predict number of columns (for width) due to CSS flexbox/columns width limitation (consider: CSS Grid for this)
+      for (let i=0, len = slideList.length; i< len; i++) {
+        this['testtwc'+i] = initial;
+        this['testcc'+i] = initial;
+      }
 
-       let initial = getNumColumnsFromViewport()
-        this.testC = initial;
-        for (let i=0, len = slideList.length; i< len; i++) {
-          this['testtwc'+i] = initial;
-          this['testcc'+i] = initial;
-        }
-      setTimeout(()=> {
       for (let i=0, len = slideList.length; i< len; i++) {
         let elem = document.getElementById("omega_slide_"+i);
         if (!elem) return;
@@ -277,10 +293,8 @@ export default {
           this['testcc'+i] = totalWidthCols;
         }
       }
-      }, 0);
-      // this.$refs.splider.refresh();
     },
-    goto (i, tt, innerIndex, suppressEvents) { //  innerIndex
+    goto (i, tt, innerIndex, suppressEvents) {
         if (i !== this.splideIndex) {
           this.$refs.splider.splide.go(i);
         }
@@ -295,7 +309,7 @@ export default {
         }
       if (!suppressEvents) this.$emit('goto', this.totalSlideAccum[i]+innerIndex);
     },
-    scrollToElem(elem, i) { // within current context of div
+    scrollToElem(elem, i) {
       let horizontalMode = this.testC > 1;
       let prop = NO_ABS_RECT_COORDS ? (horizontalMode ? "left" : "top") : (horizontalMode ? "x" : "y");
       let propD = horizontalMode ? "width" : "height";
@@ -342,18 +356,15 @@ export default {
           setTimeout(()=>{
             this.noTransition = false;
             this.$el.classList.remove('no-transition');
-          }, 250);
+          }, 0);
         },0);
       });
     }
 
     this.$refs.splider.splide.on("move", (newIndex, oldIndex) => {
       if (oldIndex === newIndex) {
-        //this.rootOffsetH = 0;
-        //this.hOffset = 0;
         return;
       }
-      // do something
       this.splideIndex = newIndex;
       // this.rootOffsetH = 0;
 
@@ -364,31 +375,24 @@ export default {
         while (--i >= 0) {
           let elem = document.getElementById("omega_slide_" + i, true);
           this.scrollToElem(elem, i);
-          // this['hOffset'+i] = 0;
         }
         this.rootOffsetH = 0;
-        //if (newIndex !== )
 
         i = newIndex;
         let len = this.slideList.length;
         while (++i < len) {
           let elem = this.$refs[`splideh_${i}_${0}`][0];
           this.scrollToElem(elem, i);
-          // this['hOffset'+i] = 0;
         }
       }
-
       this.$emit('songFocusChange', newIndex);
-
     });
   },
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style  lang="scss" scoped>
 
-
+<style lang="scss" scoped>
 
 $bottom-bar-height:50px;
 
@@ -427,16 +431,16 @@ $bottom-bar-height:50px;
     width:35%;
     height:100%;
     position:absolute;
-  // padding: 3px;
+    // padding: 3px;
     border-radius:5px;
     text-align:center;
     vertical-align:center;
     align-items:center;
     justify-items: center;
-    //background-color: #333333;
+    // background-color: #333333;
     touch-action:none;
     padding-top:15px;
-   // margin-top:-25px;
+    // margin-top:-25px;
     top:0;
     box-sizing:content-box;
     &.left {
@@ -449,9 +453,7 @@ $bottom-bar-height:50px;
       left:50%;
       transform:translateX(-50%);
       width:30%;
-     // max-width:80px;
-
-       position:relative;
+      position:relative;
       &:before {
         content: '';
         left:0;
@@ -470,23 +472,17 @@ $bottom-bar-height:50px;
          border-left:1px solid rgba(255,255,255,0.4);
         height:100%;
       }
-
       position:relative;
-
     }
 
   }
-
   .left {
     left:0;
-
   }
   .right {
     right:0;
-
   }
 }
-
 
 .offseter {
   transition: transform 0.25s cubic-bezier(0.37, 0, 0.63, 1);
@@ -495,12 +491,9 @@ $bottom-bar-height:50px;
   }
 }
 .slide-overview {
-
-
-
-font-size:var(--overview-font-size);
-    text-align: center;
-background-color:#1e1e1e;//#1b1a1a;
+  font-size:var(--overview-font-size);
+  text-align: center;
+  background-color:#1e1e1e;//#1b1a1a;
   overflow: hidden;
   position: relative;
   height: 100%;
@@ -511,7 +504,7 @@ background-color:#1e1e1e;//#1b1a1a;
 
    &[data-columns='1'] {
     ::v-deep article > *{
-        max-width: 100vw;
+        width: 100vw;
       }
      ::v-deep article {
        font-size:0.94em;
@@ -525,17 +518,17 @@ background-color:#1e1e1e;//#1b1a1a;
 
   &[data-columns='2'] {
     ::v-deep article > *{
-      max-width: (100vw / 2);
+      width: (100vw / 2);
     }
   }
    &[data-columns='3'] {
     ::v-deep article > *{
-      max-width: (100vw / 3);
+      width: (100vw / 3);
     }
   }
   &[data-columns='4'] {
     ::v-deep article > *{
-      max-width: (100vw / 4);
+      width: (100vw / 4);
     }
   }
 
@@ -552,14 +545,9 @@ background-color:#1e1e1e;//#1b1a1a;
     box-sizing: border-box;
     padding-bottom: 15px;
     column-gap: 0;
-     color:#666666;
- //   opacity:.4;
-   // color:#666666;
+    color:#666666;
     &.selected {
-   //  opacity:1;
-      color:#aaccff;
-     //  background-color:#141414;
-
+    color:#aaccff;
 
     }
     > * {
@@ -619,7 +607,6 @@ background-color:#1e1e1e;//#1b1a1a;
 
 
  ::v-deep .splide__slide {
-    //padding-bottom:50px;
     position: relative;
 
     box-sizing: border-box;
@@ -654,7 +641,6 @@ background-color:#1e1e1e;//#1b1a1a;
   cursor:auto !important;
   ::v-deep .song {
     display:none;
-
   }
   ::v-deep pre {
     display:none;
@@ -663,7 +649,6 @@ background-color:#1e1e1e;//#1b1a1a;
     background-color:inherit !important;
   }
     font-size:0.8em;
-   // color:#aaaaaa;
     position:relative;
 
     &:before {
@@ -677,7 +662,6 @@ background-color:#1e1e1e;//#1b1a1a;
       transform:translateX(-50%);
     }
     padding-top:5px;
-
   }
 
   .rewind-button {
@@ -688,52 +672,36 @@ background-color:#1e1e1e;//#1b1a1a;
     color:white;
     margin-top:5px;
     display:inline-block;
-   // background-color:#888888;
   }
 
-    .content {
-      &[data-inner-index='0'] {
-        ::v-deep .song {
-          display:none;
-          .show-chords & {
-            display:block;
-          }
+  .content {
+    &[data-inner-index='0'] {
+      ::v-deep .song {
+        display:none;
+        .show-chords & {
+          display:block;
         }
-
       }
-      cursor: pointer;
-      z-index:112;
-      padding: 1px 15px;
-      box-sizing: border-box;
-      // outline:rgb(16, 16, 16) 1px solid;
-      margin: 0;
+    }
+    cursor: pointer;
+    z-index:112;
+    padding: 1px 15px;
+    box-sizing: border-box;
+    // outline:rgb(16, 16, 16) 1px solid;
+    margin: 0;
+    &.selected {
+      outline:rgba(121, 78, 0, 1) 1px solid;
+      cursor:auto !important;
+      background-color:#1c1c20 !important;
+    }
+  }
+
+  .faint-select .content {
       &.selected {
-        outline:rgba(121, 78, 0, 1) 1px solid;
-        cursor:auto !important;
-        background-color:#1c1c20 !important;
-      }
-      /*
-       .no-touch & {
-        &:hover {
-            background-color:#151520;
-          }
-      }
-      */
+      outline:rgba(121, 78, 0, 0.3) 1px solid;
+      cursor:auto !important;
     }
-
-    .faint-select .content {
-       &.selected {
-        outline:rgba(121, 78, 0, 0.3) 1px solid;
-        cursor:auto !important;
-      //  background-color:#171717 !important;//##181818 !important;
-
-      }
-       .no-touch & {
-        &:hover {
-        //    background-color: #080808 !important;
-        }
-      }
-    }
+  }
 
 .tray {
     position:fixed;bottom:$bottom-bar-height;left:0;width:100%;height:auto;
