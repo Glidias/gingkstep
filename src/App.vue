@@ -76,9 +76,9 @@
       </div>
       <hr>
       <label style="font-size:0.8rem">Offline local JSON pastebox:</label>
-      <form @submit.prevent="onPasteSubmitLoad($event)">
+      <form class="form-mockjson" @submit.prevent="onPasteSubmitLoad($event)">
         <textarea name="json" :value="mockDataStr"></textarea>
-        <span>
+        <span >
           <button type="submit">JSON Load</button>
         </span>
       </form>
@@ -110,7 +110,6 @@ function frozen(obj) {
   Object.freeze(obj);
   return obj;
 }
-
 
 export default {
   name: "App",
@@ -254,7 +253,6 @@ export default {
       console.log('socket connect error');
        alert("Error with connection...");
     },
-
     hostingRoom (sessionPin) {
       this.attemptingConnect = false;
       this.sessionPin = sessionPin;
@@ -278,8 +276,6 @@ export default {
 
       this.sessionPin = sessionPin;
       this.isHost = false;
-
-
     },
   },
   methods: {
@@ -562,24 +558,14 @@ export default {
 
       //this.lazyEmit('join-room', e.currentTarget.json.value);
     },
-     async onSubmitLoad () { //e
-
-      let toLoad = this.formValueTreeId; //e.currentTarget.treeid.value;
+     async onSubmitLoad () {
+      let toLoad = this.formValueTreeId;
       if (!toLoad) {
         return;
       }
       await this.loadTree(toLoad);
 
-
       if (this.slides) {
-        /*
-        if (!history.state) {
-          history.pushState(this._lastHistoryState = {s:toLoad}, "", "?s="+toLoad);
-        } else {
-          history.replaceState(this._lastHistoryState = {s:toLoad}, "", "?s="+toLoad);
-        }
-        */
-        //window.addEventListener('popstate', this.onPopState.bind(this));
         let qParams = '';
         let urlParams = new URLSearchParams(window.location.search);
         QUERY_KEEP_PARAMS.forEach((param)=>{
@@ -593,22 +579,8 @@ export default {
       this.lazyEmit('host-room', this.formValueTreeId);
     },
     async promptInstall () {
-      // Show the prompt:
-   //  this.deferredPrompt.prompt();
-
-     // Wait for the user to respond to the prompt:
-    /*
-     this.deferredPrompt.userChoice.then(choiceResult => {
-       if (choiceResult.outcome === "accepted") {
-         // User accepted the install prompt
-       }
-    */
-
-       this.deferredPrompt = null;
-       await this.$workbox.messageSW({ type: "SKIP_WAITING" });
-
-     //});
-
+      this.deferredPrompt = null;
+      await this.$workbox.messageSW({ type: "SKIP_WAITING" });
     }
   },
   watch: {
@@ -671,6 +643,11 @@ export default {
 
 :root {
    --overview-font-size: 17px;
+}
+
+.form-mockjson {
+  display:flex;
+  align-items:flex-end;
 }
 
 body {

@@ -1,8 +1,8 @@
 <template>
     <div id="impress" :style="`transform: scale(${scale})`">
       <splide ref="splider" :options="splideOptions" class="scrollslides">
-          <splide-slide class="step" v-for="(li, i) in stepList" :key="i" v-html="li" :class="{intro:slidesHeaderIndices && slidesHeaderIndices[i]}"></splide-slide>
-        </splide>
+        <splide-slide class="step" v-for="(li, i) in stepList" :key="i" v-html="li" :class="{intro:slidesHeaderIndices && slidesHeaderIndices[i]}"></splide-slide>
+      </splide>
     </div>
 </template>
 
