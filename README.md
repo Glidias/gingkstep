@@ -2,6 +2,8 @@
 
 A song lyrics/chords/transposer/page-turner/slideshow/presentation viewer utility for offline and online sessions (similar to Kahoot).
 
+Demo can be found in https://gingkstep.herokuapp.com
+
 Check the Wiki https://github.com/Glidias/gingkstep/wiki for user documentation.
 
 ### For development:
