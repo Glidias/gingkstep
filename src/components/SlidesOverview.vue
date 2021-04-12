@@ -681,12 +681,7 @@ $bottom-bar-height:50px;
 
 .content {
 
-  > * {
-    pointer-events: none;
-  }
-  &.selected > * {
-    pointer-events: auto;
-  }
+
 
   &[data-inner-index='0'] {
     ::v-deep .song {
@@ -702,10 +697,18 @@ $bottom-bar-height:50px;
   box-sizing: border-box;
   // outline:rgb(16, 16, 16) 1px solid;
   margin: 0;
+
+  ::v-deep > * {
+    pointer-events: none;
+  }
+
   &.selected {
     outline:rgba(121, 78, 0, 1) 1px solid;
     cursor:auto !important;
     background-color:#1c1c20 !important;
+    ::v-deep > * {
+      pointer-events:auto;
+    }
   }
 }
 
