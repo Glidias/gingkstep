@@ -3,8 +3,9 @@
     <div v-if="slides && slides.length" @keyup="onKeyupHotBox($event)" @keydown="onKeydownHotBox($event)">
       <slides-overview :tree-id="formValueTreeId" :chord-mode="chordMode" :using-mock="usingMock" :show-chords="showChords" @songFocusChange="onSongFocusChange" @goto="onGoto" :step-index="stepIndex" :slide-list="slides" v-if="showOverview" :faint-select="!isHost && !strongHighlight">
         <div class="traycontents">
+          <button class="clipboardbtn" v-if="savedSlidesJSON" @click="saveJsonClipboard()">&#128190;</button>
           <div>
-             <label><input type="checkbox" v-model="showChords" @keydown.stop>Show Chords?</label>
+            <label><input type="checkbox" v-model="showChords" @keydown.stop>Show Chords?</label>
             <select v-show="showChords" v-model="chordMode" @keydown.stop="">
                 <option :value="Constants.CHORD_MODE_LETTER">Letters</option>
                 <option :value="Constants.CHORD_MODE_ROMAN">Roman</option>
@@ -128,6 +129,7 @@ export default {
       sessionPin: '',
       usingMock: false,
       attemptingConnect: false,
+      savedSlidesJSON: '',
       isHost: false,
       strongHighlight: false,
       deferredPrompt: null,
@@ -279,9 +281,13 @@ export default {
     },
   },
   methods: {
-     async loadTree(treeD) {
-       this.attemptingConnect = true;
-        // attempt load treeD before
+    saveJsonClipboard () {
+      window.localStorage.setItem('mockData', this.savedSlidesJSON);
+      alert("Song Data saved to local storage!")
+    },
+    async loadTree(treeD) {
+      this.attemptingConnect = true;
+      // attempt load treeD before
       try {
         const response = await axios.get(HOST_PREFIX + 'loadtree', {
           params: {
@@ -292,6 +298,7 @@ export default {
           console.log(response.data.error + ":: error code found.");
           alert(`Error code: ${response.data.error}, found.`);
         } else {
+          this.savedSlidesJSON = JSON.stringify(response.data);
           this.setSlides(response.data.result);
         }
       }
@@ -482,10 +489,6 @@ export default {
            curSlide.slides[s] = document.getElementById(`splideh_${i}_${s}`).innerHTML;
           }
           curSlide.copyright = document.getElementById(`splideh_${i}-copyright`).innerHTML;
-
-          //splideh_s_i-copyright
-
-
         }
       }
     },
@@ -523,7 +526,7 @@ export default {
       this.$socket.emit(event, data, data2);
     },
     resetDataModel() {
-      let slides = this.slides;
+    let slides = this.slides;
      // Object.assign(this._lastState={}, this.$data);
      this._lastState={
        slides:this.slides,
@@ -550,6 +553,7 @@ export default {
       } catch(err) {
         alert('failed to parse json');
       }
+
       if (mockData && mockData.result) {
         window.localStorage.setItem('mockData', e.currentTarget.json.value);
         this.usingMock = true;
@@ -684,6 +688,17 @@ body {
   }
 }
 
+.clipboardbtn {
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  left:15px;
+  border-radius:0;
+  background-color:transparent;
+  width:auto;
+  height:auto;
+  padding:0;
+}
 
 
 #app {
