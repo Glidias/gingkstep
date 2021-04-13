@@ -4,7 +4,6 @@ const G = 'G'.charCodeAt(0);
 const PIANO_KEYS = ['C', 0, 'D', 0, 'E', 'F', 0, 'G', 0, 'A', 0, 'B', 'C', 0, 'D', 0, 'E', 'F', 0, 'G', 0, 'A', 0, 'B', 'C', 0, 'D', 0, 'E', 'F', 0, 'G', 0, 'A', 0, 'B'];
 const WHITE_KEY_INDICES_FROM_A = [9, 11, 0, 2, 4, 5, 7]; //[21, 23, 24, 26, 28, 29, 31];
 
-// console.log(WHITE_KEY_INDICES_FROM_A.map((i)=>PIANO_KEYS[i]))
 // black keys
 const PIANO_KEYS_SHARP = [0, 'Ch', 0, 'Dh', 0, 0, 'Fh', 0, 'Gh', 0, 'Ah', 0, 0, 'Ch', 0, 'Dh', 0, 0, 'Fh', 0, 'Gh', 0, 'Ah', 0, 0, 'Ch', 0, 'Dh', 0, 0, 'Fh', 0, 'Gh', 0, 'Ah', 0];
 const PIANO_KEYS_FLAT = [0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0, 0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0, 0, 'Db', 0, 'Eb', 0, 0, 'Gb', 0, 'Ab', 0, 'Bb', 0];
@@ -19,7 +18,6 @@ const MIDDLE_C_INDEX = WHITE_KEY_INDICES_FROM_A[2];
 
 const PIANO_KEYS_12_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const PIANO_KEYS_12_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-//const PIANO_KEYS_12_C = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']; // based on diff key signature accidental tolerance of 1
 
 
 /**
@@ -78,6 +76,5 @@ function getSharpFlatDelta(sharpsOrFlats) {
   getSharpFlatDelta,
   MIDDLE_C_INDEX,
   A, G, PIANO_KEYS, PIANO_KEYS_FLAT, PIANO_KEYS_SHARP, WHITE_KEY_INDICES_FROM_A, SIGN_AS_SHARP, SIGN_AS_SHARP_MINOR, DIFF_ACCIDENTALS_KEYS,
-  PIANO_KEYS_12_SHARP, PIANO_KEYS_12_FLAT,
-  // PIANO_KEYS_12_C
+  PIANO_KEYS_12_SHARP, PIANO_KEYS_12_FLAT
   }
