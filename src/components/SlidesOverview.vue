@@ -185,7 +185,7 @@ export default {
 
           let slideList = this.slideList;
           for (let i = 0, l = slideList.length; i < l; i++) {
-            if (i !== this.lastScrolledSlideIndex) {
+            if (i !== this.lastScrolledSlideIndex || i !== this.splideIndex) {
               this['hOffset'+i] = 0;
             }
           }
