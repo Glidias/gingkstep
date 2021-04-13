@@ -2,7 +2,7 @@
 // const { PIANO_KEYS, PIANO_KEYS_FLAT, SIGN_AS_SHARP, PIANO_KEYS_SHARP } = require("../../src/util/keys")
 const { Chord } = require("../../src/util/chord")
 
-test('test minor chords', () => {
+test('test minor label chords', () => {
   let test_isMinor = (chd, base, mod="") =>{
     try {
       expect(Chord.parse(chd).isMinor).toStrictEqual(true);
@@ -15,7 +15,7 @@ test('test minor chords', () => {
   test_isMinor("CMin6", true);
 });
 
-test('test major chords', () => {
+test('test non-minor label chords', () => {
   let test_isMajor = (chd, base, mod="") =>{
     try {
       expect(Chord.parse(chd).isMinor).toStrictEqual(false);
@@ -25,7 +25,7 @@ test('test major chords', () => {
     }
   }
   test_isMajor("F#Maj7/D#");
-  test_isMajor("Bbdim/D");
+  test_isMajor("Bbdim/D"); // disambguiation: diminished is not considered a "minor" (well for the purpose of this test..)
   test_isMajor("Bmaj7/Db");
 });
 
