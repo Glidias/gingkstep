@@ -25,7 +25,7 @@ test('test non-minor label chords', () => {
     }
   }
   test_isMajor("F#Maj7/D#");
-  test_isMajor("Bbdim/D"); // disambguiation: diminished is not considered a "minor" (well for the purpose of this test..)
+  test_isMajor("Bbdim/D");
   test_isMajor("Bmaj7/Db");
 });
 
