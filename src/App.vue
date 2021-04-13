@@ -71,9 +71,11 @@
       <p>WIKI For more info: [<a href="https://github.com/Glidias/gingkstep/wiki" target="_blank">link</a>]</p>
       <p><a href="https://github.com/Glidias/gingkstep/wiki/Gingkstep-Usage" target="_blank">Frontend usage guide</a></p>
        <div class="banner" v-if="deferredPrompt">
-        <hr>
-        <p>Do you want to install/update Gingkstep App?</p>
-        <button @click="promptInstall">Yes, Install/Update it!</button>
+        <div>
+          <p>New version of Gingkstep App found!</p>
+          <br>
+          <button @click="promptInstall">Click to continue!</button>
+        </div>
       </div>
       <hr>
       <label style="font-size:0.8rem">Offline local JSON pastebox:</label>
@@ -654,6 +656,19 @@ export default {
   align-items:flex-end;
 }
 
+.banner {
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background-color:#222233;
+  text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content: center;
+}
+
 body {
 
 
@@ -676,9 +691,9 @@ body {
 }
 
 
-  a {
-    color:rgb(206, 194, 206);
-  }
+a {
+  color:rgb(206, 194, 206);
+}
 
 #impress {
   .intro {
