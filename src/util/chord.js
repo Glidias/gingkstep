@@ -480,7 +480,6 @@ class Chord {
         } else if (!signAsSharp !== !this.getSignAsSharp()) {
           result = result.switchModifier();
         }
-
      }
     //}
     /*
@@ -536,7 +535,7 @@ class Chord {
   }
 
   /**
-   * @return Zero if neutral (all-natural). False if prefer flats. True if prefer sharps.
+   * @return {number|boolean} Zero if neutral (all-natural). False if prefer flats. True if prefer sharps.
    */
   getSignAsSharp() {
     let index = this.base.charCodeAt(0) - A;
