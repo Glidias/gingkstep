@@ -2,7 +2,7 @@
   <div class="slide-overview" :data-columns="testC" :class="{'no-transition': noTransition, 'no-touch':!isTouchDevice, 'faint-select':faintSelect}" @keydown.up="tapHandlerLeft2"  @keydown.down="tapHandlerRight2">
     <div
       class="offseter"
-      :style="{transform: `translateX(${!scrolledOff ? rootOffsetH : 0}px)`}"
+      :style="{transform: `translateX(${!scrolledOff && testC > 1 ? rootOffsetH : 0}px)`}"
       @touchmove.capture="touchMoveCaptureHandler($event)"
     >
       <splide ref="splider" :options="splideOptions" :class="{scrollslides: true}">
@@ -337,6 +337,8 @@ export default {
     },
     onResize () {
       this.$el.style.height = window.innerHeight + 'px';
+      // let dontHaveNoTrans = !this.$el.classList.contains('no-transition');
+      // this.$el.classList.add('no-transition');
       this.$refs.splider.$el.style.height = (window.innerHeight - 50) + 'px';
       let slideList = this.slideList;
       let initial = getNumColumnsFromViewport()
@@ -347,6 +349,7 @@ export default {
         this['testtwc'+i] = initial;
         this['testcc'+i] = initial;
       }
+
 
       for (let i=0, len = slideList.length; i< len; i++) {
         let elem = document.getElementById("omega_slide_"+i);
@@ -360,6 +363,25 @@ export default {
           this['testcc'+i] = totalWidthCols;
         }
       }
+     setTimeout(()=>{ // call refresh again (repeat of above) for better prediction
+       for (let i=0, len = slideList.length; i< len; i++) {
+        this['testtwc'+i] = initial;
+        this['testcc'+i] = initial;
+      }
+        for (let i=0, len = slideList.length; i< len; i++) {
+          let elem = document.getElementById("omega_slide_"+i);
+          if (!elem) return;
+          let parentRect =  elem.parentNode.getBoundingClientRect();
+          let rectTest =  elem.getBoundingClientRect();
+          let totalWidthCols =  ((Math.floor((rectTest.x-parentRect.x)/rectTest.width+0.01))+1);
+          this['testtwc'+i] = totalWidthCols;
+
+          if (totalWidthCols < this.testC) {
+            this['testcc'+i] = totalWidthCols;
+          }
+        }
+        // if (dontHaveNoTrans) this.$el.classList.remove('no-transition');
+      },0);
     },
     goto (i, tt, innerIndex, suppressEvents) {
       if (i !== this.splideIndex) {
