@@ -486,6 +486,7 @@ $bottom-bar-height:50px;
 */
 
 .article-holder {
+  position:relative;
   height:100%;
   &::-webkit-scrollbar {
     display: none;
