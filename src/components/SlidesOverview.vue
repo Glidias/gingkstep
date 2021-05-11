@@ -3,25 +3,29 @@
     <div
       class="offseter"
       :style="{transform: `translateX(${rootOffsetH}px)`}"
+      @touchmove.capture="touchMoveCaptureHandler($event)"
     >
-      <splide ref="splider" :options="splideOptions" class="scrollslides">
+      <splide ref="splider" :options="splideOptions" :class="{scrollslides: true}">
         <splide-slide v-for="(ul, s) in slideList" :key="s">
-          <article v-touch:swipe="swipeHandler"
-            class="html-export"
-            :class="{selected:s===splideIndex}"
-            :style="{
-              'column-count':  $data['testcc'+s],
-              transform: `translate(${testC > 1 ? $data['hOffset'+s] : 0}px, ${testC <= 1 ? $data['vOffset'+s] : 0}px)`,
-            }"
-          >
-            <div :ref="'splideh_'+s+'_'+i" v-for="(htm, i) in ul.slides" :key="i" :id="i === ul.slides.length - 1 ? `omega_slide_${s}` : undefined">
-              <div :id="'splideh_'+s+'_'+i"  :class="{selected:lastScrolledSlideIndex === s && innerIndex === i}"  class="content" v-html="htm" v-touch:tap="tapHandlerContentSlide"  :data-inner-index="i" :data-slide-index="s"></div>
-              <div v-if="i === ul.slides.length - 1" class="copyright-song" :class="{'-has-copyright': !!ul.copyright}" style="pointer-events:none; ">
-                <div :id="'splideh_'+s+'-copyright'" v-html="ul.copyright || ul.slides[0]"></div>
-                <div class="arial rewind-button" style="pointer-events:auto" :data-slide-index="s" v-touch:tap="tapRewindHandler">{{lastScrolledSlideIndex === s ? '⏮' : '▶'}}</div>
+          <div class="article-holder" :id="'articleHolder'+s" :style="s === splideIndex || scrollingAnim ? articleOverflowSettings : undefined"
+            @scroll="!scrollingAnim && s === splideIndex ? onArticleFreeScroll($event) : undefined" @touchstart="onArticleTouchStart" @touchend="onArticleTouchEnd"
+            >
+            <article v-touch:swipe="testC > 1 ? swipeTouchLandscapeHandler : undefined"
+              class="html-export"
+              :class="{selected:s===splideIndex}"
+              :style="{
+                'column-count':  $data['testcc'+s],
+              }"
+            >
+              <div :ref="'splideh_'+s+'_'+i" v-for="(htm, i) in ul.slides" :key="i" :id="i === ul.slides.length - 1 ? `omega_slide_${s}` : undefined">
+                <div :id="'splideh_'+s+'_'+i"  :class="{selected:lastScrolledSlideIndex === s && innerIndex === i}"  class="content" v-html="htm" v-touch:tap="tapHandlerContentSlide"  :data-inner-index="i" :data-slide-index="s"></div>
+                <div v-if="i === ul.slides.length - 1" class="copyright-song" :class="{'-has-copyright': !!ul.copyright}" style="pointer-events:none; ">
+                  <div :id="'splideh_'+s+'-copyright'" v-html="ul.copyright || ul.slides[0]"></div>
+                  <div class="arial rewind-button" style="pointer-events:auto" :data-slide-index="s" v-touch:tap="tapRewindHandler">{{lastScrolledSlideIndex === s ? '⏮' : '▶'}}</div>
+                </div>
               </div>
-            </div>
-          </article>
+            </article>
+          </div>
         </splide-slide>
       </splide>
     </div>
@@ -33,19 +37,18 @@
       </div>
     </div>
     <div class="bottombar">
-      <div class="btn left arial" v-touch:tap="tapHandlerLeft" v-show="splideIndex === lastScrolledSlideIndex">↑</div>
-      <div class="btn right arial" v-touch:tap="tapHandlerRight" v-show="splideIndex === lastScrolledSlideIndex">↓</div>
-      <div class="btn center" v-touch:tap="centerBtnTap" @keydown.stop="">
-
-      </div>
+      <div class="btn left arial" v-touch:tap="tapHandlerLeft" v-show="!scrolledOff && splideIndex === lastScrolledSlideIndex">↑</div>
+      <div class="btn right arial" v-touch:tap="tapHandlerRight" v-show="!scrolledOff && splideIndex === lastScrolledSlideIndex">↓</div>
+      <div class="btn center" v-touch:tap="centerBtnTap" @keydown.stop=""></div>
       <div class="btn left" v-touch:tap="returnTap" v-show="splideIndex  > lastScrolledSlideIndex">⏎</div>
-      <div class="btn right" v-touch:tap="returnTap" v-show="splideIndex < lastScrolledSlideIndex">⏎</div>
+      <div class="btn right" v-touch:tap="returnTap" v-show="(scrolledOff && splideIndex === lastScrolledSlideIndex) || splideIndex < lastScrolledSlideIndex">⏎{{splideIndex === lastScrolledSlideIndex ? '↕' : ''}}</div>
     </div>
   </div>
 </template>
 
 <script>
 import { NO_ARROWS } from './mixins/hotkeys';
+import { TweenMax, Power2 } from 'gsap';
 
 function isTouchDevice() {
   return (('ontouchstart' in window) ||
@@ -89,10 +92,13 @@ export default {
   },
   data() {
     let initial = getNumColumnsFromViewport()
-    let d = {
-      testC: initial,
+    const d = {
+      testC: initial, // number of screen available responsive columns detected to control number of display columns
       rootOffsetH: 0, // a horizontal root offset displacement to peek into next song slide when viewing last column of current slide
       splideIndex: 0, // the current Splide focus index
+      touchScrolled: 0, // bitmask.... bit 1: touch down has happened, bit 2: scrolled has happened. Reset to zero if touch release occured
+      scrolledOff: false, // to indicate if free-scrolling within article slide has happened and position is offseted
+      scrollingAnim: false, // indicates whether scroll animation is occuring or not
       showTray: false,
       noTransition: false,
 
@@ -109,6 +115,24 @@ export default {
     return d;
   },
   computed: {
+    splideOverflowSettings () {
+      const cols = this.testC;
+      return cols === 1 ? {
+        'overflow-x': 'auto',
+        'overflow-y': 'hidden'
+      } : undefined
+    },
+    articleOverflowSettings () {
+      const cols = this.testC;
+      return cols === 1 ? {
+        'overflow-x': 'hidden',
+        'overflow-y': 'auto'
+      } : {
+        'overflow-y': 'hidden',
+        'overflow-x': 'auto'
+      };
+    },
+
     printUrl () {
       return `${process.env.BASE_URL}print?s=${this.treeId}` + (this.showChords ? `&showchords` : '') + (this.chordMode ? `&nummode=${this.chordMode}` : '');
     },
@@ -145,7 +169,9 @@ export default {
     },
     isTouchDevice: isTouchDevice,
     splideOptions() {
-       var cols = this.testC;
+      const cols = this.testC;
+      const noDragging = false;// this.testC === 1;
+
       return {
         autoWidth: true,
         start: 0, //this.stepIndex !== undefined ? getSlideIndexFromStep(this.stepIndex, this.slideList) : 0,
@@ -154,18 +180,30 @@ export default {
         easing: 'cubic-bezier(0.37, 0, 0.63, 1)',
         throttle:0,
         speed:250,
-        keyboard: NO_ARROWS ? false : 'global',
+        keyboard: NO_ARROWS || noDragging ? false : 'global',
         focus: "center",
+        swipeDistanceThreshold: Infinity,
         arrows: false,
         perPage: 1,
         perMove: 1,
         dragDistanceStartThreshold: 30,
-        drag: true,
+        drag: !noDragging,
         height: '100%'
       };
     },
   },
   watch: {
+    /*
+    touchScrolled () {
+      console.log(this.touchScrolled);
+    },
+    */
+    ///*
+    splideOptions () {
+      // assume total merge of current options to force-reapply settings
+      this.$refs.splider.splide.options = this.splideOptions;
+    },
+    //*/
     showChords () {
       this.$nextTick(()=>{
         this.onResize();
@@ -180,13 +218,14 @@ export default {
             let b = arr[val][1];
             this.goto(a, 0, b, true);
           } else {
-            // todo somethin?
+            // do nothing
           }
 
           let slideList = this.slideList;
           for (let i = 0, l = slideList.length; i < l; i++) {
             if (i !== this.lastScrolledSlideIndex || i !== this.splideIndex) {
               this['hOffset'+i] = 0;
+              document.getElementById('articleHolder'+i).scrollLeft = 0;
             }
           }
         }, 1);
@@ -204,6 +243,24 @@ export default {
     }
   },
   methods: {
+    onArticleTouchStart () {
+      this.touchScrolled |= 1;
+    },
+    onArticleTouchEnd () {
+      this.touchScrolled = 0;
+    },
+    onArticleFreeScroll (e) {
+      // if (!this._lastScrolledElem) return;
+      /** @type {HTMLElement} */
+      // let targ = e.currentTarget;
+      //targ.scrollTop
+      this.scrolledOff = true;
+      this.rootOffsetH = 0;
+      if (this.touchScrolled === 1) this.touchScrolled = 3; // |= 2; // only progress touch scrolled state to 3 from touch-down case
+    },
+    touchMoveCaptureHandler (e) { // to consider blocking touch move from happening on draggable splide
+      if (this.touchScrolled === 3) e.stopImmediatePropagation();
+    },
     centerBtnTap () {
       this.showTray = !this.showTray;
     },
@@ -214,6 +271,9 @@ export default {
       this.showTray = false;
     },
     tapHandlerContentSlide(e) {
+      if (this.touchScrolled === 3) {
+        return;
+      }
       this.goto(parseInt(e.currentTarget.getAttribute('data-slide-index')), e.currentTarget.parentNode, parseInt(e.currentTarget.getAttribute('data-inner-index')));
     },
     tapRewindHandler(e) {
@@ -222,6 +282,9 @@ export default {
     },
     returnTap() {
       if (this._lastScrolledElem) this.goto(this.lastScrolledSlideIndex, this._lastScrolledElem, this.innerIndex);
+    },
+    swipeTouchLandscapeHandler(e) {
+
     },
     tapHandlerLeft(e) {
       this.swipeHandler("bottom", e, true);
@@ -295,22 +358,24 @@ export default {
       }
     },
     goto (i, tt, innerIndex, suppressEvents) {
-        if (i !== this.splideIndex) {
-          this.$refs.splider.splide.go(i);
-        }
+      if (i !== this.splideIndex) {
+        this.$refs.splider.splide.go(i);
+      }
 
-        if (tt != null) {
-          let targt = typeof tt !== 'number' ? tt : this.$refs[`splideh_${i}_${innerIndex}`][0];
+      if (tt != null) {
+        let targt = typeof tt !== 'number' ? tt : this.$refs[`splideh_${i}_${innerIndex}`][0];
 
-          this.scrollToElem(targt, i);
-          this._lastScrolledElem = targt;
-          this.lastScrolledSlideIndex_ = i;
-          this.innerIndex_ = innerIndex;
-        }
+        this.scrollToElem(targt, i);
+        this._lastScrolledElem = targt;
+        this.lastScrolledSlideIndex_ = i;
+        this.innerIndex_ = innerIndex;
+      }
+
       if (!suppressEvents) this.$emit('goto', this.totalSlideAccum[i]+innerIndex);
     },
     scrollToElem(elem, i) {
       let horizontalMode = this.testC > 1;
+      this.scrolledOff = false;
       let prop = NO_ABS_RECT_COORDS ? (horizontalMode ? "left" : "top") : (horizontalMode ? "x" : "y");
       let propD = horizontalMode ? "width" : "height";
       let parentRect = elem.parentNode.getBoundingClientRect();
@@ -333,6 +398,18 @@ export default {
         this.rootOffsetH = 0;
       }
       this[horizontalMode ? "hOffset"+i : "vOffset"+i] = tryVal;
+
+      this.scrollingAnim = true;
+      let onComplete = ()=> {
+        this.scrollingAnim = false;
+      };
+      if (horizontalMode) {
+        // TweenMax.to();
+         TweenMax.to(elem.parentNode.parentNode, {duration: .25, scrollTop:0, scrollLeft: -tryVal, ease: Power2.easeInOut, onComplete});
+      } else {
+        // assumed scrollable target
+        TweenMax.to(elem.parentNode.parentNode, {duration: .25, scrollLeft:0, scrollTop: -tryVal, ease: Power2.easeInOut, onComplete});
+      }
     },
   },
   beforeDestroy() {
@@ -396,8 +473,19 @@ export default {
 
 $bottom-bar-height:50px;
 
+/*
 .clipboardbtn {
 
+}
+*/
+
+.article-holder {
+  height:100%;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .print-tray {
@@ -506,6 +594,12 @@ $bottom-bar-height:50px;
   ::v-deep .scrollslides {
     height: 100%;
   }
+  ///*
+  ::v-deep .scrollslides--disabled .splide__list {
+    transform: translateX(0) !important;
+    //transition: none !important;
+  }
+  //*/
 
   &[data-columns='1'] {
     ::v-deep article > *{
@@ -681,7 +775,7 @@ $bottom-bar-height:50px;
 
 .content {
 
-
+  -webkit-tap-highlight-color: transparent;
 
   &[data-inner-index='0'] {
     ::v-deep .song {
