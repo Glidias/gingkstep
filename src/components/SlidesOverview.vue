@@ -2,12 +2,12 @@
   <div class="slide-overview" :data-columns="testC" :class="{'no-transition': noTransition, 'no-touch':!isTouchDevice, 'faint-select':faintSelect}" @keydown.up="tapHandlerLeft2"  @keydown.down="tapHandlerRight2">
     <div
       class="offseter"
-      :style="{transform: `translateX(${rootOffsetH}px)`}"
+      :style="{transform: `translateX(${!scrolledOff ? rootOffsetH : 0}px)`}"
       @touchmove.capture="touchMoveCaptureHandler($event)"
     >
       <splide ref="splider" :options="splideOptions" :class="{scrollslides: true}">
         <splide-slide v-for="(ul, s) in slideList" :key="s">
-          <div class="article-holder" :id="'articleHolder'+s" :style="s === splideIndex || scrollingAnim ? articleOverflowSettings : undefined"
+          <div class="article-holder" :id="'articleHolder'+s" :style="articleOverflowSettings"
             @scroll="!scrollingAnim && s === splideIndex ? onArticleFreeScroll($event) : undefined" @touchstart="onArticleTouchStart" @touchend="onArticleTouchEnd"
             >
             <article v-touch:swipe="testC > 1 ? swipeTouchLandscapeHandler : undefined"
@@ -169,7 +169,7 @@ export default {
     },
     isTouchDevice: isTouchDevice,
     splideOptions() {
-      const cols = this.testC;
+      // const cols = this.testC;
       const noDragging = false;// this.testC === 1;
 
       return {
@@ -198,12 +198,12 @@ export default {
       console.log(this.touchScrolled);
     },
     */
-    ///*
+    /*
     splideOptions () {
       // assume total merge of current options to force-reapply settings
       this.$refs.splider.splide.options = this.splideOptions;
     },
-    //*/
+    */
     showChords () {
       this.$nextTick(()=>{
         this.onResize();
@@ -251,11 +251,14 @@ export default {
     },
     onArticleFreeScroll (e) {
       // if (!this._lastScrolledElem) return;
+      if (this._cancelFirstScrollEvent) {
+        this._cancelFirstScrollEvent = false;
+        return;
+      }
       /** @type {HTMLElement} */
       // let targ = e.currentTarget;
       //targ.scrollTop
       this.scrolledOff = true;
-      this.rootOffsetH = 0;
       if (this.touchScrolled === 1) this.touchScrolled = 3; // |= 2; // only progress touch scrolled state to 3 from touch-down case
     },
     touchMoveCaptureHandler (e) { // to consider blocking touch move from happening on draggable splide
@@ -274,6 +277,7 @@ export default {
       if (this.touchScrolled === 3) {
         return;
       }
+      this.scrolledOff = false;
       this.goto(parseInt(e.currentTarget.getAttribute('data-slide-index')), e.currentTarget.parentNode, parseInt(e.currentTarget.getAttribute('data-inner-index')));
     },
     tapRewindHandler(e) {
@@ -376,6 +380,7 @@ export default {
     scrollToElem(elem, i) {
       let horizontalMode = this.testC > 1;
       this.scrolledOff = false;
+
       let prop = NO_ABS_RECT_COORDS ? (horizontalMode ? "left" : "top") : (horizontalMode ? "x" : "y");
       let propD = horizontalMode ? "width" : "height";
       let parentRect = elem.parentNode.getBoundingClientRect();
@@ -401,6 +406,7 @@ export default {
 
       this.scrollingAnim = true;
       let onComplete = ()=> {
+        this._cancelFirstScrollEvent = true; // a flag to circumvent first scroll event occuring once scroll reaches to a stop
         this.scrollingAnim = false;
       };
       if (horizontalMode) {
